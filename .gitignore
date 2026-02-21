@@ -368,3 +368,5 @@ nunit-*.xml
 # Environment variables
 .env
 .env.local
+
+appsettings.Development.json
