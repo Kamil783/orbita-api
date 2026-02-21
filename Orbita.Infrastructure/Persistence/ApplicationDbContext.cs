@@ -1,22 +1,16 @@
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Orbita.Domain.Entities;
+using Orbita.Infrastructure.Entities;
 
 namespace Orbita.Infrastructure.Persistence;
 
-public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
+public class OrbitaDbContext(DbContextOptions<OrbitaDbContext> options) : IdentityDbContext<UserEntity, IdentityRole<Guid>, Guid>(options)
 {
-    public DbSet<User> Users => Set<User>();
-
+    public DbSet<UserEntity> Users => Set<UserEntity>();
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<User>(builder =>
-        {
-            builder.HasKey(user => user.Id);
-            builder.Property(user => user.Email).HasMaxLength(256).IsRequired();
-            builder.HasIndex(user => user.Email).IsUnique();
-            builder.Property(user => user.PasswordHash).HasMaxLength(512).IsRequired();
-        });
-
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(OrbitaDbContext).Assembly);
         base.OnModelCreating(modelBuilder);
     }
 }
