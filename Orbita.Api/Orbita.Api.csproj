@@ -9,8 +9,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.10" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.10" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.22.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Orbita.Application\Orbita.Application.csproj" />
+    <ProjectReference Include="..\Orbita.Contracts\Orbita.Contracts.csproj" />
+    <ProjectReference Include="..\Orbita.Infrastructure\Orbita.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>
