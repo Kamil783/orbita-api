@@ -10,7 +10,5 @@ public class UserConfig : IEntityTypeConfiguration<UserEntity>
     {
         b.ToTable("Users");
         b.HasKey(x => x.Id);
-
-        b.HasIndex(x => x.Email).IsUnique();
     }
 }
