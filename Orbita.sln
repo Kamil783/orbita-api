@@ -5,6 +5,18 @@ VisualStudioVersion = 17.14.36616.10 d17.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orbita.Api", "Orbita.Api\Orbita.Api.csproj", "{3F25790B-1B7F-46CB-BF15-BA64B31914ED}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orbita.Domain", "Orbita.Domain\Orbita.Domain.csproj", "{A34D4493-0CF5-443C-991F-E47D54CAADC2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orbita.Application", "Orbita.Application\Orbita.Application.csproj", "{2474266F-CACA-4653-BCAF-67A06033ADC2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orbita.Infrastructure", "Orbita.Infrastructure\Orbita.Infrastructure.csproj", "{AF56D2F2-6982-44C3-A6BA-E8F815D2F168}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orbita.Contracts", "Orbita.Contracts\Orbita.Contracts.csproj", "{F685DD03-AB14-4B2F-B6D3-38B8347BE273}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orbita.UnitTests", "Orbita.UnitTests\Orbita.UnitTests.csproj", "{EB967CF5-B936-4D51-AB42-0364A268C943}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orbita.IntegrationTests", "Orbita.IntegrationTests\Orbita.IntegrationTests.csproj", "{4D4613F5-E439-4FC9-A1EE-F11991D0F3F9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +27,30 @@ Global
 		{3F25790B-1B7F-46CB-BF15-BA64B31914ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3F25790B-1B7F-46CB-BF15-BA64B31914ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3F25790B-1B7F-46CB-BF15-BA64B31914ED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A34D4493-0CF5-443C-991F-E47D54CAADC2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A34D4493-0CF5-443C-991F-E47D54CAADC2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A34D4493-0CF5-443C-991F-E47D54CAADC2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A34D4493-0CF5-443C-991F-E47D54CAADC2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2474266F-CACA-4653-BCAF-67A06033ADC2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2474266F-CACA-4653-BCAF-67A06033ADC2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2474266F-CACA-4653-BCAF-67A06033ADC2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2474266F-CACA-4653-BCAF-67A06033ADC2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AF56D2F2-6982-44C3-A6BA-E8F815D2F168}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AF56D2F2-6982-44C3-A6BA-E8F815D2F168}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AF56D2F2-6982-44C3-A6BA-E8F815D2F168}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AF56D2F2-6982-44C3-A6BA-E8F815D2F168}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F685DD03-AB14-4B2F-B6D3-38B8347BE273}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F685DD03-AB14-4B2F-B6D3-38B8347BE273}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F685DD03-AB14-4B2F-B6D3-38B8347BE273}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F685DD03-AB14-4B2F-B6D3-38B8347BE273}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EB967CF5-B936-4D51-AB42-0364A268C943}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EB967CF5-B936-4D51-AB42-0364A268C943}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EB967CF5-B936-4D51-AB42-0364A268C943}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EB967CF5-B936-4D51-AB42-0364A268C943}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4D4613F5-E439-4FC9-A1EE-F11991D0F3F9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4D4613F5-E439-4FC9-A1EE-F11991D0F3F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4D4613F5-E439-4FC9-A1EE-F11991D0F3F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4D4613F5-E439-4FC9-A1EE-F11991D0F3F9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
