@@ -7,21 +7,27 @@ WORKDIR /app
 EXPOSE 8080
 EXPOSE 8081
 
-
 # Этот этап используется для сборки проекта службы
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
+
+COPY ["Orbita.sln", "./"]
 COPY ["Orbita.Api/Orbita.Api.csproj", "Orbita.Api/"]
+COPY ["Orbita.Application/Orbita.Application.csproj", "Orbita.Application/"]
+COPY ["Orbita.Contracts/Orbita.Contracts.csproj", "Orbita.Contracts/"]
+COPY ["Orbita.Domain/Orbita.Domain.csproj", "Orbita.Domain/"]
+COPY ["Orbita.Infrastructure/Orbita.Infrastructure.csproj", "Orbita.Infrastructure/"]
 RUN dotnet restore "./Orbita.Api/Orbita.Api.csproj"
+
 COPY . .
 WORKDIR "/src/Orbita.Api"
-RUN dotnet build "./Orbita.Api.csproj" -c $BUILD_CONFIGURATION -o /app/build
+RUN dotnet build "./Orbita.Api.csproj" -c $BUILD_CONFIGURATION -o /app/build --no-restore
 
 # Этот этап используется для публикации проекта службы, который будет скопирован на последний этап
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./Orbita.Api.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "./Orbita.Api.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false --no-build
 
 # Этот этап используется в рабочей среде или при запуске из VS в обычном режиме (по умолчанию, когда конфигурация отладки не используется)
 FROM base AS final
