@@ -12,7 +12,7 @@ using Orbita.Infrastructure.Persistence;
 namespace Orbita.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(OrbitaDbContext))]
-    [Migration("20260221161929_InitialCreate")]
+    [Migration("20260221163529_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -224,7 +224,7 @@ namespace Orbita.Infrastructure.Persistence.Migrations
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex");
 
-                    b.ToTable("AspNetUsers", (string)null);
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>

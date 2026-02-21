@@ -10,7 +10,8 @@ public class OrbitaDbContext(DbContextOptions<OrbitaDbContext> options) : Identi
     public DbSet<UserEntity> Users => Set<UserEntity>();
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.ApplyConfigurationsFromAssembly(typeof(OrbitaDbContext).Assembly);
         base.OnModelCreating(modelBuilder);
+
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(OrbitaDbContext).Assembly);
     }
 }

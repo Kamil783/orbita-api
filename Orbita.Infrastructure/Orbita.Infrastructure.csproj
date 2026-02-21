@@ -22,4 +22,8 @@
     <ProjectReference Include="..\Orbita.Contracts\Orbita.Contracts.csproj" />
     <ProjectReference Include="..\Orbita.Domain\Orbita.Domain.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Persistence\Migrations\" />
+  </ItemGroup>
 </Project>
