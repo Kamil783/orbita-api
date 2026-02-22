@@ -50,6 +50,7 @@ public static class SeedDatabase
             admin = new UserEntity
             {
                 Email = email,
+                UserName = email,
                 EmailConfirmed = true
             };
 
