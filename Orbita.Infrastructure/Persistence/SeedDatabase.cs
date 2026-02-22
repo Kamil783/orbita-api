@@ -51,7 +51,6 @@ public static class SeedDatabase
             {
                 UserName = email,
                 Email = email,
-                UserName = email,
                 EmailConfirmed = true
             };
 
