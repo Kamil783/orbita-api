@@ -1,3 +1,4 @@
+using Orbita.Api.Middleware;
 using Orbita.Application.DependencyInjection;
 using Orbita.Infrastructure.DependencyInjection;
 
@@ -9,6 +10,8 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
+
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {
