@@ -1,3 +1,4 @@
+using Orbita.Api.Extensions;
 using Orbita.Api.Middleware;
 using Orbita.Application.DependencyInjection;
 using Orbita.Infrastructure.DependencyInjection;
@@ -9,6 +10,8 @@ builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services.AddControllers();
+
+builder.Services.AddFrontCors();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -30,6 +33,9 @@ if (!app.Environment.IsDevelopment())
 {
     app.UseHttpsRedirection();
 }
+
+app.UseCors("Front");
+
 app.UseAuthentication();
 app.UseAuthorization();
 
