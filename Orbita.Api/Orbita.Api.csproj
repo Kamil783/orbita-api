@@ -16,16 +16,13 @@
 		<PrivateAssets>all</PrivateAssets>
 		<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 	</PackageReference>
+	<PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.6" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Orbita.Application\Orbita.Application.csproj" />
     <ProjectReference Include="..\Orbita.Contracts\Orbita.Contracts.csproj" />
     <ProjectReference Include="..\Orbita.Infrastructure\Orbita.Infrastructure.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Controllers\" />
   </ItemGroup>
 
 </Project>

@@ -19,7 +19,7 @@ public static class SeedDatabase
         var db = sp.GetRequiredService<OrbitaDbContext>();
         await db.Database.MigrateAsync();
 
-        var roleManager = sp.GetRequiredService<RoleManager<IdentityRole>>();
+        var roleManager = sp.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
         var userManager = sp.GetRequiredService<UserManager<UserEntity>>();
 
         string[] roles = { "Admin", "User" };
@@ -28,7 +28,7 @@ public static class SeedDatabase
         {
             if (!await roleManager.RoleExistsAsync(role))
             {
-                var res = await roleManager.CreateAsync(new IdentityRole(role));
+                var res = await roleManager.CreateAsync(new IdentityRole<Guid>(role));
                 if (!res.Succeeded)
                     throw new Exception($"Не удалось создать роль {role}: {string.Join(", ", res.Errors.Select(e => e.Description))}");
             }

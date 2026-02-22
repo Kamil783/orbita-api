@@ -13,23 +13,23 @@ public class Result
 
     public static Result Ok() => new(true, null);
 
-    public static Result Fail(string code, string message, ErrorType type = ErrorType.Unexpected)
-        => new(false, new ErrorDetails(code, message, type));
+    public static Result Fail(string message, ErrorType type = ErrorType.Unexpected, string? code = null)
+        => code is null ? new(false, new ErrorDetails(message, type)) : new (false, new ErrorDetails(message, type, Code: code));
 
-    public static Result Validation(IDictionary<string, string[]> errors, string code = "validation_error", string message = "Validation failed")
-        => new(false, new ErrorDetails(code, message, ErrorType.Validation, new Dictionary<string, string[]>(errors)));
+    public static Result Validation(IDictionary<string, string[]> errors, string message = "Validation failed")
+        => new(false, new ErrorDetails(message, ErrorType.Validation, ValidationErrors: new Dictionary<string, string[]>(errors)));
 
-    public static Result NotFound(string message = "Not found", string code = "not_found")
-        => new(false, new ErrorDetails(code, message, ErrorType.NotFound));
+    public static Result NotFound(string message = "Not found")
+        => new(false, new ErrorDetails(message, ErrorType.NotFound));
 
-    public static Result Conflict(string message = "Conflict", string code = "conflict")
-        => new(false, new ErrorDetails(code, message, ErrorType.Conflict));
+    public static Result Conflict(string message = "Conflict")
+        => new(false, new ErrorDetails(message, ErrorType.Conflict));
 
-    public static Result Unauthorized(string message = "Unauthorized", string code = "unauthorized")
-        => new(false, new ErrorDetails(code, message, ErrorType.Unauthorized));
+    public static Result Unauthorized(string message = "Unauthorized")
+        => new(false, new ErrorDetails(message, ErrorType.Unauthorized));
 
-    public static Result Forbidden(string message = "Forbidden", string code = "forbidden")
-        => new(false, new ErrorDetails(code, message, ErrorType.Forbidden));
+    public static Result Forbidden(string message = "Forbidden")
+        => new(false, new ErrorDetails(message, ErrorType.Forbidden));
 }
 
 public sealed class Result<T> : Result
@@ -44,17 +44,23 @@ public sealed class Result<T> : Result
 
     public static Result<T> Ok(T value) => new(true, value, null);
 
-    public static new Result<T> Fail(string code, string message, ErrorType type = ErrorType.Unexpected)
-        => new(false, default, new ErrorDetails(code, message, type));
+    public static Result<T> Fail(string message, ErrorType type = ErrorType.Unexpected, string? code = null)
+        => code is null ? new(false, default, new ErrorDetails(message, type)) : new (false, default, new ErrorDetails(message, type, Code: code));
 
-    public static new Result<T> Validation(IDictionary<string, string[]> errors, string code = "validation_error", string message = "Validation failed")
-        => new(false, default, new ErrorDetails(code, message, ErrorType.Validation, new Dictionary<string, string[]>(errors)));
+    public static Result<T> Validation(IDictionary<string, string[]> errors, string message = "Validation failed")
+        => new(false, default, new ErrorDetails(message, ErrorType.Validation, ValidationErrors: new Dictionary<string, string[]>(errors)));
 
-    public static new Result<T> NotFound(string message = "Not found", string code = "not_found")
-        => new(false, default, new ErrorDetails(code, message, ErrorType.NotFound));
+    public static Result<T> NotFound(string message = "Not found")
+        => new(false, default, new ErrorDetails(message, ErrorType.NotFound));
 
-    public static new Result<T> Conflict(string message = "Conflict", string code = "conflict")
-        => new(false, default, new ErrorDetails(code, message, ErrorType.Conflict));
+    public static Result<T> Conflict(string message = "Conflict")
+        => new(false, default, new ErrorDetails(message, ErrorType.Conflict));
+
+    public static Result<T> Unauthorized(string message = "Unauthorized")
+    => new(false, default, new ErrorDetails(message, ErrorType.Unauthorized));
+
+    public static Result<T> Forbidden(string message = "Forbidden")
+        => new(false, default, new ErrorDetails(message, ErrorType.Forbidden));
 }
 
 

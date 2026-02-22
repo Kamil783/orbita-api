@@ -1,8 +1,8 @@
 ﻿namespace Orbita.Application.Models.Results;
 
 public record ErrorDetails(
-    string Code,
     string Message,
     ErrorType Type = ErrorType.Unexpected,
+    string? Code = null,
     IReadOnlyDictionary<string, string[]>? ValidationErrors = null
 );
