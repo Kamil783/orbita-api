@@ -36,6 +36,7 @@ public static class SeedDatabase
 
         var email = config["SeedAdmin:Email"];
         var password = config["SeedAdmin:Password"];
+        var name = config["SeedAdmin:Name"];
 
         if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
         {
@@ -51,6 +52,7 @@ public static class SeedDatabase
             {
                 UserName = email,
                 Email = email,
+                FullName = name ?? "",
                 EmailConfirmed = true
             };
 
