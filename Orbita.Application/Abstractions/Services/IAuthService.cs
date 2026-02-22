@@ -8,4 +8,5 @@ public interface IAuthService
 {
     Task<Result<AuthResponse>> AuthenticateAsync(LoginCommand command, CancellationToken ct = default);
     Task<Result<AuthResponse>> RegisterAsync(RegisterCommand command, CancellationToken ct = default);
+    Task<Result<AuthResponse>> RefreshAsync(string refreshToken, CancellationToken ct = default);
 }
