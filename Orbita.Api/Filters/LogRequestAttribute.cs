@@ -1,9 +1,9 @@
 using System.Diagnostics;
 using System.Security.Claims;
-using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Orbita.Api.Middleware;
 using Orbita.Application.Abstractions;
 using Orbita.Application.Models;
 
@@ -36,15 +36,11 @@ public class LogRequestAttribute : ActionFilterAttribute
         var request = httpContext.Request;
         var stopwatch = Stopwatch.StartNew();
 
-        // Read request body
+        // Read request body captured by RequestBodyCaptureMiddleware (runs before model binding)
         string? requestBody = null;
-        if (LogBody && request.ContentLength is > 0 and <= MaxBodyLength)
+        if (LogBody && httpContext.Items.TryGetValue(RequestBodyCaptureMiddleware.RequestBodyKey, out var cached))
         {
-            request.EnableBuffering();
-            request.Body.Position = 0;
-            using var reader = new StreamReader(request.Body, Encoding.UTF8, leaveOpen: true);
-            requestBody = await reader.ReadToEndAsync();
-            request.Body.Position = 0;
+            requestBody = cached as string;
         }
 
         // Collect selected request headers

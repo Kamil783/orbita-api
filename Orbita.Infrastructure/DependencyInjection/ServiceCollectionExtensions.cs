@@ -58,9 +58,10 @@ public static class ServiceCollectionExtensions
 
         // Logging
         services.AddHttpContextAccessor();
-        services.AddSingleton(Channel.CreateUnbounded<AppLogEntity>(new UnboundedChannelOptions
+        services.AddSingleton(Channel.CreateBounded<AppLogEntity>(new BoundedChannelOptions(10_000)
         {
-            SingleReader = true
+            SingleReader = true,
+            FullMode = BoundedChannelFullMode.DropOldest
         }));
         services.AddSingleton<IAppLogger, AppLogger>();
         services.AddHostedService<LogBackgroundService>();
