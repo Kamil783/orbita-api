@@ -152,38 +152,6 @@ namespace Orbita.Infrastructure.Persistence.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("Orbita.Infrastructure.Entities.RefreshTokenEntity", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("ExpiresAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("IsRevoked")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Token")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Token")
-                        .IsUnique();
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("RefreshTokens", (string)null);
-                });
-
             modelBuilder.Entity("Orbita.Infrastructure.Entities.AppLogEntity", b =>
                 {
                     b.Property<Guid>("Id")
@@ -225,6 +193,35 @@ namespace Orbita.Infrastructure.Persistence.Migrations
                     b.HasIndex("TraceId");
 
                     b.ToTable("AppLogs", (string)null);
+                });
+
+            modelBuilder.Entity("Orbita.Infrastructure.Entities.RefreshTokenEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsRevoked")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("RefreshTokens");
                 });
 
             modelBuilder.Entity("Orbita.Infrastructure.Entities.RequestLogEntity", b =>
@@ -271,11 +268,11 @@ namespace Orbita.Infrastructure.Persistence.Migrations
                     b.Property<string>("RequestHeaders")
                         .HasColumnType("text");
 
-                    b.Property<int>("ResponseStatusCode")
-                        .HasColumnType("integer");
-
                     b.Property<string>("ResponseBody")
                         .HasColumnType("text");
+
+                    b.Property<int>("ResponseStatusCode")
+                        .HasColumnType("integer");
 
                     b.Property<string>("TraceId")
                         .IsRequired()
