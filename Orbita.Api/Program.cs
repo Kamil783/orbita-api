@@ -1,6 +1,7 @@
 using Orbita.Api.Middleware;
 using Orbita.Application.DependencyInjection;
 using Orbita.Infrastructure.DependencyInjection;
+using Orbita.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +11,8 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
+
+await SeedDatabase.SeedAsync(app.Services);
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseMiddleware<RequestBodyCaptureMiddleware>();
