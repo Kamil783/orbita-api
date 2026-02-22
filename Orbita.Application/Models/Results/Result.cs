@@ -44,22 +44,22 @@ public sealed class Result<T> : Result
 
     public static Result<T> Ok(T value) => new(true, value, null);
 
-    public static Result<T> Fail(string message, ErrorType type = ErrorType.Unexpected, string? code = null)
+    public static new Result<T> Fail(string message, ErrorType type = ErrorType.Unexpected, string? code = null)
         => code is null ? new(false, default, new ErrorDetails(message, type)) : new (false, default, new ErrorDetails(message, type, Code: code));
 
-    public static Result<T> Validation(IDictionary<string, string[]> errors, string message = "Validation failed")
+    public static new Result<T> Validation(IDictionary<string, string[]> errors, string message = "Validation failed")
         => new(false, default, new ErrorDetails(message, ErrorType.Validation, ValidationErrors: new Dictionary<string, string[]>(errors)));
 
-    public static Result<T> NotFound(string message = "Not found")
+    public static new Result<T> NotFound(string message = "Not found")
         => new(false, default, new ErrorDetails(message, ErrorType.NotFound));
 
-    public static Result<T> Conflict(string message = "Conflict")
+    public static new Result<T> Conflict(string message = "Conflict")
         => new(false, default, new ErrorDetails(message, ErrorType.Conflict));
 
-    public static Result<T> Unauthorized(string message = "Unauthorized")
+    public static new Result<T> Unauthorized(string message = "Unauthorized")
     => new(false, default, new ErrorDetails(message, ErrorType.Unauthorized));
 
-    public static Result<T> Forbidden(string message = "Forbidden")
+    public static new Result<T> Forbidden(string message = "Forbidden")
         => new(false, default, new ErrorDetails(message, ErrorType.Forbidden));
 }
 
