@@ -10,6 +10,7 @@ using Orbita.Application.Abstractions;
 using Orbita.Application.Abstractions.Gateways;
 using Orbita.Contracts.Auth;
 using Orbita.Infrastructure.Entities;
+using Orbita.Infrastructure.Gateways;
 using Orbita.Infrastructure.Identity;
 using Orbita.Infrastructure.Logging;
 using Orbita.Infrastructure.Persistence;
@@ -56,7 +57,7 @@ public static class ServiceCollectionExtensions
 
         services.AddAuthorization();
         services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
-        services.AddScoped<IIdentityAuthGateway, IIdentityAuthGateway>();
+        services.AddScoped<IIdentityAuthGateway, IdentityAuthGateway>();
 
         services.AddHttpContextAccessor();
         services.AddSingleton(Channel.CreateBounded<AppLogEntity>(new BoundedChannelOptions(10_000)
