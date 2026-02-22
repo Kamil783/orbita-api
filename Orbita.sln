@@ -5,6 +5,8 @@ VisualStudioVersion = 17.14.36616.10 d17.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orbita.Api", "Orbita.Api\Orbita.Api.csproj", "{3F25790B-1B7F-46CB-BF15-BA64B31914ED}"
 EndProject
+Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{8C7F3B2A-4D6E-4F1A-B8C9-2E0D5A7F3C1B}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orbita.Domain", "Orbita.Domain\Orbita.Domain.csproj", "{A34D4493-0CF5-443C-991F-E47D54CAADC2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orbita.Application", "Orbita.Application\Orbita.Application.csproj", "{2474266F-CACA-4653-BCAF-67A06033ADC2}"
@@ -51,6 +53,8 @@ Global
 		{4D4613F5-E439-4FC9-A1EE-F11991D0F3F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4D4613F5-E439-4FC9-A1EE-F11991D0F3F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4D4613F5-E439-4FC9-A1EE-F11991D0F3F9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8C7F3B2A-4D6E-4F1A-B8C9-2E0D5A7F3C1B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8C7F3B2A-4D6E-4F1A-B8C9-2E0D5A7F3C1B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

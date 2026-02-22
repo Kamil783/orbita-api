@@ -16,13 +16,6 @@
       "dotnetRunMessages": true,
       "applicationUrl": "https://localhost:7196;http://localhost:5038"
     },
-    "Docker Compose": {
-      "commandName": "DockerCompose",
-      "commandVersion": "1.0",
-      "dockerComposeFile": "${workspaceFolder}/docker-compose.yml",
-      "serviceInstance": "api",
-      "launchUrl": "http://localhost:8080"
-    },
     "Container (Dockerfile)": {
       "commandName": "Docker",
       "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}",
