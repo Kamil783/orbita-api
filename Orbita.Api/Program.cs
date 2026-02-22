@@ -5,8 +5,6 @@ using Orbita.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Configuration.AddKeyPerFile(directoryPath: "/run/secrets", optional: true);
-
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
