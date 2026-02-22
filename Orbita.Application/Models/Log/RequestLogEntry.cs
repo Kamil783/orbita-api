@@ -1,4 +1,4 @@
-namespace Orbita.Application.Models;
+namespace Orbita.Application.Models.Log;
 
 public class RequestLogEntry
 {

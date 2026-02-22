@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Orbita.Api.Middleware;
 using Orbita.Application.Abstractions;
 using Orbita.Application.Models;
+using Orbita.Application.Models.Log;
 
 namespace Orbita.Api.Filters;
 

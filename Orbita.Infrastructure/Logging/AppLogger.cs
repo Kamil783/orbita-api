@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Orbita.Application.Abstractions;
-using Orbita.Application.Models;
+using Orbita.Application.Models.Log;
 using Orbita.Infrastructure.Entities;
 using Orbita.Infrastructure.Persistence;
 

@@ -1,4 +1,4 @@
-using Orbita.Application.Models;
+using Orbita.Application.Models.Log;
 
 namespace Orbita.Application.Abstractions;
 
