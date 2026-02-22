@@ -1,6 +1,6 @@
-using System.Net;
-using System.Text.Json;
+using Orbita.Api.Factories;
 using Orbita.Application.Abstractions;
+using System.Text.Json;
 
 namespace Orbita.Api.Middleware;
 
@@ -33,55 +33,31 @@ public class ExceptionHandlingMiddleware
         }
     }
 
-    private async Task HandleExceptionAsync(HttpContext httpContext, Exception exception)
+    private async Task HandleExceptionAsync(HttpContext ctx, Exception ex)
     {
-        _logger.LogError(exception,
-            "Unhandled exception on {Method} {Path}",
-            httpContext.Request.Method,
-            httpContext.Request.Path);
+        _logger.LogError(ex, "Unhandled exception on {Method} {Path}", ctx.Request.Method, ctx.Request.Path);
 
-        // Log to database via IAppLogger
         try
         {
-            var appLogger = httpContext.RequestServices.GetService<IAppLogger>();
-            if (appLogger != null)
-            {
-                appLogger.LogError(
-                    $"Unhandled exception on {httpContext.Request.Method} {httpContext.Request.Path}",
-                    exception,
-                    source: "ExceptionHandlingMiddleware");
-            }
+            var appLogger = ctx.RequestServices.GetService<IAppLogger>();
+            appLogger?.LogError(
+                $"Unhandled exception on {ctx.Request.Method} {ctx.Request.Path}",
+                ex,
+                source: "ExceptionHandlingMiddleware");
         }
         catch
         {
-            // Don't let logging failures mask the original exception
+
         }
 
-        var (statusCode, title) = exception switch
-        {
-            ArgumentException => (HttpStatusCode.BadRequest, "Bad Request"),
-            UnauthorizedAccessException => (HttpStatusCode.Unauthorized, "Unauthorized"),
-            KeyNotFoundException => (HttpStatusCode.NotFound, "Not Found"),
-            InvalidOperationException => (HttpStatusCode.Conflict, "Conflict"),
-            _ => (HttpStatusCode.InternalServerError, "Internal Server Error")
-        };
+        var env = ctx.RequestServices.GetRequiredService<IHostEnvironment>();
+        var isDev = env.IsDevelopment();
 
-        var env = httpContext.RequestServices.GetRequiredService<IHostEnvironment>();
-        var isDevelopment = env.IsDevelopment();
+        var (status, body) = ErrorResponseFactory.FromException(ex, ctx, isDev);
 
-        var problemDetails = new
-        {
-            type = $"https://httpstatuses.io/{(int)statusCode}",
-            title,
-            status = (int)statusCode,
-            detail = isDevelopment ? exception.Message : "An unexpected error occurred.",
-            traceId = httpContext.TraceIdentifier,
-            stackTrace = isDevelopment ? exception.StackTrace : null
-        };
+        ctx.Response.ContentType = "application/json";
+        ctx.Response.StatusCode = status;
 
-        httpContext.Response.ContentType = "application/problem+json";
-        httpContext.Response.StatusCode = (int)statusCode;
-
-        await httpContext.Response.WriteAsync(JsonSerializer.Serialize(problemDetails, JsonOptions));
+        await ctx.Response.WriteAsync(JsonSerializer.Serialize(body, JsonOptions));
     }
 }
