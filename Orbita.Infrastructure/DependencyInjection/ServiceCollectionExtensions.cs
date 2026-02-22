@@ -1,3 +1,5 @@
+using System.Text;
+using System.Threading.Channels;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -5,11 +7,13 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Orbita.Application.Abstractions;
+using Orbita.Application.Abstractions.Gateways;
 using Orbita.Contracts.Auth;
 using Orbita.Infrastructure.Entities;
+using Orbita.Infrastructure.Gateways;
 using Orbita.Infrastructure.Identity;
+using Orbita.Infrastructure.Logging;
 using Orbita.Infrastructure.Persistence;
-using System.Text;
 
 namespace Orbita.Infrastructure.DependencyInjection;
 
@@ -53,6 +57,16 @@ public static class ServiceCollectionExtensions
 
         services.AddAuthorization();
         services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
+        services.AddScoped<IIdentityAuthGateway, IdentityAuthGateway>();
+
+        services.AddHttpContextAccessor();
+        services.AddSingleton(Channel.CreateBounded<AppLogEntity>(new BoundedChannelOptions(10_000)
+        {
+            SingleReader = true,
+            FullMode = BoundedChannelFullMode.DropOldest
+        }));
+        services.AddSingleton<IAppLogger, AppLogger>();
+        services.AddHostedService<LogBackgroundService>();
 
         return services;
     }

@@ -1,11 +1,12 @@
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Orbita.Application.Abstractions;
+using Orbita.Application.Models.Dto;
 using Orbita.Contracts.Auth;
 using Orbita.Domain.Entities;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace Orbita.Infrastructure.Identity;
 
@@ -13,11 +14,11 @@ public class JwtTokenGenerator(IOptions<JwtOptions> options) : IJwtTokenGenerato
 {
     private readonly JwtOptions _options = options.Value;
 
-    public string Generate(User user)
+    public string Generate(AuthUserDto user)
     {
         var claims = new List<Claim>
         {
-            new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+            new(JwtRegisteredClaimNames.Sub, user.UserId.ToString()),
             new(JwtRegisteredClaimNames.Email, user.Email)
         };
 
