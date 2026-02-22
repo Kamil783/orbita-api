@@ -49,6 +49,7 @@ public static class SeedDatabase
         {
             admin = new UserEntity
             {
+                UserName = email,
                 Email = email,
                 UserName = email,
                 EmailConfirmed = true
