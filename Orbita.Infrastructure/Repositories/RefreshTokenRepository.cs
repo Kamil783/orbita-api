@@ -34,10 +34,12 @@ public class RefreshTokenRepository(OrbitaDbContext db) : IRefreshTokenRepositor
         return new RefreshTokenData(entity.Token, entity.UserId, entity.ExpiresAt, entity.IsRevoked);
     }
 
-    public async Task RevokeAsync(string token, CancellationToken ct = default)
+    public async Task<bool> TryRevokeAsync(string token, CancellationToken ct = default)
     {
-        await db.RefreshTokens
-            .Where(t => t.Token == token)
+        var affected = await db.RefreshTokens
+            .Where(t => t.Token == token && !t.IsRevoked && t.ExpiresAt > DateTime.UtcNow)
             .ExecuteUpdateAsync(s => s.SetProperty(t => t.IsRevoked, true), ct);
+
+        return affected > 0;
     }
 }

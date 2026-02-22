@@ -56,15 +56,19 @@ public class AuthService(
     public async Task<Result<AuthResponse>> RefreshAsync(string refreshToken, CancellationToken ct = default)
     {
         var tokenData = await refreshTokens.GetByTokenAsync(refreshToken, ct);
+        if (tokenData is null)
+            return Result<AuthResponse>.Unauthorized("Invalid or expired refresh token");
 
-        if (tokenData is null || tokenData.IsRevoked || tokenData.ExpiresAt < DateTime.UtcNow)
+        // Atomic revocation: UPDATE WHERE IsRevoked = false AND ExpiresAt > now
+        // Guards against concurrent refresh requests using the same token
+        var revoked = await refreshTokens.TryRevokeAsync(refreshToken, ct);
+        if (!revoked)
             return Result<AuthResponse>.Unauthorized("Invalid or expired refresh token");
 
         var user = await gateway.FindByIdAsync(tokenData.UserId, ct);
         if (user is null)
             return Result<AuthResponse>.Unauthorized("Invalid or expired refresh token");
 
-        await refreshTokens.RevokeAsync(refreshToken, ct);
 
         var accessToken = jwt.Generate(user);
         var newRefreshToken = jwt.GenerateRefreshToken();
