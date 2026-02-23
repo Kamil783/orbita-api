@@ -11,7 +11,7 @@ using Orbita.Contracts.Auth;
 namespace Orbita.Application.Services;
 
 public class AuthService(
-    IIdentityAuthGateway gateway,
+    IIdentityUserGateway gateway,
     IJwtTokenGenerator jwt,
     IRefreshTokenRepository refreshTokens,
     IOptions<JwtOptions> jwtOptions) : IAuthService

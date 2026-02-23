@@ -1,3 +1,5 @@
+using Orbita.Application.Models.Dto;
+
 namespace Orbita.Application.Abstractions.Repositories;
 
 public interface IRefreshTokenRepository
@@ -6,5 +8,3 @@ public interface IRefreshTokenRepository
     Task<RefreshTokenData?> GetByTokenAsync(string token, CancellationToken ct = default);
     Task<bool> TryRevokeAsync(string token, CancellationToken ct = default);
 }
-
-public record RefreshTokenData(string Token, Guid UserId, DateTime ExpiresAt, bool IsRevoked);

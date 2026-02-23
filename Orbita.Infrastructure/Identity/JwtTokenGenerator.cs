@@ -15,7 +15,7 @@ public class JwtTokenGenerator(IOptions<JwtOptions> options) : IJwtTokenGenerato
 {
     private readonly JwtOptions _options = options.Value;
 
-    public string Generate(AuthUserDto user)
+    public string Generate(AuthUserData user)
     {
         var claims = new List<Claim>
         {

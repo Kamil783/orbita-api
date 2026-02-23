@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Orbita.Application.Abstractions.Repositories;
+using Orbita.Application.Models.Dto;
 using Orbita.Infrastructure.Entities;
 using Orbita.Infrastructure.Persistence;
 

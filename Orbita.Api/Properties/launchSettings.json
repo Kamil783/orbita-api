@@ -31,7 +31,9 @@
         "ASPNETCORE_HTTP_PORTS": "8080"
       },
       "envFile": "${workspaceFolder}/.env",
-      "publishAllPorts": true,
+      "publishAllPorts": false,
+      "httpPort": 5000,
+      "sslPort": 5001,
       "useSSL": true
     }
   },
