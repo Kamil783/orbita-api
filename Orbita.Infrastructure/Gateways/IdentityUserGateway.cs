@@ -6,7 +6,7 @@ using Orbita.Infrastructure.Entities;
 
 namespace Orbita.Infrastructure.Gateways;
 
-public class IdentityUserGateway(UserManager<UserEntity> userManager, SignInManager<UserEntity> signInManager) : IIdentityUserGateway
+public class IdentityUserGateway(UserManager<UserEntity> userManager) : IIdentityUserGateway
 {
     public async Task<UserData?> GetDataByEmailAsync(string email, CancellationToken ct = default)
     {
