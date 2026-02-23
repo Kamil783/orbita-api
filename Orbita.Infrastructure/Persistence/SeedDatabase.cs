@@ -78,6 +78,7 @@ public static class SeedDatabase
             AvatarVersion = 0
         };
 
+        db.UserProfiles.Add(userProfile);
         try
         {
             await db.SaveChangesAsync();
