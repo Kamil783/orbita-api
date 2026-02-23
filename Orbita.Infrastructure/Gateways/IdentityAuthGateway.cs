@@ -3,28 +3,27 @@ using Microsoft.EntityFrameworkCore;
 using Orbita.Application.Abstractions.Gateways;
 using Orbita.Application.Models.Dto;
 using Orbita.Infrastructure.Entities;
-using Orbita.Infrastructure.Persistence;
 
 namespace Orbita.Infrastructure.Gateways;
 
 public class IdentityAuthGateway(UserManager<UserEntity> userManager, SignInManager<UserEntity> signInManager) : IIdentityAuthGateway
 {
-    public async Task<AuthUserDto?> FindByEmailAsync(string email, CancellationToken ct = default)
+    public async Task<AuthUserData?> FindByEmailAsync(string email, CancellationToken ct = default)
     {
         var user = await userManager.FindByEmailAsync(email);
         if (user is null) return null;
 
         var roles = await userManager.GetRolesAsync(user);
-        return new AuthUserDto(user.Id, user.Email ?? email, [.. roles]);
+        return new AuthUserData(user.Id, user.Email ?? email, [.. roles]);
     }
 
-    public async Task<AuthUserDto?> FindByIdAsync(Guid userId, CancellationToken ct = default)
+    public async Task<AuthUserData?> FindByIdAsync(Guid userId, CancellationToken ct = default)
     {
         var user = await userManager.Users.FirstOrDefaultAsync(x => x.Id == userId, ct);
         if (user is null) return null;
 
         var roles = await userManager.GetRolesAsync(user);
-        return new AuthUserDto(user.Id, user.Email ?? "", [.. roles]);
+        return new AuthUserData(user.Id, user.Email ?? "", [.. roles]);
     }
 
     public async Task<bool> CheckPasswordAsync(Guid userId, string password, CancellationToken ct = default)
@@ -36,7 +35,7 @@ public class IdentityAuthGateway(UserManager<UserEntity> userManager, SignInMana
         return result.Succeeded;
     }
 
-    public async Task<AuthUserDto> CreateUserAsync(string email, string password, CancellationToken ct = default)
+    public async Task<AuthUserData> CreateUserAsync(string email, string password, CancellationToken ct = default)
     {
         var user = new UserEntity { UserName = email, Email = email };
 
@@ -48,6 +47,22 @@ public class IdentityAuthGateway(UserManager<UserEntity> userManager, SignInMana
         }
 
         var roles = await userManager.GetRolesAsync(user);
-        return new AuthUserDto(user.Id, user.Email ?? email, [.. roles]);
+        return new AuthUserData(user.Id, user.Email ?? email, [.. roles]);
+    }
+
+    public async Task<UserData?> GetDataByEmailAsync(string email, CancellationToken ct = default)
+    {
+        var user = await userManager.FindByEmailAsync(email);
+        if (user is null) return null;
+
+        return new UserData(user.Id, user.Email ?? "", user.UserProfile?.Name ?? "");
+    }
+
+    public async Task<UserData?> GetDataByIdAsync(Guid userId, CancellationToken ct = default)
+    {
+        var user = await userManager.Users.FirstOrDefaultAsync(x => x.Id == userId, ct);
+        if (user is null) return null;
+
+        return new UserData(user.Id, user.Email ?? "", user.UserProfile?.Name ?? "");
     }
 }

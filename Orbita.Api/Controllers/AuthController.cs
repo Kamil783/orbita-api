@@ -9,7 +9,7 @@ namespace Orbita.Api.Controllers;
 [ApiController]
 public class AuthController(IAuthService service) : ControllerBase
 {
-    [HttpPost]
+    [HttpPost("login")]
     public async Task<IActionResult> Authenticate([FromBody] LoginDto request, CancellationToken ct)
     {
         var result = await service.AuthenticateAsync(request.ToCommand(), ct);
@@ -21,6 +21,14 @@ public class AuthController(IAuthService service) : ControllerBase
     public async Task<IActionResult> Register([FromBody] RegisterDto request, CancellationToken ct)
     {
         var result = await service.RegisterAsync(request.ToCommand(), ct);
+
+        return result.ToActionResult(HttpContext);
+    }
+
+    [HttpPost("refresh")]
+    public async Task<IActionResult> Refresh([FromBody] RefreshDto request, CancellationToken ct)
+    {
+        var result = await service.RefreshAsync(request.RefreshToken, ct);
 
         return result.ToActionResult(HttpContext);
     }

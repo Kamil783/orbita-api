@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Npgsql;
 using Orbita.Infrastructure.Entities;
 
 namespace Orbita.Infrastructure.Persistence;
@@ -36,6 +37,7 @@ public static class SeedDatabase
 
         var email = config["SeedAdmin:Email"];
         var password = config["SeedAdmin:Password"];
+        var name = config["SeedAdmin:Name"];
 
         if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
         {
@@ -67,6 +69,22 @@ public static class SeedDatabase
             var addRes = await userManager.AddToRoleAsync(admin, role);
             if (!addRes.Succeeded)
                 throw new Exception($"Не удалось добавить роль {role}: {string.Join(", ", addRes.Errors.Select(e => e.Description))}");
+        }
+
+        var userProfile = new UserProfileEntity
+        {
+            UserId = admin.Id,
+            Name = name,
+            AvatarVersion = 0
+        };
+
+        try
+        {
+            await db.SaveChangesAsync();
+        }
+        catch (DbUpdateException ex) when (ex.InnerException is PostgresException pg && pg.SqlState == PostgresErrorCodes.UniqueViolation)
+        {
+
         }
     }
 }

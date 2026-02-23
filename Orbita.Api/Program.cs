@@ -1,3 +1,6 @@
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.Extensions.Options;
+using Orbita.Api.Extensions;
 using Orbita.Api.Middleware;
 using Orbita.Application.DependencyInjection;
 using Orbita.Infrastructure.DependencyInjection;
@@ -9,6 +12,8 @@ builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services.AddControllers();
+
+builder.Services.AddFrontCors();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -30,10 +35,26 @@ if (!app.Environment.IsDevelopment())
 {
     app.UseHttpsRedirection();
 }
+
+app.UseCors("Front");
+
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
+
+app.MapGet("/debug-auth-defaults", (IOptions<AuthenticationOptions> opt) => Results.Ok(new
+{
+    DefaultAuthenticateScheme = opt.Value.DefaultAuthenticateScheme,
+    DefaultChallengeScheme = opt.Value.DefaultChallengeScheme,
+    DefaultScheme = opt.Value.DefaultScheme
+}));
+
+app.MapGet("/debug-auth-schemes", async (IAuthenticationSchemeProvider schemes) =>
+{
+    var all = await schemes.GetAllSchemesAsync();
+    return Results.Ok(all.Select(s => new { s.Name, s.HandlerType?.FullName }));
+});
 
 app.Run();

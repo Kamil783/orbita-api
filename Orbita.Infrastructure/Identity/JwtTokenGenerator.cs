@@ -6,6 +6,7 @@ using Orbita.Contracts.Auth;
 using Orbita.Domain.Entities;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace Orbita.Infrastructure.Identity;
@@ -14,7 +15,7 @@ public class JwtTokenGenerator(IOptions<JwtOptions> options) : IJwtTokenGenerato
 {
     private readonly JwtOptions _options = options.Value;
 
-    public string Generate(AuthUserDto user)
+    public string Generate(AuthUserData user)
     {
         var claims = new List<Claim>
         {
@@ -35,5 +36,12 @@ public class JwtTokenGenerator(IOptions<JwtOptions> options) : IJwtTokenGenerato
             signingCredentials: signingCredentials);
 
         return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+
+    public string GenerateRefreshToken()
+    {
+        var randomBytes = new byte[64];
+        RandomNumberGenerator.Fill(randomBytes);
+        return Convert.ToBase64String(randomBytes);
     }
 }

@@ -5,5 +5,6 @@ namespace Orbita.Application.Abstractions;
 
 public interface IJwtTokenGenerator
 {
-    string Generate(AuthUserDto user);
+    string Generate(AuthUserData user);
+    string GenerateRefreshToken();
 }
