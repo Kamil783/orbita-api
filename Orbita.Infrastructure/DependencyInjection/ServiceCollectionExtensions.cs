@@ -64,7 +64,7 @@ public static class ServiceCollectionExtensions
 
         services.AddAuthorization();
         services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
-        services.AddScoped<IIdentityUserGateway, IdentityUserGateway>();
+        services.AddScoped<IIdentityAuthGateway, IdentityAuthGateway>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 
         services.AddHttpContextAccessor();
