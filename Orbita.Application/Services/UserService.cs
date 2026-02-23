@@ -25,6 +25,9 @@ public class UserService(IIdentityUserGateway gateway, IUserProfileRepository re
     {
         var profile = await repository.GetByIdAsync(userId, ct);
 
+        if (profile is null)
+            return Result.NotFound();
+
         profile = profile.SetAvatar(bytes, contentType);
 
         if(profile is null)
