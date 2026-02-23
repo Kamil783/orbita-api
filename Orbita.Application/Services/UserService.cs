@@ -28,10 +28,14 @@ public class UserService(IIdentityUserGateway gateway, IUserProfileRepository re
         if (profile is null)
             return Result.NotFound();
 
-        profile = profile.SetAvatar(bytes, contentType);
-
-        if(profile is null)
-            return Result.Fail("Invalid avatar data", ErrorType.Validation);
+        try
+        {
+            profile = profile.SetAvatar(bytes, contentType);
+        }
+        catch (Exception ex)
+        {
+            return Result.Fail(ex.Message, ErrorType.Validation);
+        }   
 
         return Result.Ok();
     }

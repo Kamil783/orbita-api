@@ -30,9 +30,8 @@ public class UserProfile
             throw new DomainValidationException("Unsupported image format. Allowed: JPEG, PNG, WebP.");
 
         if (!string.IsNullOrWhiteSpace(declaredContentType) && !ContentTypePolicy.IsAllowed(declaredContentType))
-        {
             throw new DomainValidationException("Unsupported content type. Allowed: image/jpeg, image/png, image/webp.");
-        }
+        
 
         var normalizedContentType = detected.Value switch
         {
