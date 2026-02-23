@@ -4,9 +4,9 @@ using Orbita.Infrastructure.Entities;
 
 namespace Orbita.Infrastructure.Mapping;
 
-public class UserProfileMapping : IEntityTypeConfiguration<UserProfile>
+public class UserProfileMapping : IEntityTypeConfiguration<UserProfileEntity>
 {
-    public void Configure(EntityTypeBuilder<UserProfile> b)
+    public void Configure(EntityTypeBuilder<UserProfileEntity> b)
     {
         b.HasKey(p => p.UserId);
 
@@ -21,7 +21,7 @@ public class UserProfileMapping : IEntityTypeConfiguration<UserProfile>
 
         b.HasOne(p => p.User)
             .WithOne(u => u.UserProfile)
-            .HasForeignKey<UserProfile>(p => p.UserId)
+            .HasForeignKey<UserProfileEntity>(p => p.UserId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

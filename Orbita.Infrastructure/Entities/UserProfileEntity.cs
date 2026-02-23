@@ -1,6 +1,6 @@
 ﻿namespace Orbita.Infrastructure.Entities;
 
-public class UserProfile
+public class UserProfileEntity
 {
     public Guid UserId { get; set; }
     public string Name { get; set; } = string.Empty;

@@ -4,5 +4,5 @@ namespace Orbita.Infrastructure.Entities;
 
 public class UserEntity : IdentityUser<Guid>
 {
-    public UserProfile? UserProfile { get; set; }
+    public UserProfileEntity? UserProfile { get; set; }
 }

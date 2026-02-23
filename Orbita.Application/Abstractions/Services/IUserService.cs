@@ -7,4 +7,5 @@ public interface IUserService
 {
     Task<Result<UserDataResponse>> GetDataAsync(Guid userId, CancellationToken ct = default);
     Task<Result<UserDataResponse>> GetDataAsync(string email, CancellationToken ct = default);
+    Task<Result> ChangeAvatarAsync(Guid userId, byte[] bytes, string contentType, CancellationToken ct = default);
 }

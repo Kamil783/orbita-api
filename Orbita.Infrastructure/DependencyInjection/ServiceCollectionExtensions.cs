@@ -65,7 +65,9 @@ public static class ServiceCollectionExtensions
         services.AddAuthorization();
         services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
         services.AddScoped<IIdentityAuthGateway, IdentityAuthGateway>();
+        services.AddScoped<IIdentityUserGateway, IdentityUserGateway>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+        services.AddScoped<IUserProfileRepository, UserProfileRepository>();
 
         services.AddHttpContextAccessor();
         services.AddSingleton(Channel.CreateBounded<AppLogEntity>(new BoundedChannelOptions(10_000)
