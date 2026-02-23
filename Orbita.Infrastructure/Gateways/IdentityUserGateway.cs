@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using Orbita.Application.Abstractions.Gateways;
 using Orbita.Application.Models.Dto;
 using Orbita.Infrastructure.Entities;
-using Orbita.Infrastructure.Persistence;
 
 namespace Orbita.Infrastructure.Gateways;
 
@@ -56,7 +55,7 @@ public class IdentityUserGateway(UserManager<UserEntity> userManager, SignInMana
         var user = await userManager.FindByEmailAsync(email);
         if (user is null) return null;
 
-        return new UserData(user.Id, user.Email ?? "", user.FullName ?? "");
+        return new UserData(user.Id, user.Email ?? "", user.UserProfile?.Name ?? "");
     }
 
     public async Task<UserData?> GetDataByIdAsync(Guid userId, CancellationToken ct = default)
@@ -64,6 +63,6 @@ public class IdentityUserGateway(UserManager<UserEntity> userManager, SignInMana
         var user = await userManager.Users.FirstOrDefaultAsync(x => x.Id == userId, ct);
         if (user is null) return null;
 
-        return new UserData(user.Id, user.Email ?? "", user.FullName ?? "");
+        return new UserData(user.Id, user.Email ?? "", user.UserProfile?.Name ?? "");
     }
 }

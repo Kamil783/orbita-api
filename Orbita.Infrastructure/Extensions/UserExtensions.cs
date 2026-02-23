@@ -10,7 +10,6 @@ public static class UserExtensions
         return new UserEntity
         {
             Id = user.Id,
-            FullName = user.FullName,
             Email = user.Email,
             UserName = user.Email
         };
@@ -21,7 +20,6 @@ public static class UserExtensions
         return new User
         {
             Id = userEntity.Id,
-            FullName = userEntity.FullName,
             Email = userEntity.Email
         };
     }
