@@ -10,7 +10,10 @@ public class IdentityUserGateway(UserManager<UserEntity> userManager) : IIdentit
 {
     public async Task<UserData?> GetDataByEmailAsync(string email, CancellationToken ct = default)
     {
-        var user = await userManager.FindByEmailAsync(email);
+        var user = await userManager.Users
+            .Include(u => u.UserProfile)
+            .FirstOrDefaultAsync(u => u.NormalizedEmail == email.ToUpper(), ct);
+
         if (user is null) return null;
 
         return new UserData(user.Id, user.Email ?? "", user.UserProfile?.Name ?? "");
@@ -18,7 +21,10 @@ public class IdentityUserGateway(UserManager<UserEntity> userManager) : IIdentit
 
     public async Task<UserData?> GetDataByIdAsync(Guid userId, CancellationToken ct = default)
     {
-        var user = await userManager.Users.FirstOrDefaultAsync(x => x.Id == userId, ct);
+        var user = await userManager.Users
+            .Include(u => u.UserProfile)
+            .FirstOrDefaultAsync(u => u.Id == userId, ct);
+
         if (user is null) return null;
 
         return new UserData(user.Id, user.Email ?? "", user.UserProfile?.Name ?? "");
