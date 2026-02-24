@@ -1,3 +1,3 @@
 ﻿namespace Orbita.Domain.ValueObjects;
 
-public record UserId(Guid Id);
+public record BacklogId(Guid Id);

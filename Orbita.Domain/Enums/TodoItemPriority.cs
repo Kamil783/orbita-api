@@ -1,6 +1,6 @@
 ﻿namespace Orbita.Domain.Enums;
 
-public enum TaskPriority
+public enum TodoItemPriority
 {
     Low = 1,
     Medium = 2,
