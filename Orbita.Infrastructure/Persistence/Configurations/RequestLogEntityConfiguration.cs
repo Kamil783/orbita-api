@@ -2,9 +2,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Orbita.Infrastructure.Entities;
 
-namespace Orbita.Infrastructure.Mapping;
+namespace Orbita.Infrastructure.Persistence.Configurations;
 
-public class RequestLogMapping : IEntityTypeConfiguration<RequestLogEntity>
+public class RequestLogEntityConfiguration : IEntityTypeConfiguration<RequestLogEntity>
 {
     public void Configure(EntityTypeBuilder<RequestLogEntity> builder)
     {

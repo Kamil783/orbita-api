@@ -11,6 +11,11 @@ public class OrbitaDbContext(DbContextOptions<OrbitaDbContext> options) : Identi
     public DbSet<RequestLogEntity> RequestLogs => Set<RequestLogEntity>();
     public DbSet<AppLogEntity> AppLogs => Set<AppLogEntity>();
     public DbSet<UserProfileEntity> UserProfiles => Set<UserProfileEntity>();
+    public DbSet<AppNotificationEntity> AppNotifications => Set<AppNotificationEntity>();
+    public DbSet<BacklogTaskEntity> BacklogTasks => Set<BacklogTaskEntity>();
+    public DbSet<CalendarEventEntity> CalendarEvents => Set<CalendarEventEntity>();
+    public DbSet<ColumnEntity> Columns => Set<ColumnEntity>();
+    public DbSet<TodoItemEntity> TodoItems => Set<TodoItemEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

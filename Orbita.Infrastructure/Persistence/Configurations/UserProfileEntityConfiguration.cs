@@ -2,9 +2,9 @@
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Orbita.Infrastructure.Entities;
 
-namespace Orbita.Infrastructure.Mapping;
+namespace Orbita.Infrastructure.Persistence.Configurations;
 
-public class UserProfileMapping : IEntityTypeConfiguration<UserProfileEntity>
+public class UserProfileEntityConfiguration : IEntityTypeConfiguration<UserProfileEntity>
 {
     public void Configure(EntityTypeBuilder<UserProfileEntity> b)
     {

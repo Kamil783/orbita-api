@@ -2,9 +2,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Orbita.Infrastructure.Entities;
 
-namespace Orbita.Infrastructure.Mapping;
+namespace Orbita.Infrastructure.Persistence.Configurations;
 
-public class AppLogMapping : IEntityTypeConfiguration<AppLogEntity>
+public class AppLogEntityConfiguration : IEntityTypeConfiguration<AppLogEntity>
 {
     public void Configure(EntityTypeBuilder<AppLogEntity> builder)
     {
