@@ -1,8 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Orbita.Domain.ValueObjects;
 using Orbita.Infrastructure.Entities;
-using Orbita.Infrastructure.Persistence.Configurations.Converters;
 
 namespace Orbita.Infrastructure.Persistence.Configurations;
 
@@ -13,9 +11,6 @@ public class AppNotificationEntityConfiguration : IEntityTypeConfiguration<AppNo
         b.HasKey(x => x.Id);
 
         b.Property(x => x.Id)
-            .HasConversion(IdConverters.GuidId(
-                id => id.Id,
-                value => new AppNotificationId(value)))
             .ValueGeneratedNever();
 
         b.Property(x => x.Type)

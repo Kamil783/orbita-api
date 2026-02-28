@@ -1,6 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Orbita.Domain.ValueObjects;
 using Orbita.Infrastructure.Entities;
 using Orbita.Infrastructure.Persistence.Configurations.Converters;
 
@@ -13,9 +12,6 @@ public class CalendarEventEntityConfiguration : IEntityTypeConfiguration<Calenda
         b.HasKey(x => x.Id);
 
         b.Property(x => x.Id)
-            .HasConversion(IdConverters.GuidId(
-                id => id.Id,
-                value => new CalendarEventId(value)))
             .ValueGeneratedNever();
 
         b.Property(x => x.Title)
@@ -53,9 +49,6 @@ public class CalendarEventEntityConfiguration : IEntityTypeConfiguration<Calenda
             .HasMaxLength(256);
 
         b.Property(x => x.TaskId)
-            .HasConversion(IdConverters.NullableGuidId(
-                id => id == null ? null : id.Id,
-                value => value == null ? null : new TodoItemId(value.Value)))
             .IsRequired(false);
 
         b.HasOne(x => x.Task)

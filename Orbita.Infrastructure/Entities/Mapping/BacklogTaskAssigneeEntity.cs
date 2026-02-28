@@ -1,12 +1,10 @@
-﻿using Orbita.Domain.ValueObjects;
-
 namespace Orbita.Infrastructure.Entities.Mapping;
 
 public class BacklogTaskAssigneeEntity
 {
-    public BacklogId BacklogTaskId { get; set; } = default!;
+    public Guid BacklogTaskId { get; set; }
     public BacklogTaskEntity BacklogTask { get; set; } = default!;
 
-    public UserId UserId { get; set; } = default!;
+    public Guid UserId { get; set; }
     public UserProfileEntity UserProfile { get; set; } = default!;
 }
