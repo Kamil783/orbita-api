@@ -1,11 +1,10 @@
-﻿using Orbita.Domain.Enums;
-using Orbita.Domain.ValueObjects;
+using Orbita.Domain.Enums;
 
 namespace Orbita.Infrastructure.Entities;
 
 public class CalendarEventEntity
 {
-    public CalendarEventId Id { get; set; } = default!;
+    public Guid Id { get; set; }
     public string Title { get; set; } = default!;
     public CalendarEventType Type { get; set; }
 
@@ -19,7 +18,7 @@ public class CalendarEventEntity
 
     public string? Location { get; set; }
 
-    public TodoItemId? TaskId { get; set; }
+    public Guid? TaskId { get; set; }
     public TodoItemEntity? Task { get; set; }
 
     public string? GoogleEventId { get; set; }

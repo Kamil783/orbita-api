@@ -1,11 +1,10 @@
-﻿using Orbita.Domain.ValueObjects;
 using Orbita.Infrastructure.Entities.Mapping;
 
 namespace Orbita.Infrastructure.Entities;
 
 public class UserProfileEntity
 {
-    public UserId UserId { get; set; } = default!;
+    public Guid UserId { get; set; }
     public string Name { get; set; } = string.Empty;
     public byte[]? AvatarData { get; set; }
     public string? AvatarContentType { get; set; }

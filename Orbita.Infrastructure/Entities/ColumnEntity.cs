@@ -1,11 +1,10 @@
-﻿using Orbita.Domain.Enums;
-using Orbita.Domain.ValueObjects;
+using Orbita.Domain.Enums;
 
 namespace Orbita.Infrastructure.Entities;
 
 public class ColumnEntity
 {
-    public ColumnId Id { get; set; } = default!;
+    public Guid Id { get; set; }
     public string Title { get; set; } = default!;
     public int TotalCount { get; set; }
     public string HeaderActionIcon { get; set; } = default!;

@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Orbita.Application.Abstractions.Repositories;
 using Orbita.Domain.Entities;
 using Orbita.Infrastructure.Extensions;
@@ -12,7 +12,7 @@ public class UserProfileRepository(OrbitaDbContext dbContext) : IUserProfileRepo
     {
         var dbEntity =  await dbContext.UserProfiles
             .AsNoTracking()
-            .FirstOrDefaultAsync(up => up.UserId.Id == userId, ct);
+            .FirstOrDefaultAsync(up => up.UserId == userId, ct);
 
         return dbEntity?.ToDomain();
     }
@@ -20,7 +20,7 @@ public class UserProfileRepository(OrbitaDbContext dbContext) : IUserProfileRepo
     public async Task<UserProfile?> Update(UserProfile userProfile, CancellationToken ct = default)
     {
         var updated = await dbContext.UserProfiles
-        .Where(x => x.UserId == userProfile.UserId)
+        .Where(x => x.UserId == userProfile.UserId.Id)
         .ExecuteUpdateAsync(s => s
             .SetProperty(x => x.Name, userProfile.Name)
             .SetProperty(x => x.AvatarData, userProfile.AvatarData)

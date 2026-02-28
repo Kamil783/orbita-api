@@ -1,8 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Orbita.Domain.ValueObjects;
 using Orbita.Infrastructure.Entities;
-using Orbita.Infrastructure.Persistence.Configurations.Converters;
 
 namespace Orbita.Infrastructure.Persistence.Configurations;
 
@@ -13,9 +11,6 @@ public class TodoItemEntityConfiguration : IEntityTypeConfiguration<TodoItemEnti
         b.HasKey(x => x.Id);
 
         b.Property(x => x.Id)
-            .HasConversion(IdConverters.GuidId<TodoItemId>(
-                id => id.Id,
-                value => new TodoItemId(value)))
             .ValueGeneratedNever();
 
         b.Property(x => x.Title)
@@ -31,21 +26,12 @@ public class TodoItemEntityConfiguration : IEntityTypeConfiguration<TodoItemEnti
             .IsRequired();
 
         b.Property(x => x.CreatorId)
-            .HasConversion(IdConverters.GuidId(
-                id => id.Id,
-                value => new UserId(value)))
             .IsRequired();
 
         b.Property(x => x.AssigneeId)
-            .HasConversion(IdConverters.NullableGuidId(
-                id => id == null ? null : id.Id,
-                value => value == null ? null : new UserId(value.Value)))
             .IsRequired(false);
 
         b.Property(x => x.ColumnId)
-            .HasConversion(IdConverters.GuidId(
-                id => id.Id,
-                value => new ColumnId(value)))
             .IsRequired();
 
         b.Property(x => x.CreatedAtUtc).IsRequired();
@@ -55,9 +41,6 @@ public class TodoItemEntityConfiguration : IEntityTypeConfiguration<TodoItemEnti
         b.Property(x => x.ProgressPct);
 
         b.Property(x => x.BacklogId)
-            .HasConversion(IdConverters.NullableGuidId(
-                id => id == null ? null : id.Id,
-                value => value == null ? null : new BacklogId(value.Value)))
             .IsRequired(false);
 
         b.Property(x => x.DeadlineText)

@@ -1,17 +1,16 @@
 ﻿using Orbita.Domain.Enums;
-using Orbita.Domain.ValueObjects;
 using Orbita.Infrastructure.Entities.Mapping;
 
 namespace Orbita.Infrastructure.Entities;
 
 public class BacklogTaskEntity
 {
-    public BacklogId Id { get; set; } = default!;
+    public Guid Id { get; set; }
     public string Title { get; set; } = default!;
     public TodoItemPriority Priority { get; set; }
     public string Description { get; set; } = string.Empty;
 
-    public UserId CreatorId { get; set; } = default!;
+    public Guid CreatorId { get; set; }
     public DateTime CreatedAt { get; set; }
 
     public bool InWeek { get; set; }
