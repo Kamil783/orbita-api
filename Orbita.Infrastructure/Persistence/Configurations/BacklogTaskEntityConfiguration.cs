@@ -36,11 +36,6 @@ public class BacklogTaskEntityConfiguration : IEntityTypeConfiguration<BacklogTa
                 value => new UserId(value)))
             .IsRequired();
 
-        b.Property(x => x.AssigneeId)
-            .HasConversion(IdConverters.NullableGuidId(
-                id => id == null ? null : id.Id,
-                value => value == null ? null : new UserId(value.Value)))
-            .IsRequired(false);
 
         b.Property(x => x.CreatedAt)
             .IsRequired();
@@ -53,7 +48,6 @@ public class BacklogTaskEntityConfiguration : IEntityTypeConfiguration<BacklogTa
         b.Property(x => x.EstimateMinutes);
 
         b.HasIndex(x => x.CreatorId);
-        b.HasIndex(x => x.AssigneeId);
         b.HasIndex(x => new { x.IsCompleted, x.InWeek });
     }
 }

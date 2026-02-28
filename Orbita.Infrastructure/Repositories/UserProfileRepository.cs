@@ -12,7 +12,7 @@ public class UserProfileRepository(OrbitaDbContext dbContext) : IUserProfileRepo
     {
         var dbEntity =  await dbContext.UserProfiles
             .AsNoTracking()
-            .FirstOrDefaultAsync(up => up.UserId == userId, ct);
+            .FirstOrDefaultAsync(up => up.UserId.Id == userId, ct);
 
         return dbEntity?.ToDomain();
     }

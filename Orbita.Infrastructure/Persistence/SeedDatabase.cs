@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Npgsql;
+using Orbita.Domain.ValueObjects;
 using Orbita.Infrastructure.Entities;
 
 namespace Orbita.Infrastructure.Persistence;
@@ -73,7 +74,7 @@ public static class SeedDatabase
 
         var userProfile = new UserProfileEntity
         {
-            UserId = admin.Id,
+            UserId = new UserId(admin.Id),
             Name = name,
             AvatarVersion = 0
         };

@@ -1,12 +1,13 @@
 ﻿using Orbita.Domain.Exceptions;
 using Orbita.Domain.Helpers;
 using Orbita.Domain.Helpers.Enums;
+using Orbita.Domain.ValueObjects;
 
 namespace Orbita.Domain.Entities;
 
 public class UserProfile
 {
-    public Guid UserId { get; init; }
+    public UserId UserId { get; init; }
     public string Name { get; init; }
     public byte[]? AvatarData { get; init; }
     public string? AvatarContentType { get; init; }

@@ -14,8 +14,10 @@ public class BacklogTask
     public bool InWeek { get; private set; }
     public bool IsCompleted { get; private set; }
 
-
-    public UserId? AssigneeId { get; private set; }
     public string? DueTime { get; private set; }
     public int? EstimateMinutes { get; private set; }
+
+
+    private readonly List<UserId> _assignee = [];
+    public IReadOnlyCollection<UserId> Assignee => _assignee.AsReadOnly();
 }
