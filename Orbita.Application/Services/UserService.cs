@@ -31,6 +31,7 @@ public class UserService(IIdentityUserGateway gateway, IUserProfileRepository re
         try
         {
             profile = profile.SetAvatar(bytes, contentType);
+            await repository.Update(profile, ct);
         }
         catch (Exception ex)
         {
@@ -48,7 +49,8 @@ public class UserService(IIdentityUserGateway gateway, IUserProfileRepository re
         var result = new UserDataResponse
         {
             Name = userData.Name,
-            Email = userData.Email
+            Email = userData.Email,
+            Avatar = userData.Avatar
         };
 
         return Result<UserDataResponse>.Ok(result);

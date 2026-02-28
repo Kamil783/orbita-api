@@ -55,7 +55,7 @@ public class IdentityAuthGateway(UserManager<UserEntity> userManager, SignInMana
         var user = await userManager.FindByEmailAsync(email);
         if (user is null) return null;
 
-        return new UserData(user.Id, user.Email ?? "", user.UserProfile?.Name ?? "");
+        return new UserData(user.Id, user.Email ?? "", user.UserProfile?.Name ?? "", user.UserProfile?.AvatarData ?? []);
     }
 
     public async Task<UserData?> GetDataByIdAsync(Guid userId, CancellationToken ct = default)
@@ -63,6 +63,6 @@ public class IdentityAuthGateway(UserManager<UserEntity> userManager, SignInMana
         var user = await userManager.Users.FirstOrDefaultAsync(x => x.Id == userId, ct);
         if (user is null) return null;
 
-        return new UserData(user.Id, user.Email ?? "", user.UserProfile?.Name ?? "");
+        return new UserData(user.Id, user.Email ?? "", user.UserProfile?.Name ?? "", user.UserProfile?.AvatarData ?? []);
     }
 }
