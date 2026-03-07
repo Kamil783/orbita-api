@@ -4,6 +4,7 @@ using Orbita.Application.Abstractions.Services;
 using Orbita.Application.Models.Dto;
 using Orbita.Application.Models.Results;
 using Orbita.Contracts.ApiDto.User.Responses;
+using System.Net.Mime;
 
 namespace Orbita.Application.Services;
 
@@ -37,6 +38,26 @@ public class UserService(IIdentityUserGateway gateway, IUserProfileRepository re
         {
             return Result.Fail(ex.Message, ErrorType.Validation);
         }   
+
+        return Result.Ok();
+    }
+
+    public async Task<Result> RemoveAvatarAsync(Guid userId, CancellationToken ct = default)
+    {
+        var profile = await repository.GetByIdAsync(userId, ct);
+
+        if (profile is null)
+            return Result.NotFound();
+
+        try
+        {
+            profile = profile.RemoveAvatar();
+            await repository.Update(profile, ct);
+        }
+        catch (Exception ex)
+        {
+            return Result.Fail(ex.Message, ErrorType.Validation);
+        }
 
         return Result.Ok();
     }

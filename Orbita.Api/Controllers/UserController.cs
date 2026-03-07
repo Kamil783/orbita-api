@@ -62,4 +62,20 @@ public class UserController(IUserService service) : ControllerBase
 
         return result.ToActionResult(HttpContext);
     }
+
+    [HttpDelete("avatar")]
+    public async Task<IActionResult> DeleteAvatar(CancellationToken ct)
+    {
+        var userIdValue =
+            User.FindFirstValue(ClaimTypes.NameIdentifier)
+            ?? User.FindFirstValue("sub");
+
+        if (!Guid.TryParse(userIdValue, out var userId))
+            return Unauthorized();
+
+
+        var result = await service.RemoveAvatarAsync(userId, ct);
+
+        return result.ToActionResult(HttpContext);
+    }
 }
