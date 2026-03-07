@@ -3,7 +3,7 @@ using Orbita.Application.Abstractions;
 using Orbita.Application.Abstractions.Gateways;
 using Orbita.Application.Abstractions.Repositories;
 using Orbita.Application.Abstractions.Services;
-using Orbita.Application.Commands;
+using Orbita.Application.Commands.Auth;
 using Orbita.Application.Models.Results;
 using Orbita.Contracts.ApiDto.User.Responses;
 using Orbita.Contracts.Auth;

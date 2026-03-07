@@ -1,4 +1,4 @@
-﻿using Orbita.Application.Commands;
+﻿using Orbita.Application.Commands.Auth;
 using Orbita.Contracts.ApiDto.User.Requests;
 
 namespace Orbita.Api.Extensions;

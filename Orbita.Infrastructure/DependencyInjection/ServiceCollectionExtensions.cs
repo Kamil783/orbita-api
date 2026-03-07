@@ -68,6 +68,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IIdentityUserGateway, IdentityUserGateway>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         services.AddScoped<IUserProfileRepository, UserProfileRepository>();
+        services.AddScoped<IBacklogTaskRepository, BacklogTaskRepository>();
 
         services.AddHttpContextAccessor();
         services.AddSingleton(Channel.CreateBounded<AppLogEntity>(new BoundedChannelOptions(10_000)

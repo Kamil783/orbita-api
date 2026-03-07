@@ -18,7 +18,7 @@ public class TodoItem
     public DateTime? UpdatedAtUtc { get; private set; }
     public DateTime? DeadlineUtc { get; private set; }
     public int? ProgressPct { get; private set; }
-    public BacklogId? BacklogId { get; private set; } 
+    public BacklogTaskId? BacklogId { get; private set; } 
 
 
     public string? DeadlineText { get; private set; }
