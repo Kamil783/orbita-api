@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Orbita.Application.Abstractions.Services;
 using Orbita.Contracts.ApiDto.User.Requests;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Orbita.Api.Controllers;
 
@@ -18,6 +19,7 @@ public class AuthController(IAuthService service) : ControllerBase
     }
 
     [HttpPost("registration")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request, CancellationToken ct)
     {
         var result = await service.RegisterAsync(request.ToCommand(), ct);
