@@ -14,9 +14,8 @@ public class BacklogTask
     public bool InWeek { get; private set; }
     public bool IsCompleted { get; private set; }
 
-    public string? DueTime { get; private set; }
+    public DateTime? DueDate { get; private set; }
     public int? EstimateMinutes { get; private set; }
-
 
     private readonly List<UserId> _assignees = [];
     public IReadOnlyCollection<UserId> Assignees => _assignees.AsReadOnly();
@@ -30,7 +29,7 @@ public class BacklogTask
         DateTime createdAt,
         bool inWeek,
         bool isCompleted,
-        string? dueTime,
+        DateTime? dueDate,
         int? estimateMinutes,
         IEnumerable<UserId> assignees)
     {
@@ -42,7 +41,7 @@ public class BacklogTask
         CreatedAt = createdAt;
         InWeek = inWeek;
         IsCompleted = isCompleted;
-        DueTime = dueTime;
+        DueDate = dueDate;
         EstimateMinutes = estimateMinutes;
         _assignees = [.. assignees];
     }
@@ -56,7 +55,7 @@ public class BacklogTask
         DateTime createdAt,
         bool inWeek,
         bool isCompleted,
-        string? dueTime,
+        DateTime? dueDate,
         int? estimateMinutes,
         IEnumerable<UserId> assignees)
     {
@@ -69,8 +68,76 @@ public class BacklogTask
             createdAt,
             inWeek,
             isCompleted,
-            dueTime,
+            dueDate,
             estimateMinutes,
             assignees);
+    }
+
+    public static BacklogTask Create(
+        string title,
+        TodoItemPriority priority,
+        string description,
+        UserId creatorId,
+        DateTime? dueDate,
+        int? estimateMinutes,
+        IEnumerable<UserId> assignees)
+    {
+        if (string.IsNullOrWhiteSpace(title))
+            throw new ArgumentException("Title is required.", nameof(title));
+
+        if (estimateMinutes is < 0)
+            throw new ArgumentOutOfRangeException(nameof(estimateMinutes), "Estimate cannot be negative.");
+
+        return new BacklogTask(
+            new BacklogTaskId(Guid.NewGuid()),
+            title,
+            priority,
+            description,
+            creatorId,
+            DateTime.UtcNow,
+            false,
+            false,
+            dueDate,
+            estimateMinutes,
+            assignees);
+    }
+
+    public void SetDueDate(DateTime? dueDate)
+    {
+        DueDate = dueDate;
+    }
+
+    public void SetEstimateMinutes(int? estimateMinutes)
+    {
+        if (estimateMinutes is < 0)
+            throw new ArgumentOutOfRangeException(nameof(estimateMinutes), "Estimate cannot be negative.");
+
+        EstimateMinutes = estimateMinutes;
+    }
+
+    public bool HasDeadline() => DueDate.HasValue;
+
+    public bool IsOverdue(DateTime now)
+    {
+        if (!DueDate.HasValue || IsCompleted)
+            return false;
+
+        return DueDate.Value.Date < now.Date;
+    }
+
+    public bool IsDueToday(DateTime now)
+    {
+        if (!DueDate.HasValue)
+            return false;
+
+        return DueDate.Value.Date == now.Date;
+    }
+
+    public bool IsDueTomorrow(DateTime now)
+    {
+        if (!DueDate.HasValue)
+            return false;
+
+        return DueDate.Value.Date == now.Date.AddDays(1);
     }
 }

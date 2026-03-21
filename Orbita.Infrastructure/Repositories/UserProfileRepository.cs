@@ -18,7 +18,7 @@ public class UserProfileRepository(OrbitaDbContext db) : IUserProfileRepository
         return dbEntity?.ToDomain();
     }
 
-    public async Task<UserProfile?> Update(UserProfile userProfile, CancellationToken ct = default)
+    public async Task<UserProfile?> UpdateAsync(UserProfile userProfile, CancellationToken ct = default)
     {
         var entity = await db.UserProfiles
             .FirstOrDefaultAsync(x => x.UserId == userProfile.UserId.Id, ct);
@@ -33,6 +33,16 @@ public class UserProfileRepository(OrbitaDbContext db) : IUserProfileRepository
         await db.SaveChangesAsync(ct);
 
         return entity.ToDomain();
+    }
+
+    public async Task<IEnumerable<UserProfile>> GetTeamUserProfilesAsync(Guid userId, CancellationToken ct = default)
+    {
+        var entities = await db.UserProfiles
+            .Where(p => true)
+            .AsNoTracking()
+            .ToListAsync(ct);
+
+        return entities.Select(x => x.ToDomain());
     }
 
     private static void MapToExistingEntity(UserProfile source, UserProfileEntity target)

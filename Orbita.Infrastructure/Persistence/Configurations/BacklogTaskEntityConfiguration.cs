@@ -28,18 +28,24 @@ public class BacklogTaskEntityConfiguration : IEntityTypeConfiguration<BacklogTa
         b.Property(x => x.CreatorId)
             .IsRequired();
 
-
         b.Property(x => x.CreatedAt)
             .IsRequired();
 
-        b.Property(x => x.InWeek).IsRequired();
-        b.Property(x => x.IsCompleted).IsRequired();
+        b.Property(x => x.InWeek)
+            .IsRequired();
 
-        b.Property(x => x.DueTime);
+        b.Property(x => x.IsCompleted)
+            .IsRequired();
 
-        b.Property(x => x.EstimateMinutes);
+        b.Property(x => x.DueDate)
+            .HasColumnType("timestamp without time zone")
+            .IsRequired(false);
+
+        b.Property(x => x.EstimateMinutes)
+            .IsRequired(false);
 
         b.HasIndex(x => x.CreatorId);
         b.HasIndex(x => new { x.IsCompleted, x.InWeek });
+        b.HasIndex(x => x.DueDate);
     }
 }

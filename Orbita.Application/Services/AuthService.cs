@@ -59,8 +59,7 @@ public class AuthService(
         if (tokenData is null)
             return Result<AuthResponse>.Unauthorized("Invalid or expired refresh token");
 
-        // Atomic revocation: UPDATE WHERE IsRevoked = false AND ExpiresAt > now
-        // Guards against concurrent refresh requests using the same token
+
         var revoked = await refreshTokens.TryRevokeAsync(refreshToken, ct);
         if (!revoked)
             return Result<AuthResponse>.Unauthorized("Invalid or expired refresh token");

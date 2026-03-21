@@ -4,9 +4,9 @@ namespace Orbita.Application.Abstractions.Repositories;
 
 public interface IBacklogTaskRepository
 {
-    Task<BacklogTask?> Get(Guid id, CancellationToken ct);
-    Task<IReadOnlyCollection<BacklogTask>> GetAll(CancellationToken ct);
-    Task<BacklogTask> Create(BacklogTask task, CancellationToken ct);
-    Task<BacklogTask?> Update(BacklogTask task, CancellationToken ct);
-    Task<BacklogTask?> Delete(Guid id, CancellationToken ct);
+    Task<BacklogTask?> GetAsync(Guid id, CancellationToken ct);
+    Task<IReadOnlyCollection<BacklogTask>> GetAllAsync(CancellationToken ct);
+    Task<BacklogTask> CreateAsync(BacklogTask task, CancellationToken ct);
+    Task<BacklogTask?> UpdateAsync(BacklogTask task, CancellationToken ct);
+    Task<BacklogTask?> DeleteAsync(Guid id, CancellationToken ct);
 }

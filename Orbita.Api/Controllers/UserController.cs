@@ -7,19 +7,13 @@ using System.Security.Claims;
 namespace Orbita.Api.Controllers;
 
 [Route("api/[controller]")]
-[ApiController]
-[Authorize]
-public class UserController(IUserService service) : ControllerBase
+public class UserController(IUserService service) : AuthorizedControllerBase
 {
     [HttpGet("profile")]
     public async Task<IActionResult> GetProfile(CancellationToken ct)
     {
-        var userIdValue =
-            User.FindFirstValue(ClaimTypes.NameIdentifier)
-            ?? User.FindFirstValue("sub");
-
-        if (!Guid.TryParse(userIdValue, out var userId))
-            return Unauthorized(); 
+        if (!TryGetUserId(out var userId))
+            return Unauthorized();
 
         var result = await service.GetDataAsync(userId, ct);
 
@@ -29,11 +23,7 @@ public class UserController(IUserService service) : ControllerBase
     [HttpPatch("profile")]
     public async Task<IActionResult> ChangeProfile(CancellationToken ct)
     {
-        var userIdValue =
-            User.FindFirstValue(ClaimTypes.NameIdentifier)
-            ?? User.FindFirstValue("sub");
-
-        if (!Guid.TryParse(userIdValue, out var userId))
+        if (!TryGetUserId(out var userId))
             return Unauthorized();
 
         var result = await service.GetDataAsync(userId, ct);
@@ -44,11 +34,7 @@ public class UserController(IUserService service) : ControllerBase
     [HttpPut("avatar")]
     public async Task<IActionResult> ChangeAvatar([FromForm] IFormFile file, CancellationToken ct)
     {
-        var userIdValue =
-            User.FindFirstValue(ClaimTypes.NameIdentifier)
-            ?? User.FindFirstValue("sub");
-
-        if (!Guid.TryParse(userIdValue, out var userId))
+        if(!TryGetUserId(out var userId))
             return Unauthorized();
 
         byte[] bytes;
@@ -66,11 +52,7 @@ public class UserController(IUserService service) : ControllerBase
     [HttpDelete("avatar")]
     public async Task<IActionResult> DeleteAvatar(CancellationToken ct)
     {
-        var userIdValue =
-            User.FindFirstValue(ClaimTypes.NameIdentifier)
-            ?? User.FindFirstValue("sub");
-
-        if (!Guid.TryParse(userIdValue, out var userId))
+        if (!TryGetUserId(out var userId))
             return Unauthorized();
 
 

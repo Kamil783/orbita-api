@@ -2,10 +2,10 @@
 
 public class CreateBacklogTaskCommand
 {
-    public required string Title { get; set; }
-    public required string Priority { get; set; }
-    public DateTime? DueDate { get; set; }
-    public int? EstimateMinutes { get; set; }
-    public int[] Assignee { get; set; }
-    public string? Description { get; set; }
+    public required string Title { get; init; }
+    public required string Priority { get; init; }
+    public DateTime? DueDate { get; init; }
+    public int? EstimateMinutes { get; init; }
+    public IReadOnlyCollection<Guid> AssigneeIds { get; init; } = [];
+    public string? Description { get; init; }
 }

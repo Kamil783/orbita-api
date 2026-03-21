@@ -19,7 +19,7 @@ public static class BacklogTaskExtensions
             CreatedAt = backlogTask.CreatedAt,
             InWeek = backlogTask.InWeek,
             IsCompleted = backlogTask.IsCompleted,
-            DueTime = backlogTask.DueTime,
+            DueDate = backlogTask.DueDate,
             EstimateMinutes = backlogTask.EstimateMinutes,
             Assignees = backlogTask.Assignees
                 .Select(a => new BacklogTaskAssigneeEntity
@@ -42,7 +42,7 @@ public static class BacklogTaskExtensions
              createdAt: entity.CreatedAt,
              inWeek: entity.InWeek,
              isCompleted: entity.IsCompleted,
-             dueTime: entity.DueTime,
+             dueDate: entity.DueDate,
              estimateMinutes: entity.EstimateMinutes,
              assignees: entity.Assignees.Select(a => new UserId(a.UserId))
          );

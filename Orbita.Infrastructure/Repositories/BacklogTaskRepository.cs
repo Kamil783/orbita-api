@@ -10,7 +10,7 @@ namespace Orbita.Infrastructure.Repositories;
 
 public class BacklogTaskRepository(OrbitaDbContext db) : IBacklogTaskRepository
 {
-    public async Task<BacklogTask> Create(BacklogTask task, CancellationToken ct = default)
+    public async Task<BacklogTask> CreateAsync(BacklogTask task, CancellationToken ct = default)
     {
         var entity = task.ToEntity();
 
@@ -20,7 +20,7 @@ public class BacklogTaskRepository(OrbitaDbContext db) : IBacklogTaskRepository
         return entity.ToDomain();
     }
 
-    public async Task<BacklogTask?> Delete(Guid id, CancellationToken ct = default)
+    public async Task<BacklogTask?> DeleteAsync(Guid id, CancellationToken ct = default)
     {
         var entity = await db.BacklogTasks
             .Include(x => x.Assignees)
@@ -37,7 +37,7 @@ public class BacklogTaskRepository(OrbitaDbContext db) : IBacklogTaskRepository
         return entity.ToDomain();
     }
 
-    public async Task<BacklogTask?> Get(Guid id, CancellationToken ct = default)
+    public async Task<BacklogTask?> GetAsync(Guid id, CancellationToken ct = default)
     {
         var entity = await db.BacklogTasks
             .Include(x => x.Assignees)
@@ -46,7 +46,7 @@ public class BacklogTaskRepository(OrbitaDbContext db) : IBacklogTaskRepository
         return entity?.ToDomain();
     }
 
-    public async Task<IReadOnlyCollection<BacklogTask>> GetAll(CancellationToken ct = default)
+    public async Task<IReadOnlyCollection<BacklogTask>> GetAllAsync(CancellationToken ct = default)
     {
         var entities = await db.BacklogTasks
             .Include(x => x.Assignees)
@@ -57,7 +57,7 @@ public class BacklogTaskRepository(OrbitaDbContext db) : IBacklogTaskRepository
             .ToList();
     }
 
-    public async Task<BacklogTask?> Update(BacklogTask task, CancellationToken ct = default)
+    public async Task<BacklogTask?> UpdateAsync(BacklogTask task, CancellationToken ct = default)
     {
         var entity = await db.BacklogTasks
             .Include(x => x.Assignees)
@@ -82,7 +82,7 @@ public class BacklogTaskRepository(OrbitaDbContext db) : IBacklogTaskRepository
         target.Description = source.Description;
         target.InWeek = source.InWeek;
         target.IsCompleted = source.IsCompleted;
-        target.DueTime = source.DueTime;
+        target.DueDate = source.DueDate;
         target.EstimateMinutes = source.EstimateMinutes;
 
         target.Assignees.Clear();

@@ -16,7 +16,8 @@ public class BacklogTaskEntity
     public bool InWeek { get; set; }
     public bool IsCompleted { get; set; }
 
-    public ICollection<BacklogTaskAssigneeEntity> Assignees { get; set; } = [];
-    public string? DueTime { get; set; }
+    public DateTime? DueDate { get; set; }
     public int? EstimateMinutes { get; set; }
+
+    public ICollection<BacklogTaskAssigneeEntity> Assignees { get; set; } = [];
 }
