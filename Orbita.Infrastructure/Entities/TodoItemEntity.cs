@@ -24,6 +24,7 @@ public class TodoItemEntity
 
     public string? DeadlineText { get; set; }
     public string? CompletedText { get; set; }
+    public int SortOrder { get; set; }
 
     public CalendarEventEntity? CalendarEvent { get; set; }
 }

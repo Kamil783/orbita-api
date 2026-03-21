@@ -54,5 +54,8 @@ public class TodoItemEntityConfiguration : IEntityTypeConfiguration<TodoItemEnti
         b.HasIndex(x => x.AssigneeId);
         b.HasIndex(x => x.TaskStatus);
         b.HasIndex(x => x.DeadlineUtc);
+
+        b.Property(x => x.SortOrder).IsRequired();
+        b.HasIndex(x => new { x.ColumnId, x.SortOrder });
     }
 }

@@ -140,4 +140,14 @@ public class BacklogTask
 
         return DueDate.Value.Date == now.Date.AddDays(1);
     }
+
+    public void SetInWeek(bool inWeek)
+    {
+        InWeek = inWeek;
+    }
+
+    public void SetCompleted(bool completed)
+    {
+        IsCompleted = completed;
+    }
 }
