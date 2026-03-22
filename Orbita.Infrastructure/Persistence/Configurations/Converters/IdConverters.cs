@@ -19,12 +19,12 @@ public static class IdConverters
 
     public static readonly ValueConverter<DateOnly, DateTime> DateOnlyToDateTime =
         new(
-            d => d.ToDateTime(TimeOnly.MinValue),
+            d => d.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc),
             dt => DateOnly.FromDateTime(dt));
 
     public static readonly ValueConverter<DateOnly?, DateTime?> NullableDateOnlyToDateTime =
         new(
-            d => d.HasValue ? d.Value.ToDateTime(TimeOnly.MinValue) : null,
+            d => d.HasValue ? d.Value.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc) : null,
             dt => dt.HasValue ? DateOnly.FromDateTime(dt.Value) : null);
 
     public static readonly ValueConverter<TimeOnly, TimeSpan> TimeOnlyToTimeSpan =

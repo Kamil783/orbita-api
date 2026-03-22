@@ -41,7 +41,7 @@ public class BacklogTask
         CreatedAt = createdAt;
         InWeek = inWeek;
         IsCompleted = isCompleted;
-        DueDate = dueDate;
+        DueDate = NormalizeToUtc(dueDate);
         EstimateMinutes = estimateMinutes;
         _assignees = [.. assignees];
     }
@@ -104,7 +104,7 @@ public class BacklogTask
 
     public void SetDueDate(DateTime? dueDate)
     {
-        DueDate = dueDate;
+        DueDate = NormalizeToUtc(dueDate);
     }
 
     public void SetEstimateMinutes(int? estimateMinutes)
@@ -173,5 +173,13 @@ public class BacklogTask
     {
         _assignees.Clear();
         _assignees.AddRange(assignees);
+    }
+
+    private static DateTime? NormalizeToUtc(DateTime? dt)
+    {
+        if (dt is null) return null;
+        return dt.Value.Kind == DateTimeKind.Utc
+            ? dt
+            : DateTime.SpecifyKind(dt.Value, DateTimeKind.Utc);
     }
 }

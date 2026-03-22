@@ -243,7 +243,7 @@ namespace Orbita.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(4000)");
 
                     b.Property<DateTime?>("DueDate")
-                        .HasColumnType("timestamp without time zone");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int?>("EstimateMinutes")
                         .HasColumnType("integer");
