@@ -12,10 +12,10 @@ public class ColumnController(IColumnService service) : AuthorizedControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateColumn([FromBody] CreateColumnRequest request, CancellationToken ct)
     {
-        if (!TryGetUserId(out _))
+        if (!TryGetUserId(out var userId))
             return Unauthorized();
 
-        var res = await service.CreateAsync(request.Title, ct);
+        var res = await service.CreateAsync(userId, request.Title, ct);
 
         return res
             .Map(column => new { id = column.Id.Id.ToString() })

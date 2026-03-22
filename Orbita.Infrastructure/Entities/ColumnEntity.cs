@@ -10,6 +10,7 @@ public class ColumnEntity
     public string HeaderActionIcon { get; set; } = default!;
     public TodoItemStatus Status { get; set; }
     public bool Muted { get; set; }
+    public Guid? CreatorId { get; set; }
 
     public List<TodoItemEntity> TodoItems { get; set; } = new();
 }

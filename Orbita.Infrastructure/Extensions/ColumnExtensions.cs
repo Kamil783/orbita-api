@@ -15,7 +15,8 @@ public static class ColumnExtensions
             TotalCount = column.TotalCount,
             HeaderActionIcon = column.HeaderActionIcon,
             Status = column.Status,
-            Muted = column.Muted
+            Muted = column.Muted,
+            CreatorId = column.CreatorId?.Id
         };
     }
 
@@ -32,6 +33,7 @@ public static class ColumnExtensions
             headerActionIcon: entity.HeaderActionIcon,
             status: entity.Status,
             muted: entity.Muted,
+            creatorId: entity.CreatorId.HasValue ? new UserId(entity.CreatorId.Value) : null,
             todoItems: todoItems
         );
     }

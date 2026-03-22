@@ -29,11 +29,14 @@ public class ColumnEntityConfiguration : IEntityTypeConfiguration<ColumnEntity>
 
         b.Property(x => x.Muted).IsRequired();
 
+        b.Property(x => x.CreatorId).IsRequired(false);
+
         b.HasMany(x => x.TodoItems)
             .WithOne(x => x.Column)
             .HasForeignKey(x => x.ColumnId)
             .OnDelete(DeleteBehavior.Cascade);
 
         b.HasIndex(x => x.Status);
+        b.HasIndex(x => x.CreatorId);
     }
 }
