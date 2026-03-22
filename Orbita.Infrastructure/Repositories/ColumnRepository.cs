@@ -19,6 +19,7 @@ public class ColumnRepository(OrbitaDbContext db) : IColumnRepository
     public async Task<IReadOnlyCollection<Column>> GetAllWithItemsAsync(Guid userId, CancellationToken ct = default)
     {
         var entities = await db.Columns
+            .Where(c => c.CreatorId == null || c.CreatorId == userId)
             .Include(c => c.TodoItems
                 .Where(t => t.CreatorId == userId)
                 .OrderBy(t => t.SortOrder))

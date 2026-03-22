@@ -5,5 +5,5 @@ namespace Orbita.Application.Abstractions.Services;
 
 public interface IColumnService
 {
-    Task<Result<Column>> CreateAsync(string title, CancellationToken ct = default);
+    Task<Result<Column>> CreateAsync(Guid userId, string title, CancellationToken ct = default);
 }

@@ -11,13 +11,16 @@ public class Column
     public string HeaderActionIcon { get; private set; }
     public TodoItemStatus Status { get; private set; }
     public bool Muted { get; private set; }
+    public UserId? CreatorId { get; private set; }
 
     private readonly List<TodoItem> _todoItems = [];
     public IReadOnlyCollection<TodoItem> TodoItems => _todoItems.AsReadOnly();
 
+    public bool IsDefault => CreatorId is null;
+
     private Column() { }
 
-    public static Column Create(string title, TodoItemStatus status, string headerActionIcon, bool muted = false)
+    public static Column Create(string title, TodoItemStatus status, string headerActionIcon, bool muted = false, UserId? creatorId = null)
     {
         return new Column
         {
@@ -26,7 +29,8 @@ public class Column
             TotalCount = 0,
             HeaderActionIcon = headerActionIcon,
             Status = status,
-            Muted = muted
+            Muted = muted,
+            CreatorId = creatorId
         };
     }
 
@@ -37,6 +41,7 @@ public class Column
         string headerActionIcon,
         TodoItemStatus status,
         bool muted,
+        UserId? creatorId,
         IEnumerable<TodoItem> todoItems)
     {
         var column = new Column
@@ -46,7 +51,8 @@ public class Column
             TotalCount = totalCount,
             HeaderActionIcon = headerActionIcon,
             Status = status,
-            Muted = muted
+            Muted = muted,
+            CreatorId = creatorId
         };
         column._todoItems.AddRange(todoItems);
         return column;
