@@ -48,7 +48,7 @@ public class TodoItem
             ColumnId = columnId,
             CreatedAtUtc = DateTime.UtcNow,
             SortOrder = sortOrder,
-            DeadlineUtc = deadlineUtc,
+            DeadlineUtc = NormalizeToUtc(deadlineUtc),
             ProgressPct = progressPct,
             BacklogId = backlogId,
             DeadlineText = deadlineText,
@@ -86,7 +86,7 @@ public class TodoItem
             SortOrder = sortOrder,
             AssigneeId = assigneeId,
             UpdatedAtUtc = updatedAtUtc,
-            DeadlineUtc = deadlineUtc,
+            DeadlineUtc = NormalizeToUtc(deadlineUtc),
             ProgressPct = progressPct,
             BacklogId = backlogId,
             DeadlineText = deadlineText,
@@ -104,5 +104,13 @@ public class TodoItem
     public void SetSortOrder(int sortOrder)
     {
         SortOrder = sortOrder;
+    }
+
+    private static DateTime? NormalizeToUtc(DateTime? dt)
+    {
+        if (dt is null) return null;
+        return dt.Value.Kind == DateTimeKind.Utc
+            ? dt
+            : DateTime.SpecifyKind(dt.Value, DateTimeKind.Utc);
     }
 }
