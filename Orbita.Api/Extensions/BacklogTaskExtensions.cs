@@ -22,6 +22,19 @@ public static class BacklogTaskExtensions
         };
     }
 
+    public static UpdateBacklogTaskCommand ToCommand(this UpdateBacklogTaskRequest request)
+    {
+        return new UpdateBacklogTaskCommand
+        {
+            Title = request.Title,
+            Description = request.Description,
+            Priority = request.Priority,
+            DueDate = request.DueDate,
+            EstimateMinutes = request.EstimateMinutes,
+            AssigneeIds = request.AssigneeIds
+        };
+    }
+
     public static BacklogTaskResponse ToResponse(this BacklogTask task, DateTime now)
     {
         return new BacklogTaskResponse

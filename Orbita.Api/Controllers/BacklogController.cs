@@ -39,6 +39,21 @@ public class BacklogController(IBacklogTaskService service) : AuthorizedControll
             .ToActionResult(HttpContext);
     }
 
+    [HttpPatch("{backlogTaskId}")]
+    public async Task<IActionResult> UpdateBacklog([FromRoute] Guid backlogTaskId, [FromBody] UpdateBacklogTaskRequest request, CancellationToken ct)
+    {
+        if (!TryGetUserId(out var userId))
+            return Unauthorized();
+
+        var res = await service.UpdateAsync(userId, backlogTaskId, request.ToCommand(), ct);
+
+        var now = DateTime.UtcNow;
+
+        return res
+            .Map(task => task.ToResponse(now))
+            .ToActionResult(HttpContext);
+    }
+
     [HttpPost("{backlogTaskId}/to-week")]
     public async Task<IActionResult> MoveToWeek([FromRoute] Guid backlogTaskId, [FromBody] MoveBacklogTaskToWeekRequest request, CancellationToken ct)
     {

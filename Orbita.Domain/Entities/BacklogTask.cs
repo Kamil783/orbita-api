@@ -150,4 +150,28 @@ public class BacklogTask
     {
         IsCompleted = completed;
     }
+
+    public void SetTitle(string title)
+    {
+        if (string.IsNullOrWhiteSpace(title))
+            throw new ArgumentException("Title is required.", nameof(title));
+
+        Title = title;
+    }
+
+    public void SetDescription(string description)
+    {
+        Description = description;
+    }
+
+    public void SetPriority(TodoItemPriority priority)
+    {
+        Priority = priority;
+    }
+
+    public void SetAssignees(IEnumerable<UserId> assignees)
+    {
+        _assignees.Clear();
+        _assignees.AddRange(assignees);
+    }
 }

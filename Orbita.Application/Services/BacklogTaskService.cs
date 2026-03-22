@@ -38,6 +38,43 @@ public class BacklogTaskService(
         return Result<BacklogTask>.Ok(result);
     }
 
+    public async Task<Result<BacklogTask>> UpdateAsync(Guid userId, Guid backlogTaskId, UpdateBacklogTaskCommand command, CancellationToken ct = default)
+    {
+        var backlogTask = await backlogRepository.GetAsync(backlogTaskId, ct);
+        if (backlogTask is null)
+            return Result<BacklogTask>.NotFound("Backlog task not found.");
+
+        if (backlogTask.CreatorId.Id != userId)
+            return Result<BacklogTask>.Forbidden("Access denied.");
+
+        if (command.Title is not null)
+            backlogTask.SetTitle(command.Title);
+
+        if (command.Description is not null)
+            backlogTask.SetDescription(command.Description);
+
+        if (command.Priority is not null)
+        {
+            if (!Enum.TryParse<TodoItemPriority>(command.Priority, true, out var priority))
+                return Result<BacklogTask>.Fail("Invalid priority.");
+
+            backlogTask.SetPriority(priority);
+        }
+
+        if (command.DueDate.HasValue)
+            backlogTask.SetDueDate(command.DueDate);
+
+        if (command.EstimateMinutes.HasValue)
+            backlogTask.SetEstimateMinutes(command.EstimateMinutes);
+
+        if (command.AssigneeIds is not null)
+            backlogTask.SetAssignees(command.AssigneeIds.Select(x => new UserId(x)));
+
+        var updated = await backlogRepository.UpdateAsync(backlogTask, ct);
+
+        return Result<BacklogTask>.Ok(updated!);
+    }
+
     public async Task<Result<TodoItem>> MoveToWeekAsync(Guid userId, Guid backlogTaskId, Guid targetColumnId, CancellationToken ct = default)
     {
         var backlogTask = await backlogRepository.GetAsync(backlogTaskId, ct);
