@@ -13,6 +13,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IBacklogTaskService, BacklogTaskService>();
         services.AddTransient<IColumnService, ColumnService>();
         services.AddTransient<ITodoItemService, TodoItemService>();
+        services.AddTransient<IWeekService, WeekService>();
         return services;
     }
 }

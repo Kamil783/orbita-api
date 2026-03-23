@@ -16,6 +16,7 @@ public class OrbitaDbContext(DbContextOptions<OrbitaDbContext> options) : Identi
     public DbSet<CalendarEventEntity> CalendarEvents => Set<CalendarEventEntity>();
     public DbSet<ColumnEntity> Columns => Set<ColumnEntity>();
     public DbSet<TodoItemEntity> TodoItems => Set<TodoItemEntity>();
+    public DbSet<WeekEntity> Weeks => Set<WeekEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

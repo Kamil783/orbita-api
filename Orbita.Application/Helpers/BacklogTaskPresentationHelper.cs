@@ -21,6 +21,14 @@ public static class BacklogTaskPresentationHelper
         return date.ToString("dd MMMM", new CultureInfo("ru-RU"));
     }
 
+    public static string GetWeekLabel(DateTime startDate, DateTime endDate)
+    {
+        var culture = new CultureInfo("ru-RU");
+        var start = startDate.Date.ToString("d MMMM", culture);
+        var end = endDate.Date.ToString("d MMMM", culture);
+        return $"{start} — {end}";
+    }
+
     public static string? GetEstimateDisplayText(int? estimateMinutes)
     {
         if (!estimateMinutes.HasValue)

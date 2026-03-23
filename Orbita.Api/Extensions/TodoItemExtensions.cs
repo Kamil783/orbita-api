@@ -7,7 +7,7 @@ namespace Orbita.Api.Extensions;
 
 public static class TodoItemExtensions
 {
-    public static TaskCardVm ToTaskCardVm(this TodoItem item)
+    public static TaskCardVm ToTaskCardVm(this TodoItem item, string? weekLabel = null)
     {
         return new TaskCardVm
         {
@@ -21,11 +21,12 @@ public static class TodoItemExtensions
             AssigneeIds = item.Assignees.Count > 0
                 ? item.Assignees.Select(a => a.Id.ToString()).ToArray()
                 : null,
-            BacklogId = item.BacklogId?.Id.ToString()
+            BacklogId = item.BacklogId?.Id.ToString(),
+            WeekLabel = weekLabel
         };
     }
 
-    public static KanbanColumnVm ToKanbanColumnVm(this Column column)
+    public static KanbanColumnVm ToKanbanColumnVm(this Column column, string? weekLabel = null)
     {
         return new KanbanColumnVm
         {
@@ -35,7 +36,7 @@ public static class TodoItemExtensions
             ColumnType = MapColumnType(column.Status),
             HeaderActionIcon = column.HeaderActionIcon,
             Muted = column.Muted ? true : null,
-            Cards = column.TodoItems.Select(t => t.ToTaskCardVm()).ToList()
+            Cards = column.TodoItems.Select(t => t.ToTaskCardVm(weekLabel)).ToList()
         };
     }
 
