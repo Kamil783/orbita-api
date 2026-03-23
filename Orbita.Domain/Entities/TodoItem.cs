@@ -18,7 +18,6 @@ public class TodoItem
     public int? ProgressPct { get; private set; }
     public BacklogTaskId? BacklogId { get; private set; }
 
-    public string? DeadlineText { get; private set; }
     public string? CompletedText { get; private set; }
     public int SortOrder { get; private set; }
 
@@ -36,7 +35,6 @@ public class TodoItem
         DateTime? deadlineUtc = null,
         int? progressPct = null,
         BacklogTaskId? backlogId = null,
-        string? deadlineText = null,
         string? completedText = null,
         IEnumerable<UserId>? assignees = null)
     {
@@ -53,7 +51,6 @@ public class TodoItem
             DeadlineUtc = NormalizeToUtc(deadlineUtc),
             ProgressPct = progressPct,
             BacklogId = backlogId,
-            DeadlineText = deadlineText,
             CompletedText = completedText
         };
         if (assignees is not null)
@@ -75,7 +72,6 @@ public class TodoItem
         DateTime? deadlineUtc = null,
         int? progressPct = null,
         BacklogTaskId? backlogId = null,
-        string? deadlineText = null,
         string? completedText = null)
     {
         var item = new TodoItem
@@ -92,7 +88,6 @@ public class TodoItem
             DeadlineUtc = NormalizeToUtc(deadlineUtc),
             ProgressPct = progressPct,
             BacklogId = backlogId,
-            DeadlineText = deadlineText,
             CompletedText = completedText
         };
         if (assignees is not null)

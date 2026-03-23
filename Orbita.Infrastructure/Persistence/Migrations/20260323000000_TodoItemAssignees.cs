@@ -19,6 +19,16 @@ namespace Orbita.Infrastructure.Persistence.Migrations
                 name: "AssigneeId",
                 table: "TodoItems");
 
+            migrationBuilder.DropColumn(
+                name: "DeadlineText",
+                table: "TodoItems");
+
+            migrationBuilder.AddColumn<int>(
+                name: "ProgressPct",
+                table: "BacklogTasks",
+                type: "integer",
+                nullable: true);
+
             migrationBuilder.CreateTable(
                 name: "TodoItemAssigneeEntity",
                 columns: table => new
@@ -54,6 +64,17 @@ namespace Orbita.Infrastructure.Persistence.Migrations
         {
             migrationBuilder.DropTable(
                 name: "TodoItemAssigneeEntity");
+
+            migrationBuilder.DropColumn(
+                name: "ProgressPct",
+                table: "BacklogTasks");
+
+            migrationBuilder.AddColumn<string>(
+                name: "DeadlineText",
+                table: "TodoItems",
+                type: "character varying(128)",
+                maxLength: 128,
+                nullable: true);
 
             migrationBuilder.AddColumn<Guid>(
                 name: "AssigneeId",

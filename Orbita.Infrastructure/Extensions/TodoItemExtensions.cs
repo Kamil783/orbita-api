@@ -23,7 +23,6 @@ public static class TodoItemExtensions
             DeadlineUtc = item.DeadlineUtc,
             ProgressPct = item.ProgressPct,
             BacklogId = item.BacklogId?.Id,
-            DeadlineText = item.DeadlineText,
             CompletedText = item.CompletedText,
             SortOrder = item.SortOrder,
             Assignees = item.Assignees.Select(a => new TodoItemAssigneeEntity
@@ -51,7 +50,6 @@ public static class TodoItemExtensions
             deadlineUtc: entity.DeadlineUtc,
             progressPct: entity.ProgressPct,
             backlogId: entity.BacklogId.HasValue ? new BacklogTaskId(entity.BacklogId.Value) : null,
-            deadlineText: entity.DeadlineText,
             completedText: entity.CompletedText
         );
     }

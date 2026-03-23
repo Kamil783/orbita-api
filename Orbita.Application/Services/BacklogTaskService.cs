@@ -1,7 +1,6 @@
 using Orbita.Application.Abstractions.Repositories;
 using Orbita.Application.Abstractions.Services;
 using Orbita.Application.Commands.BacklogTasks;
-using Orbita.Application.Helpers;
 using Orbita.Application.Models.Results;
 using Orbita.Domain.Entities;
 using Orbita.Domain.Enums;
@@ -95,8 +94,6 @@ public class BacklogTaskService(
 
         var maxSort = await todoItemRepository.GetMaxSortOrderAsync(targetColumnId, ct);
 
-        var now = DateTime.UtcNow;
-
         var todoItem = TodoItem.Create(
             title: backlogTask.Title,
             priority: backlogTask.Priority,
@@ -106,7 +103,6 @@ public class BacklogTaskService(
             deadlineUtc: backlogTask.DueDate,
             progressPct: backlogTask.TrackProgress ? 0 : null,
             backlogId: backlogTask.Id,
-            deadlineText: BacklogTaskPresentationHelper.GetDueDisplayText(backlogTask.DueDate, now),
             assignees: backlogTask.Assignees);
 
         var created = await todoItemRepository.CreateAsync(todoItem, ct);
