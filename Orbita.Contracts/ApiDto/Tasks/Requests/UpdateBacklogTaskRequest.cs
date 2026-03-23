@@ -8,4 +8,5 @@ public sealed class UpdateBacklogTaskRequest
     public DateTime? DueDate { get; set; }
     public int? EstimateMinutes { get; set; }
     public Guid[]? AssigneeIds { get; set; }
+    public int? ProgressPct { get; set; }
 }

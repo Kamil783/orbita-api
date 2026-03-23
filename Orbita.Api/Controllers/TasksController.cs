@@ -25,10 +25,11 @@ public class TasksController(ITodoItemService service) : AuthorizedControllerBas
     [HttpPost("move")]
     public async Task<IActionResult> MoveTask([FromBody] MoveTaskRequest request, CancellationToken ct)
     {
-        if (!TryGetUserId(out _))
+        if (!TryGetUserId(out var userId))
             return Unauthorized();
 
         var res = await service.MoveAsync(
+            userId,
             request.TaskId,
             request.FromColumnId,
             request.ToColumnId,
@@ -42,10 +43,10 @@ public class TasksController(ITodoItemService service) : AuthorizedControllerBas
     [HttpPost("move-to")]
     public async Task<IActionResult> MoveTaskTo([FromBody] MoveTaskToRequest request, CancellationToken ct)
     {
-        if (!TryGetUserId(out _))
+        if (!TryGetUserId(out var userId))
             return Unauthorized();
 
-        var res = await service.MoveToAsync(request.TaskId, request.TargetStatus, ct);
+        var res = await service.MoveToAsync(userId, request.TaskId, request.TargetStatus, ct);
 
         return res.ToActionResult(HttpContext);
     }
@@ -53,10 +54,10 @@ public class TasksController(ITodoItemService service) : AuthorizedControllerBas
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteTask([FromRoute] Guid id, CancellationToken ct)
     {
-        if (!TryGetUserId(out _))
+        if (!TryGetUserId(out var userId))
             return Unauthorized();
 
-        var res = await service.DeleteAsync(id, ct);
+        var res = await service.DeleteAsync(userId, id, ct);
 
         return res.ToActionResult(HttpContext);
     }

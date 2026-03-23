@@ -16,9 +16,12 @@ public class BacklogTask
 
     public DateTime? DueDate { get; private set; }
     public int? EstimateMinutes { get; private set; }
+    public int? ProgressPct { get; private set; }
 
     private readonly List<UserId> _assignees = [];
     public IReadOnlyCollection<UserId> Assignees => _assignees.AsReadOnly();
+
+    public bool TrackProgress => ProgressPct is not null;
 
     private BacklogTask(
         BacklogTaskId id,
@@ -31,6 +34,7 @@ public class BacklogTask
         bool isCompleted,
         DateTime? dueDate,
         int? estimateMinutes,
+        int? progressPct,
         IEnumerable<UserId> assignees)
     {
         Id = id;
@@ -43,6 +47,7 @@ public class BacklogTask
         IsCompleted = isCompleted;
         DueDate = NormalizeToUtc(dueDate);
         EstimateMinutes = estimateMinutes;
+        ProgressPct = progressPct;
         _assignees = [.. assignees];
     }
 
@@ -57,6 +62,7 @@ public class BacklogTask
         bool isCompleted,
         DateTime? dueDate,
         int? estimateMinutes,
+        int? progressPct,
         IEnumerable<UserId> assignees)
     {
         return new BacklogTask(
@@ -70,6 +76,7 @@ public class BacklogTask
             isCompleted,
             dueDate,
             estimateMinutes,
+            progressPct,
             assignees);
     }
 
@@ -80,6 +87,7 @@ public class BacklogTask
         UserId creatorId,
         DateTime? dueDate,
         int? estimateMinutes,
+        int? progressPct,
         IEnumerable<UserId> assignees)
     {
         if (string.IsNullOrWhiteSpace(title))
@@ -99,6 +107,7 @@ public class BacklogTask
             false,
             dueDate,
             estimateMinutes,
+            progressPct,
             assignees);
     }
 
@@ -167,6 +176,11 @@ public class BacklogTask
     public void SetPriority(TodoItemPriority priority)
     {
         Priority = priority;
+    }
+
+    public void SetProgressPct(int? progressPct)
+    {
+        ProgressPct = progressPct;
     }
 
     public void SetAssignees(IEnumerable<UserId> assignees)

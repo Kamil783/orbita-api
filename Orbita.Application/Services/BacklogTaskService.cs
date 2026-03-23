@@ -1,6 +1,7 @@
 using Orbita.Application.Abstractions.Repositories;
 using Orbita.Application.Abstractions.Services;
 using Orbita.Application.Commands.BacklogTasks;
+using Orbita.Application.Helpers;
 using Orbita.Application.Models.Results;
 using Orbita.Domain.Entities;
 using Orbita.Domain.Enums;
@@ -31,6 +32,7 @@ public class BacklogTaskService(
             creatorId: new UserId(currentUserId),
             dueDate: command.DueDate,
             estimateMinutes: command.EstimateMinutes,
+            progressPct: command.ProgressPct,
             assignees: command.AssigneeIds.Select(x => new UserId(x)));
 
         var result = await backlogRepository.CreateAsync(task, ct);
@@ -67,6 +69,9 @@ public class BacklogTaskService(
         if (command.EstimateMinutes.HasValue)
             backlogTask.SetEstimateMinutes(command.EstimateMinutes);
 
+        if (command.ProgressPct.HasValue)
+            backlogTask.SetProgressPct(command.ProgressPct);
+
         if (command.AssigneeIds is not null)
             backlogTask.SetAssignees(command.AssigneeIds.Select(x => new UserId(x)));
 
@@ -90,6 +95,8 @@ public class BacklogTaskService(
 
         var maxSort = await todoItemRepository.GetMaxSortOrderAsync(targetColumnId, ct);
 
+        var now = DateTime.UtcNow;
+
         var todoItem = TodoItem.Create(
             title: backlogTask.Title,
             priority: backlogTask.Priority,
@@ -97,8 +104,10 @@ public class BacklogTaskService(
             columnId: new ColumnId(targetColumnId),
             sortOrder: maxSort + 1,
             deadlineUtc: backlogTask.DueDate,
+            progressPct: backlogTask.TrackProgress ? 0 : null,
             backlogId: backlogTask.Id,
-            deadlineText: backlogTask.DueDate?.ToString("dd MMM"));
+            deadlineText: BacklogTaskPresentationHelper.GetDueDisplayText(backlogTask.DueDate, now),
+            assigneeId: backlogTask.Assignees.FirstOrDefault());
 
         var created = await todoItemRepository.CreateAsync(todoItem, ct);
 

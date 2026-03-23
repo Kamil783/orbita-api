@@ -18,7 +18,8 @@ public static class BacklogTaskExtensions
             DueDate = request.DueDate,
             EstimateMinutes = request.EstimateMinutes,
             AssigneeIds = request.Assignee,
-            Description = request.Description
+            Description = request.Description,
+            ProgressPct = request.ProgressPct
         };
     }
 
@@ -31,7 +32,8 @@ public static class BacklogTaskExtensions
             Priority = request.Priority,
             DueDate = request.DueDate,
             EstimateMinutes = request.EstimateMinutes,
-            AssigneeIds = request.AssigneeIds
+            AssigneeIds = request.AssigneeIds,
+            ProgressPct = request.ProgressPct
         };
     }
 
@@ -49,6 +51,7 @@ public static class BacklogTaskExtensions
             EstimateDisplayText = BacklogTaskPresentationHelper.GetEstimateDisplayText(task.EstimateMinutes),
             IsCompleted = task.IsCompleted,
             InWeek = task.InWeek,
+            ProgressPct = task.ProgressPct,
             AssigneeIds = task.Assignees.Select(x => x.Id.ToString()).ToArray()
         };
     }
