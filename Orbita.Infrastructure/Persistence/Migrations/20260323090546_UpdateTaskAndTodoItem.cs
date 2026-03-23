@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Orbita.Infrastructure.Persistence.Migrations
 {
     /// <inheritdoc />
-    public partial class TodoItemAssignees : Migration
+    public partial class UpdateTaskAndTodoItem : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -22,6 +22,29 @@ namespace Orbita.Infrastructure.Persistence.Migrations
             migrationBuilder.DropColumn(
                 name: "DeadlineText",
                 table: "TodoItems");
+
+            migrationBuilder.DropColumn(
+                name: "DueTime",
+                table: "BacklogTasks");
+
+            migrationBuilder.AddColumn<int>(
+                name: "SortOrder",
+                table: "TodoItems",
+                type: "integer",
+                nullable: false,
+                defaultValue: 0);
+
+            migrationBuilder.AddColumn<Guid>(
+                name: "CreatorId",
+                table: "Columns",
+                type: "uuid",
+                nullable: true);
+
+            migrationBuilder.AddColumn<DateTime>(
+                name: "DueDate",
+                table: "BacklogTasks",
+                type: "timestamp with time zone",
+                nullable: true);
 
             migrationBuilder.AddColumn<int>(
                 name: "ProgressPct",
@@ -54,6 +77,21 @@ namespace Orbita.Infrastructure.Persistence.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_TodoItems_ColumnId_SortOrder",
+                table: "TodoItems",
+                columns: new[] { "ColumnId", "SortOrder" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Columns_CreatorId",
+                table: "Columns",
+                column: "CreatorId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_BacklogTasks_DueDate",
+                table: "BacklogTasks",
+                column: "DueDate");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_TodoItemAssigneeEntity_UserId",
                 table: "TodoItemAssigneeEntity",
                 column: "UserId");
@@ -65,9 +103,39 @@ namespace Orbita.Infrastructure.Persistence.Migrations
             migrationBuilder.DropTable(
                 name: "TodoItemAssigneeEntity");
 
+            migrationBuilder.DropIndex(
+                name: "IX_TodoItems_ColumnId_SortOrder",
+                table: "TodoItems");
+
+            migrationBuilder.DropIndex(
+                name: "IX_Columns_CreatorId",
+                table: "Columns");
+
+            migrationBuilder.DropIndex(
+                name: "IX_BacklogTasks_DueDate",
+                table: "BacklogTasks");
+
+            migrationBuilder.DropColumn(
+                name: "SortOrder",
+                table: "TodoItems");
+
+            migrationBuilder.DropColumn(
+                name: "CreatorId",
+                table: "Columns");
+
+            migrationBuilder.DropColumn(
+                name: "DueDate",
+                table: "BacklogTasks");
+
             migrationBuilder.DropColumn(
                 name: "ProgressPct",
                 table: "BacklogTasks");
+
+            migrationBuilder.AddColumn<Guid>(
+                name: "AssigneeId",
+                table: "TodoItems",
+                type: "uuid",
+                nullable: true);
 
             migrationBuilder.AddColumn<string>(
                 name: "DeadlineText",
@@ -76,10 +144,10 @@ namespace Orbita.Infrastructure.Persistence.Migrations
                 maxLength: 128,
                 nullable: true);
 
-            migrationBuilder.AddColumn<Guid>(
-                name: "AssigneeId",
-                table: "TodoItems",
-                type: "uuid",
+            migrationBuilder.AddColumn<string>(
+                name: "DueTime",
+                table: "BacklogTasks",
+                type: "text",
                 nullable: true);
 
             migrationBuilder.CreateIndex(
