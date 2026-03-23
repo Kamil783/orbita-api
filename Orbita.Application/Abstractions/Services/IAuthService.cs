@@ -1,4 +1,4 @@
-﻿using Orbita.Application.Commands;
+﻿using Orbita.Application.Commands.Auth;
 using Orbita.Application.Models.Results;
 using Orbita.Contracts.ApiDto.User.Responses;
 

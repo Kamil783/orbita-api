@@ -10,6 +10,9 @@ public static class ServiceCollectionExtensions
     {
         services.AddTransient<IAuthService, AuthService>();
         services.AddTransient<IUserService, UserService>();
+        services.AddTransient<IBacklogTaskService, BacklogTaskService>();
+        services.AddTransient<IColumnService, ColumnService>();
+        services.AddTransient<ITodoItemService, TodoItemService>();
         return services;
     }
 }

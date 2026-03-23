@@ -1,0 +1,42 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Orbita.Infrastructure.Entities;
+
+namespace Orbita.Infrastructure.Persistence.Configurations;
+
+public class ColumnEntityConfiguration : IEntityTypeConfiguration<ColumnEntity>
+{
+    public void Configure(EntityTypeBuilder<ColumnEntity> b)
+    {
+        b.HasKey(x => x.Id);
+
+        b.Property(x => x.Id)
+            .ValueGeneratedNever();
+
+        b.Property(x => x.Title)
+            .HasMaxLength(120)
+            .IsRequired();
+
+        b.Property(x => x.TotalCount).IsRequired();
+
+        b.Property(x => x.HeaderActionIcon)
+            .HasMaxLength(64)
+            .IsRequired();
+
+        b.Property(x => x.Status)
+            .HasConversion<int>()
+            .IsRequired();
+
+        b.Property(x => x.Muted).IsRequired();
+
+        b.Property(x => x.CreatorId).IsRequired(false);
+
+        b.HasMany(x => x.TodoItems)
+            .WithOne(x => x.Column)
+            .HasForeignKey(x => x.ColumnId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        b.HasIndex(x => x.Status);
+        b.HasIndex(x => x.CreatorId);
+    }
+}

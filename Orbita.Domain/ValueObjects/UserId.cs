@@ -1,12 +1,3 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace Orbita.Domain.ValueObjects;
 
-namespace Orbita.Domain.ValueObjects
-{
-    internal class UserId
-    {
-    }
-}
+public record UserId(Guid Id);
