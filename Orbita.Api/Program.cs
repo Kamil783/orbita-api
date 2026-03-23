@@ -44,17 +44,4 @@ app.UseAuthorization();
 app.MapControllers();
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 
-app.MapGet("/debug-auth-defaults", (IOptions<AuthenticationOptions> opt) => Results.Ok(new
-{
-    DefaultAuthenticateScheme = opt.Value.DefaultAuthenticateScheme,
-    DefaultChallengeScheme = opt.Value.DefaultChallengeScheme,
-    DefaultScheme = opt.Value.DefaultScheme
-}));
-
-app.MapGet("/debug-auth-schemes", async (IAuthenticationSchemeProvider schemes) =>
-{
-    var all = await schemes.GetAllSchemesAsync();
-    return Results.Ok(all.Select(s => new { s.Name, s.HandlerType?.FullName }));
-});
-
 app.Run();
