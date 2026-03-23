@@ -1,4 +1,5 @@
-﻿using Orbita.Domain.Entities;
+using Orbita.Domain.Entities;
+using Orbita.Domain.ValueObjects;
 using Orbita.Infrastructure.Entities;
 
 namespace Orbita.Infrastructure.Extensions;
@@ -9,7 +10,7 @@ public static class UserProfileExtensions
     {
         return new UserProfileEntity
         {
-            UserId = profile.UserId,
+            UserId = profile.UserId.Id,
             Name = profile.Name,
             AvatarData = profile.AvatarData,
             AvatarContentType = profile.AvatarContentType,
@@ -21,7 +22,7 @@ public static class UserProfileExtensions
     {
         return new UserProfile
         {
-            UserId = userEntity.UserId,
+            UserId = new UserId(userEntity.UserId),
             Name = userEntity.Name,
             AvatarData = userEntity.AvatarData,
             AvatarContentType = userEntity.AvatarContentType,

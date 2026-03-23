@@ -4,6 +4,7 @@ using Orbita.Application.Abstractions.Services;
 using Orbita.Application.Models.Dto;
 using Orbita.Application.Models.Results;
 using Orbita.Contracts.ApiDto.User.Responses;
+using Orbita.Domain.Entities;
 
 namespace Orbita.Application.Services;
 
@@ -31,6 +32,7 @@ public class UserService(IIdentityUserGateway gateway, IUserProfileRepository re
         try
         {
             profile = profile.SetAvatar(bytes, contentType);
+            await repository.UpdateAsync(profile, ct);
         }
         catch (Exception ex)
         {
@@ -38,6 +40,35 @@ public class UserService(IIdentityUserGateway gateway, IUserProfileRepository re
         }   
 
         return Result.Ok();
+    }
+
+    public async Task<Result> RemoveAvatarAsync(Guid userId, CancellationToken ct = default)
+    {
+        var profile = await repository.GetByIdAsync(userId, ct);
+
+        if (profile is null)
+            return Result.NotFound();
+
+        try
+        {
+            profile = profile.RemoveAvatar();
+            await repository.UpdateAsync(profile, ct);
+        }
+        catch (Exception ex)
+        {
+            return Result.Fail(ex.Message, ErrorType.Validation);
+        }
+
+        return Result.Ok();
+    }
+
+    public async Task<Result<List<MemberDataResponse>>> GetTeamDataAsync(Guid userId, CancellationToken ct = default)
+    {
+        var profiles = await repository.GetTeamUserProfilesAsync(userId, ct);
+
+        var result = profiles.Select(BuildMemberDataResult).ToList();
+
+        return Result<List<MemberDataResponse>>.Ok(result);
     }
 
     private static Result<UserDataResponse> BuildDataResult(UserData? userData)
@@ -48,9 +79,22 @@ public class UserService(IIdentityUserGateway gateway, IUserProfileRepository re
         var result = new UserDataResponse
         {
             Name = userData.Name,
-            Email = userData.Email
+            Email = userData.Email,
+            Avatar = userData.Avatar
         };
 
         return Result<UserDataResponse>.Ok(result);
     }
+
+    private static MemberDataResponse BuildMemberDataResult(UserProfile userProfile)
+    {
+        return new MemberDataResponse
+        {
+            Id = userProfile.UserId.Id,
+            Name = userProfile.Name,
+            Avatar = userProfile.AvatarData
+        };
+    }
+
+
 }

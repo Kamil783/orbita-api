@@ -1,4 +1,6 @@
-﻿namespace Orbita.Infrastructure.Entities;
+using Orbita.Infrastructure.Entities.Mapping;
+
+namespace Orbita.Infrastructure.Entities;
 
 public class UserProfileEntity
 {
@@ -8,5 +10,7 @@ public class UserProfileEntity
     public string? AvatarContentType { get; set; }
     public int AvatarVersion { get; set; } = 1;
 
+    public ICollection<BacklogTaskAssigneeEntity> AssignedBacklogTaskItems { get; set; } = [];
+    public ICollection<TodoItemAssigneeEntity> AssignedTodoItems { get; set; } = [];
     public UserEntity User { get; set; } = default!;
 }

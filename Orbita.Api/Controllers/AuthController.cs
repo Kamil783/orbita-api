@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Orbita.Application.Abstractions.Services;
 using Orbita.Contracts.ApiDto.User.Requests;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Orbita.Api.Controllers;
 
@@ -10,7 +11,7 @@ namespace Orbita.Api.Controllers;
 public class AuthController(IAuthService service) : ControllerBase
 {
     [HttpPost("login")]
-    public async Task<IActionResult> Authenticate([FromBody] LoginDto request, CancellationToken ct)
+    public async Task<IActionResult> Authenticate([FromBody] LoginRequest request, CancellationToken ct)
     {
         var result = await service.AuthenticateAsync(request.ToCommand(), ct);
 
@@ -18,7 +19,8 @@ public class AuthController(IAuthService service) : ControllerBase
     }
 
     [HttpPost("registration")]
-    public async Task<IActionResult> Register([FromBody] RegisterDto request, CancellationToken ct)
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> Register([FromBody] RegisterRequest request, CancellationToken ct)
     {
         var result = await service.RegisterAsync(request.ToCommand(), ct);
 
@@ -26,7 +28,7 @@ public class AuthController(IAuthService service) : ControllerBase
     }
 
     [HttpPost("refresh")]
-    public async Task<IActionResult> Refresh([FromBody] RefreshDto request, CancellationToken ct)
+    public async Task<IActionResult> Refresh([FromBody] RefreshRequest request, CancellationToken ct)
     {
         var result = await service.RefreshAsync(request.RefreshToken, ct);
 

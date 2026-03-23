@@ -16,7 +16,7 @@ public class IdentityUserGateway(UserManager<UserEntity> userManager) : IIdentit
 
         if (user is null) return null;
 
-        return new UserData(user.Id, user.Email ?? "", user.UserProfile?.Name ?? "");
+        return new UserData(user.Id, user.Email ?? "", user.UserProfile?.Name ?? "", user.UserProfile?.AvatarData ?? []);
     }
 
     public async Task<UserData?> GetDataByIdAsync(Guid userId, CancellationToken ct = default)
@@ -27,6 +27,6 @@ public class IdentityUserGateway(UserManager<UserEntity> userManager) : IIdentit
 
         if (user is null) return null;
 
-        return new UserData(user.Id, user.Email ?? "", user.UserProfile?.Name ?? "");
+        return new UserData(user.Id, user.Email ?? "", user.UserProfile?.Name ?? "", user.UserProfile?.AvatarData ?? []);
     }
 }

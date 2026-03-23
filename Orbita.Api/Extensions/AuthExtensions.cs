@@ -1,11 +1,11 @@
-﻿using Orbita.Application.Commands;
+﻿using Orbita.Application.Commands.Auth;
 using Orbita.Contracts.ApiDto.User.Requests;
 
 namespace Orbita.Api.Extensions;
 
 public static class AuthExtensions
 {
-    public static LoginCommand ToCommand(this LoginDto authDto)
+    public static LoginCommand ToCommand(this LoginRequest authDto)
     {
         return new LoginCommand
         {
@@ -14,7 +14,7 @@ public static class AuthExtensions
         };
     }
 
-    public static RegisterCommand ToCommand(this RegisterDto registerDto)
+    public static RegisterCommand ToCommand(this RegisterRequest registerDto)
     {
         return new RegisterCommand
         {

@@ -195,6 +195,204 @@ namespace Orbita.Infrastructure.Persistence.Migrations
                     b.ToTable("AppLogs", (string)null);
                 });
 
+            modelBuilder.Entity("Orbita.Infrastructure.Entities.AppNotificationEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<bool>("Read")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.ToTable("AppNotifications");
+                });
+
+            modelBuilder.Entity("Orbita.Infrastructure.Entities.BacklogTaskEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreatorId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)");
+
+                    b.Property<DateTime?>("DueDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("EstimateMinutes")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("InWeek")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsCompleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("Priority")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("ProgressPct")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatorId");
+
+                    b.HasIndex("DueDate");
+
+                    b.HasIndex("IsCompleted", "InWeek");
+
+                    b.ToTable("BacklogTasks");
+                });
+
+            modelBuilder.Entity("Orbita.Infrastructure.Entities.CalendarEventEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Color")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("EndDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<TimeSpan>("EndTime")
+                        .HasColumnType("interval");
+
+                    b.Property<string>("GoogleEventId")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("Location")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<TimeSpan>("StartTime")
+                        .HasColumnType("interval");
+
+                    b.Property<Guid?>("TaskId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Date");
+
+                    b.HasIndex("TaskId")
+                        .IsUnique();
+
+                    b.HasIndex("Type");
+
+                    b.ToTable("CalendarEvents");
+                });
+
+            modelBuilder.Entity("Orbita.Infrastructure.Entities.ColumnEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("CreatorId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("HeaderActionIcon")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<bool>("Muted")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)");
+
+                    b.Property<int>("TotalCount")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatorId");
+
+                    b.HasIndex("Status");
+
+                    b.ToTable("Columns");
+                });
+
+            modelBuilder.Entity("Orbita.Infrastructure.Entities.Mapping.BacklogTaskAssigneeEntity", b =>
+                {
+                    b.Property<Guid>("BacklogTaskId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("BacklogTaskId", "UserId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("BacklogTaskAssigneeEntity");
+                });
+
+            modelBuilder.Entity("Orbita.Infrastructure.Entities.Mapping.TodoItemAssigneeEntity", b =>
+                {
+                    b.Property<Guid>("TodoItemId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("TodoItemId", "UserId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("TodoItemAssigneeEntity");
+                });
+
             modelBuilder.Entity("Orbita.Infrastructure.Entities.RefreshTokenEntity", b =>
                 {
                     b.Property<Guid>("Id")
@@ -298,6 +496,65 @@ namespace Orbita.Infrastructure.Persistence.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("RequestLogs", (string)null);
+                });
+
+            modelBuilder.Entity("Orbita.Infrastructure.Entities.TodoItemEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("BacklogId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ColumnId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CompletedText")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreatorId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("DeadlineUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("ProgressPct")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TaskPriority")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TaskStatus")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ColumnId");
+
+                    b.HasIndex("CreatorId");
+
+                    b.HasIndex("DeadlineUtc");
+
+                    b.HasIndex("TaskStatus");
+
+                    b.HasIndex("ColumnId", "SortOrder");
+
+                    b.ToTable("TodoItems");
                 });
 
             modelBuilder.Entity("Orbita.Infrastructure.Entities.UserEntity", b =>
@@ -441,6 +698,54 @@ namespace Orbita.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Orbita.Infrastructure.Entities.CalendarEventEntity", b =>
+                {
+                    b.HasOne("Orbita.Infrastructure.Entities.TodoItemEntity", "Task")
+                        .WithOne("CalendarEvent")
+                        .HasForeignKey("Orbita.Infrastructure.Entities.CalendarEventEntity", "TaskId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Task");
+                });
+
+            modelBuilder.Entity("Orbita.Infrastructure.Entities.Mapping.BacklogTaskAssigneeEntity", b =>
+                {
+                    b.HasOne("Orbita.Infrastructure.Entities.BacklogTaskEntity", "BacklogTask")
+                        .WithMany("Assignees")
+                        .HasForeignKey("BacklogTaskId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Orbita.Infrastructure.Entities.UserProfileEntity", "UserProfile")
+                        .WithMany("AssignedBacklogTaskItems")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("BacklogTask");
+
+                    b.Navigation("UserProfile");
+                });
+
+            modelBuilder.Entity("Orbita.Infrastructure.Entities.Mapping.TodoItemAssigneeEntity", b =>
+                {
+                    b.HasOne("Orbita.Infrastructure.Entities.TodoItemEntity", "TodoItem")
+                        .WithMany("Assignees")
+                        .HasForeignKey("TodoItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Orbita.Infrastructure.Entities.UserProfileEntity", "UserProfile")
+                        .WithMany("AssignedTodoItems")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("TodoItem");
+
+                    b.Navigation("UserProfile");
+                });
+
             modelBuilder.Entity("Orbita.Infrastructure.Entities.RefreshTokenEntity", b =>
                 {
                     b.HasOne("Orbita.Infrastructure.Entities.UserEntity", "User")
@@ -450,6 +755,17 @@ namespace Orbita.Infrastructure.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Orbita.Infrastructure.Entities.TodoItemEntity", b =>
+                {
+                    b.HasOne("Orbita.Infrastructure.Entities.ColumnEntity", "Column")
+                        .WithMany("TodoItems")
+                        .HasForeignKey("ColumnId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Column");
                 });
 
             modelBuilder.Entity("Orbita.Infrastructure.Entities.UserProfileEntity", b =>
@@ -463,9 +779,33 @@ namespace Orbita.Infrastructure.Persistence.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Orbita.Infrastructure.Entities.BacklogTaskEntity", b =>
+                {
+                    b.Navigation("Assignees");
+                });
+
+            modelBuilder.Entity("Orbita.Infrastructure.Entities.ColumnEntity", b =>
+                {
+                    b.Navigation("TodoItems");
+                });
+
+            modelBuilder.Entity("Orbita.Infrastructure.Entities.TodoItemEntity", b =>
+                {
+                    b.Navigation("Assignees");
+
+                    b.Navigation("CalendarEvent");
+                });
+
             modelBuilder.Entity("Orbita.Infrastructure.Entities.UserEntity", b =>
                 {
                     b.Navigation("UserProfile");
+                });
+
+            modelBuilder.Entity("Orbita.Infrastructure.Entities.UserProfileEntity", b =>
+                {
+                    b.Navigation("AssignedBacklogTaskItems");
+
+                    b.Navigation("AssignedTodoItems");
                 });
 #pragma warning restore 612, 618
         }
