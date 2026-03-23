@@ -107,7 +107,7 @@ public class BacklogTaskService(
             progressPct: backlogTask.TrackProgress ? 0 : null,
             backlogId: backlogTask.Id,
             deadlineText: BacklogTaskPresentationHelper.GetDueDisplayText(backlogTask.DueDate, now),
-            assigneeId: backlogTask.Assignees.FirstOrDefault());
+            assignees: backlogTask.Assignees);
 
         var created = await todoItemRepository.CreateAsync(todoItem, ct);
 
