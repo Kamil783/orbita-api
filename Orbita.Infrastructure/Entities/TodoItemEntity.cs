@@ -22,7 +22,6 @@ public class TodoItemEntity
 
     public Guid? BacklogId { get; set; }
 
-    public string? DeadlineText { get; set; }
     public string? CompletedText { get; set; }
     public int SortOrder { get; set; }
 

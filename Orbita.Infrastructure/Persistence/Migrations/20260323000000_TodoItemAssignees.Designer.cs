@@ -522,10 +522,6 @@ namespace Orbita.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("CreatorId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("DeadlineText")
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
-
                     b.Property<DateTime?>("DeadlineUtc")
                         .HasColumnType("timestamp with time zone");
 

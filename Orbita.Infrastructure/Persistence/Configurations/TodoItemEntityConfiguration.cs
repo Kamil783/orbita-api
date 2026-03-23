@@ -40,9 +40,6 @@ public class TodoItemEntityConfiguration : IEntityTypeConfiguration<TodoItemEnti
         b.Property(x => x.BacklogId)
             .IsRequired(false);
 
-        b.Property(x => x.DeadlineText)
-            .HasMaxLength(128);
-
         b.Property(x => x.CompletedText)
             .HasMaxLength(128);
 

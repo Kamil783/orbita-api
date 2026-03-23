@@ -1,3 +1,4 @@
+using Orbita.Application.Helpers;
 using Orbita.Contracts.ApiDto.Tasks.Responses;
 using Orbita.Domain.Entities;
 using Orbita.Domain.Enums;
@@ -14,7 +15,7 @@ public static class TodoItemExtensions
             Title = item.Title,
             Status = item.ColumnId.Id.ToString(),
             Priority = MapPriority(item.TaskPriority),
-            DeadlineText = item.DeadlineText,
+            DeadlineText = BacklogTaskPresentationHelper.GetDueDisplayText(item.DeadlineUtc, DateTime.UtcNow),
             CompletedText = item.CompletedText,
             ProgressPct = item.ProgressPct,
             AssigneeIds = item.Assignees.Count > 0
