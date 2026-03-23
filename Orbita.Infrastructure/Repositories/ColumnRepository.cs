@@ -23,6 +23,7 @@ public class ColumnRepository(OrbitaDbContext db) : IColumnRepository
             .Include(c => c.TodoItems
                 .Where(t => t.CreatorId == userId)
                 .OrderBy(t => t.SortOrder))
+                .ThenInclude(t => t.Assignees)
             .OrderBy(c => c.Status)
             .ToListAsync(ct);
 
