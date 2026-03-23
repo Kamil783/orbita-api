@@ -1,4 +1,4 @@
-﻿using Orbita.Domain.Enums;
+using Orbita.Domain.Enums;
 using Orbita.Domain.ValueObjects;
 
 namespace Orbita.Domain.Entities;
@@ -13,7 +13,6 @@ public class TodoItem
     public ColumnId ColumnId { get; private set; }
     public DateTime CreatedAtUtc { get; private set; }
 
-    public UserId? AssigneeId { get; private set; }
     public DateTime? UpdatedAtUtc { get; private set; }
     public DateTime? DeadlineUtc { get; private set; }
     public int? ProgressPct { get; private set; }
@@ -22,6 +21,9 @@ public class TodoItem
     public string? DeadlineText { get; private set; }
     public string? CompletedText { get; private set; }
     public int SortOrder { get; private set; }
+
+    private readonly List<UserId> _assignees = [];
+    public IReadOnlyCollection<UserId> Assignees => _assignees.AsReadOnly();
 
     private TodoItem() { }
 
@@ -36,9 +38,9 @@ public class TodoItem
         BacklogTaskId? backlogId = null,
         string? deadlineText = null,
         string? completedText = null,
-        UserId? assigneeId = null)
+        IEnumerable<UserId>? assignees = null)
     {
-        return new TodoItem
+        var item = new TodoItem
         {
             Id = new TodoItemId(Guid.NewGuid()),
             Title = title,
@@ -52,9 +54,11 @@ public class TodoItem
             ProgressPct = progressPct,
             BacklogId = backlogId,
             DeadlineText = deadlineText,
-            CompletedText = completedText,
-            AssigneeId = assigneeId
+            CompletedText = completedText
         };
+        if (assignees is not null)
+            item._assignees.AddRange(assignees);
+        return item;
     }
 
     public static TodoItem Restore(
@@ -66,7 +70,7 @@ public class TodoItem
         ColumnId columnId,
         DateTime createdAtUtc,
         int sortOrder,
-        UserId? assigneeId = null,
+        IEnumerable<UserId>? assignees = null,
         DateTime? updatedAtUtc = null,
         DateTime? deadlineUtc = null,
         int? progressPct = null,
@@ -74,7 +78,7 @@ public class TodoItem
         string? deadlineText = null,
         string? completedText = null)
     {
-        return new TodoItem
+        var item = new TodoItem
         {
             Id = id,
             Title = title,
@@ -84,7 +88,6 @@ public class TodoItem
             ColumnId = columnId,
             CreatedAtUtc = createdAtUtc,
             SortOrder = sortOrder,
-            AssigneeId = assigneeId,
             UpdatedAtUtc = updatedAtUtc,
             DeadlineUtc = NormalizeToUtc(deadlineUtc),
             ProgressPct = progressPct,
@@ -92,6 +95,9 @@ public class TodoItem
             DeadlineText = deadlineText,
             CompletedText = completedText
         };
+        if (assignees is not null)
+            item._assignees.AddRange(assignees);
+        return item;
     }
 
     public void MoveTo(ColumnId columnId, int sortOrder)

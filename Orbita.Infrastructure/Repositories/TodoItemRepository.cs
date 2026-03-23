@@ -11,6 +11,7 @@ public class TodoItemRepository(OrbitaDbContext db) : ITodoItemRepository
     public async Task<TodoItem?> GetAsync(Guid id, CancellationToken ct = default)
     {
         var entity = await db.TodoItems
+            .Include(x => x.Assignees)
             .FirstOrDefaultAsync(x => x.Id == id, ct);
 
         return entity?.ToDomain();
@@ -19,6 +20,7 @@ public class TodoItemRepository(OrbitaDbContext db) : ITodoItemRepository
     public async Task<TodoItem?> GetByBacklogIdAsync(Guid backlogId, CancellationToken ct = default)
     {
         var entity = await db.TodoItems
+            .Include(x => x.Assignees)
             .FirstOrDefaultAsync(x => x.BacklogId == backlogId, ct);
 
         return entity?.ToDomain();

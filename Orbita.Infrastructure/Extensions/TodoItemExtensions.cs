@@ -2,6 +2,7 @@ using Orbita.Domain.Entities;
 using Orbita.Domain.Enums;
 using Orbita.Domain.ValueObjects;
 using Orbita.Infrastructure.Entities;
+using Orbita.Infrastructure.Entities.Mapping;
 
 namespace Orbita.Infrastructure.Extensions;
 
@@ -9,7 +10,7 @@ public static class TodoItemExtensions
 {
     public static TodoItemEntity ToEntity(this TodoItem item)
     {
-        return new TodoItemEntity
+        var entity = new TodoItemEntity
         {
             Id = item.Id.Id,
             Title = item.Title,
@@ -18,15 +19,20 @@ public static class TodoItemExtensions
             CreatorId = item.CreatorId.Id,
             ColumnId = item.ColumnId.Id,
             CreatedAtUtc = item.CreatedAtUtc,
-            AssigneeId = item.AssigneeId?.Id,
             UpdatedAtUtc = item.UpdatedAtUtc,
             DeadlineUtc = item.DeadlineUtc,
             ProgressPct = item.ProgressPct,
             BacklogId = item.BacklogId?.Id,
             DeadlineText = item.DeadlineText,
             CompletedText = item.CompletedText,
-            SortOrder = item.SortOrder
+            SortOrder = item.SortOrder,
+            Assignees = item.Assignees.Select(a => new TodoItemAssigneeEntity
+            {
+                TodoItemId = item.Id.Id,
+                UserId = a.Id
+            }).ToList()
         };
+        return entity;
     }
 
     public static TodoItem ToDomain(this TodoItemEntity entity)
@@ -40,7 +46,7 @@ public static class TodoItemExtensions
             columnId: new ColumnId(entity.ColumnId),
             createdAtUtc: entity.CreatedAtUtc,
             sortOrder: entity.SortOrder,
-            assigneeId: entity.AssigneeId.HasValue ? new UserId(entity.AssigneeId.Value) : null,
+            assignees: entity.Assignees.Select(a => new UserId(a.UserId)),
             updatedAtUtc: entity.UpdatedAtUtc,
             deadlineUtc: entity.DeadlineUtc,
             progressPct: entity.ProgressPct,

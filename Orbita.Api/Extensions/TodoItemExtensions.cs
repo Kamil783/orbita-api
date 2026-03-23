@@ -17,7 +17,9 @@ public static class TodoItemExtensions
             DeadlineText = item.DeadlineText,
             CompletedText = item.CompletedText,
             ProgressPct = item.ProgressPct,
-            AssigneeIds = item.AssigneeId is not null ? [item.AssigneeId.Id.ToString()] : null,
+            AssigneeIds = item.Assignees.Count > 0
+                ? item.Assignees.Select(a => a.Id.ToString()).ToList()
+                : null,
             BacklogId = item.BacklogId?.Id.ToString()
         };
     }
