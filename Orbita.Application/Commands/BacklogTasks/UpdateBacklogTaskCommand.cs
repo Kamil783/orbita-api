@@ -8,4 +8,5 @@ public class UpdateBacklogTaskCommand
     public DateTime? DueDate { get; init; }
     public int? EstimateMinutes { get; init; }
     public IReadOnlyCollection<Guid>? AssigneeIds { get; init; }
+    public int? ProgressPct { get; init; }
 }

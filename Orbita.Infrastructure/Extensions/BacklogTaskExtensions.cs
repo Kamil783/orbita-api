@@ -21,6 +21,7 @@ public static class BacklogTaskExtensions
             IsCompleted = backlogTask.IsCompleted,
             DueDate = backlogTask.DueDate,
             EstimateMinutes = backlogTask.EstimateMinutes,
+            ProgressPct = backlogTask.ProgressPct,
             Assignees = backlogTask.Assignees
                 .Select(a => new BacklogTaskAssigneeEntity
                 {
@@ -44,6 +45,7 @@ public static class BacklogTaskExtensions
              isCompleted: entity.IsCompleted,
              dueDate: entity.DueDate,
              estimateMinutes: entity.EstimateMinutes,
+             progressPct: entity.ProgressPct,
              assignees: entity.Assignees.Select(a => new UserId(a.UserId))
          );
     }

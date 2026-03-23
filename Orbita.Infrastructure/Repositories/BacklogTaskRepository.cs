@@ -96,6 +96,7 @@ public class BacklogTaskRepository(OrbitaDbContext db) : IBacklogTaskRepository
         target.IsCompleted = source.IsCompleted;
         target.DueDate = source.DueDate;
         target.EstimateMinutes = source.EstimateMinutes;
+        target.ProgressPct = source.ProgressPct;
 
         target.Assignees.Clear();
 

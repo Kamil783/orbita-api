@@ -16,9 +16,16 @@ public class TodoItemService(
     }
 
     public async Task<Result> MoveAsync(
-        Guid taskId, Guid fromColumnId, Guid toColumnId,
+        Guid userId, Guid taskId, Guid fromColumnId, Guid toColumnId,
         int fromIndex, int toIndex, CancellationToken ct = default)
     {
+        var item = await todoItemRepository.GetAsync(taskId, ct);
+        if (item is null)
+            return Result.NotFound("Task not found.");
+
+        if (item.CreatorId.Id != userId)
+            return Result.Forbidden("Access denied.");
+
         var success = await todoItemRepository.MoveCardAsync(taskId, fromColumnId, toColumnId, fromIndex, toIndex, ct);
 
         if (!success)
@@ -27,11 +34,14 @@ public class TodoItemService(
         return Result.Ok();
     }
 
-    public async Task<Result> MoveToAsync(Guid taskId, Guid targetColumnId, CancellationToken ct = default)
+    public async Task<Result> MoveToAsync(Guid userId, Guid taskId, Guid targetColumnId, CancellationToken ct = default)
     {
         var item = await todoItemRepository.GetAsync(taskId, ct);
         if (item is null)
             return Result.NotFound("Task not found.");
+
+        if (item.CreatorId.Id != userId)
+            return Result.Forbidden("Access denied.");
 
         var column = await columnRepository.GetAsync(targetColumnId, ct);
         if (column is null)
@@ -41,11 +51,14 @@ public class TodoItemService(
         return Result.Ok();
     }
 
-    public async Task<Result> DeleteAsync(Guid taskId, CancellationToken ct = default)
+    public async Task<Result> DeleteAsync(Guid userId, Guid taskId, CancellationToken ct = default)
     {
         var item = await todoItemRepository.GetAsync(taskId, ct);
         if (item is null)
             return Result.NotFound("Task not found.");
+
+        if (item.CreatorId.Id != userId)
+            return Result.Forbidden("Access denied.");
 
         await todoItemRepository.DeleteAsync(taskId, ct);
         return Result.Ok();

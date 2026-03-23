@@ -8,4 +8,5 @@ public sealed class CreateBacklogTaskRequest
     public int? EstimateMinutes { get; set; }
     public Guid[] Assignee { get; set; } = [];
     public string? Description { get; set; }
+    public int? ProgressPct { get; set; }
 }

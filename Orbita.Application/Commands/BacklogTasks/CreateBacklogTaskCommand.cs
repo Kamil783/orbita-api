@@ -8,4 +8,5 @@ public class CreateBacklogTaskCommand
     public int? EstimateMinutes { get; init; }
     public IReadOnlyCollection<Guid> AssigneeIds { get; init; } = [];
     public string? Description { get; init; }
+    public int? ProgressPct { get; init; }
 }
