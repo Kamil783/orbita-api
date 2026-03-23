@@ -27,6 +27,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
+          file: ./Orbita.Api/Dockerfile
           push: true
           tags: ghcr.io/kamil783/orbita-api:latest
 
