@@ -1,4 +1,5 @@
 using Orbita.Domain.Enums;
+using Orbita.Infrastructure.Entities.Mapping;
 
 namespace Orbita.Infrastructure.Entities;
 
@@ -15,15 +16,15 @@ public class TodoItemEntity
 
     public DateTime CreatedAtUtc { get; set; }
 
-    public Guid? AssigneeId { get; set; }
     public DateTime? UpdatedAtUtc { get; set; }
     public DateTime? DeadlineUtc { get; set; }
     public int? ProgressPct { get; set; }
 
     public Guid? BacklogId { get; set; }
 
-    public string? DeadlineText { get; set; }
     public string? CompletedText { get; set; }
+    public int SortOrder { get; set; }
 
+    public ICollection<TodoItemAssigneeEntity> Assignees { get; set; } = [];
     public CalendarEventEntity? CalendarEvent { get; set; }
 }

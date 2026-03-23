@@ -38,7 +38,6 @@ public class BacklogTaskEntityConfiguration : IEntityTypeConfiguration<BacklogTa
             .IsRequired();
 
         b.Property(x => x.DueDate)
-            .HasColumnType("timestamp without time zone")
             .IsRequired(false);
 
         b.Property(x => x.EstimateMinutes)

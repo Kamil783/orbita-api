@@ -243,7 +243,7 @@ namespace Orbita.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(4000)");
 
                     b.Property<DateTime?>("DueDate")
-                        .HasColumnType("timestamp without time zone");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int?>("EstimateMinutes")
                         .HasColumnType("integer");
@@ -255,6 +255,9 @@ namespace Orbita.Infrastructure.Persistence.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<int>("Priority")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("ProgressPct")
                         .HasColumnType("integer");
 
                     b.Property<string>("Title")
@@ -329,6 +332,9 @@ namespace Orbita.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("CreatorId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("HeaderActionIcon")
                         .IsRequired()
                         .HasMaxLength(64)
@@ -350,6 +356,8 @@ namespace Orbita.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CreatorId");
+
                     b.HasIndex("Status");
 
                     b.ToTable("Columns");
@@ -368,6 +376,21 @@ namespace Orbita.Infrastructure.Persistence.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("BacklogTaskAssigneeEntity");
+                });
+
+            modelBuilder.Entity("Orbita.Infrastructure.Entities.Mapping.TodoItemAssigneeEntity", b =>
+                {
+                    b.Property<Guid>("TodoItemId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("TodoItemId", "UserId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("TodoItemAssigneeEntity");
                 });
 
             modelBuilder.Entity("Orbita.Infrastructure.Entities.RefreshTokenEntity", b =>
@@ -480,9 +503,6 @@ namespace Orbita.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("AssigneeId")
-                        .HasColumnType("uuid");
-
                     b.Property<Guid?>("BacklogId")
                         .HasColumnType("uuid");
 
@@ -499,14 +519,13 @@ namespace Orbita.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("CreatorId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("DeadlineText")
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
-
                     b.Property<DateTime?>("DeadlineUtc")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int?>("ProgressPct")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("SortOrder")
                         .HasColumnType("integer");
 
                     b.Property<int>("TaskPriority")
@@ -525,8 +544,6 @@ namespace Orbita.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AssigneeId");
-
                     b.HasIndex("ColumnId");
 
                     b.HasIndex("CreatorId");
@@ -534,6 +551,8 @@ namespace Orbita.Infrastructure.Persistence.Migrations
                     b.HasIndex("DeadlineUtc");
 
                     b.HasIndex("TaskStatus");
+
+                    b.HasIndex("ColumnId", "SortOrder");
 
                     b.ToTable("TodoItems");
                 });
@@ -708,6 +727,25 @@ namespace Orbita.Infrastructure.Persistence.Migrations
                     b.Navigation("UserProfile");
                 });
 
+            modelBuilder.Entity("Orbita.Infrastructure.Entities.Mapping.TodoItemAssigneeEntity", b =>
+                {
+                    b.HasOne("Orbita.Infrastructure.Entities.TodoItemEntity", "TodoItem")
+                        .WithMany("Assignees")
+                        .HasForeignKey("TodoItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Orbita.Infrastructure.Entities.UserProfileEntity", "UserProfile")
+                        .WithMany("AssignedTodoItems")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("TodoItem");
+
+                    b.Navigation("UserProfile");
+                });
+
             modelBuilder.Entity("Orbita.Infrastructure.Entities.RefreshTokenEntity", b =>
                 {
                     b.HasOne("Orbita.Infrastructure.Entities.UserEntity", "User")
@@ -753,6 +791,8 @@ namespace Orbita.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("Orbita.Infrastructure.Entities.TodoItemEntity", b =>
                 {
+                    b.Navigation("Assignees");
+
                     b.Navigation("CalendarEvent");
                 });
 
@@ -764,6 +804,8 @@ namespace Orbita.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Orbita.Infrastructure.Entities.UserProfileEntity", b =>
                 {
                     b.Navigation("AssignedBacklogTaskItems");
+
+                    b.Navigation("AssignedTodoItems");
                 });
 #pragma warning restore 612, 618
         }

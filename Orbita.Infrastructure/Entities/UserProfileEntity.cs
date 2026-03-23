@@ -11,5 +11,6 @@ public class UserProfileEntity
     public int AvatarVersion { get; set; } = 1;
 
     public ICollection<BacklogTaskAssigneeEntity> AssignedBacklogTaskItems { get; set; } = [];
+    public ICollection<TodoItemAssigneeEntity> AssignedTodoItems { get; set; } = [];
     public UserEntity User { get; set; } = default!;
 }

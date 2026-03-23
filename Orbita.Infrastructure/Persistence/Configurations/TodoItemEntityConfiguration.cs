@@ -28,9 +28,6 @@ public class TodoItemEntityConfiguration : IEntityTypeConfiguration<TodoItemEnti
         b.Property(x => x.CreatorId)
             .IsRequired();
 
-        b.Property(x => x.AssigneeId)
-            .IsRequired(false);
-
         b.Property(x => x.ColumnId)
             .IsRequired();
 
@@ -43,16 +40,15 @@ public class TodoItemEntityConfiguration : IEntityTypeConfiguration<TodoItemEnti
         b.Property(x => x.BacklogId)
             .IsRequired(false);
 
-        b.Property(x => x.DeadlineText)
-            .HasMaxLength(128);
-
         b.Property(x => x.CompletedText)
             .HasMaxLength(128);
 
         b.HasIndex(x => x.ColumnId);
         b.HasIndex(x => x.CreatorId);
-        b.HasIndex(x => x.AssigneeId);
         b.HasIndex(x => x.TaskStatus);
         b.HasIndex(x => x.DeadlineUtc);
+
+        b.Property(x => x.SortOrder).IsRequired();
+        b.HasIndex(x => new { x.ColumnId, x.SortOrder });
     }
 }

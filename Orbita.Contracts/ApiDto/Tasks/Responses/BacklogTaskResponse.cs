@@ -12,5 +12,6 @@ public sealed class BacklogTaskResponse
     public string? EstimateDisplayText { get; init; }
     public bool IsCompleted { get; init; }
     public bool InWeek { get; init; }
+    public int? ProgressPct { get; init; }
     public string[]? AssigneeIds { get; init; }
 }

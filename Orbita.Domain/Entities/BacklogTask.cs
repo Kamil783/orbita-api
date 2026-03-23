@@ -16,9 +16,12 @@ public class BacklogTask
 
     public DateTime? DueDate { get; private set; }
     public int? EstimateMinutes { get; private set; }
+    public int? ProgressPct { get; private set; }
 
     private readonly List<UserId> _assignees = [];
     public IReadOnlyCollection<UserId> Assignees => _assignees.AsReadOnly();
+
+    public bool TrackProgress => ProgressPct is not null;
 
     private BacklogTask(
         BacklogTaskId id,
@@ -31,6 +34,7 @@ public class BacklogTask
         bool isCompleted,
         DateTime? dueDate,
         int? estimateMinutes,
+        int? progressPct,
         IEnumerable<UserId> assignees)
     {
         Id = id;
@@ -41,8 +45,9 @@ public class BacklogTask
         CreatedAt = createdAt;
         InWeek = inWeek;
         IsCompleted = isCompleted;
-        DueDate = dueDate;
+        DueDate = NormalizeToUtc(dueDate);
         EstimateMinutes = estimateMinutes;
+        ProgressPct = progressPct;
         _assignees = [.. assignees];
     }
 
@@ -57,6 +62,7 @@ public class BacklogTask
         bool isCompleted,
         DateTime? dueDate,
         int? estimateMinutes,
+        int? progressPct,
         IEnumerable<UserId> assignees)
     {
         return new BacklogTask(
@@ -70,6 +76,7 @@ public class BacklogTask
             isCompleted,
             dueDate,
             estimateMinutes,
+            progressPct,
             assignees);
     }
 
@@ -80,6 +87,7 @@ public class BacklogTask
         UserId creatorId,
         DateTime? dueDate,
         int? estimateMinutes,
+        int? progressPct,
         IEnumerable<UserId> assignees)
     {
         if (string.IsNullOrWhiteSpace(title))
@@ -99,12 +107,13 @@ public class BacklogTask
             false,
             dueDate,
             estimateMinutes,
+            progressPct,
             assignees);
     }
 
     public void SetDueDate(DateTime? dueDate)
     {
-        DueDate = dueDate;
+        DueDate = NormalizeToUtc(dueDate);
     }
 
     public void SetEstimateMinutes(int? estimateMinutes)
@@ -139,5 +148,52 @@ public class BacklogTask
             return false;
 
         return DueDate.Value.Date == now.Date.AddDays(1);
+    }
+
+    public void SetInWeek(bool inWeek)
+    {
+        InWeek = inWeek;
+    }
+
+    public void SetCompleted(bool completed)
+    {
+        IsCompleted = completed;
+    }
+
+    public void SetTitle(string title)
+    {
+        if (string.IsNullOrWhiteSpace(title))
+            throw new ArgumentException("Title is required.", nameof(title));
+
+        Title = title;
+    }
+
+    public void SetDescription(string description)
+    {
+        Description = description;
+    }
+
+    public void SetPriority(TodoItemPriority priority)
+    {
+        Priority = priority;
+    }
+
+    public void SetProgressPct(int? progressPct)
+    {
+        ProgressPct = progressPct;
+    }
+
+    public void SetAssignees(IEnumerable<UserId> assignees)
+    {
+        _assignees.Clear();
+        _assignees.AddRange(assignees);
+    }
+
+    private static DateTime? NormalizeToUtc(DateTime? dt)
+    {
+        if (dt is null) return null;
+        return dt.Value.Kind == DateTimeKind.Utc
+            ? dt
+            : DateTime.SpecifyKind(dt.Value, DateTimeKind.Utc);
     }
 }
