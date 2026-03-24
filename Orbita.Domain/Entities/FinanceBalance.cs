@@ -6,6 +6,8 @@ public class FinanceBalance
 {
     public UserId UserId { get; private set; }
     public long Balance { get; private set; }
+    public long PreviousMonthBalance { get; private set; }
+    public DateTime? LastMonthClosedAt { get; private set; }
     public DateTime UpdatedAt { get; private set; }
 
     private FinanceBalance() { }
@@ -16,16 +18,25 @@ public class FinanceBalance
         {
             UserId = userId,
             Balance = 0,
+            PreviousMonthBalance = 0,
+            LastMonthClosedAt = null,
             UpdatedAt = DateTime.UtcNow
         };
     }
 
-    public static FinanceBalance Restore(UserId userId, long balance, DateTime updatedAt)
+    public static FinanceBalance Restore(
+        UserId userId,
+        long balance,
+        long previousMonthBalance,
+        DateTime? lastMonthClosedAt,
+        DateTime updatedAt)
     {
         return new FinanceBalance
         {
             UserId = userId,
             Balance = balance,
+            PreviousMonthBalance = previousMonthBalance,
+            LastMonthClosedAt = lastMonthClosedAt,
             UpdatedAt = updatedAt
         };
     }
@@ -33,6 +44,13 @@ public class FinanceBalance
     public void Adjust(long delta)
     {
         Balance += delta;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void CloseMonth()
+    {
+        PreviousMonthBalance = Balance;
+        LastMonthClosedAt = DateTime.UtcNow;
         UpdatedAt = DateTime.UtcNow;
     }
 }

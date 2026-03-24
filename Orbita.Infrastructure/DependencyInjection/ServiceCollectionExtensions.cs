@@ -13,6 +13,8 @@ using Orbita.Contracts.Auth;
 using Orbita.Infrastructure.Entities;
 using Orbita.Infrastructure.Gateways;
 using Orbita.Infrastructure.Identity;
+using Orbita.Application.Abstractions.Jobs;
+using Orbita.Infrastructure.Jobs;
 using Orbita.Infrastructure.Logging;
 using Orbita.Infrastructure.Persistence;
 using Orbita.Infrastructure.Repositories;
@@ -86,6 +88,9 @@ public static class ServiceCollectionExtensions
         }));
         services.AddSingleton<IAppLogger, AppLogger>();
         services.AddHostedService<LogBackgroundService>();
+
+        services.AddScoped<IDailyJob, MonthRolloverJob>();
+        services.AddHostedService<DailyTaskRunnerService>();
 
         return services;
     }
