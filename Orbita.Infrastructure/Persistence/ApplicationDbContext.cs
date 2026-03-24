@@ -16,6 +16,12 @@ public class OrbitaDbContext(DbContextOptions<OrbitaDbContext> options) : Identi
     public DbSet<CalendarEventEntity> CalendarEvents => Set<CalendarEventEntity>();
     public DbSet<ColumnEntity> Columns => Set<ColumnEntity>();
     public DbSet<TodoItemEntity> TodoItems => Set<TodoItemEntity>();
+    public DbSet<WeekEntity> Weeks => Set<WeekEntity>();
+    public DbSet<FinanceBalanceEntity> FinanceBalances => Set<FinanceBalanceEntity>();
+    public DbSet<FinanceCategoryEntity> FinanceCategories => Set<FinanceCategoryEntity>();
+    public DbSet<FinanceTransactionEntity> FinanceTransactions => Set<FinanceTransactionEntity>();
+    public DbSet<SavingsGoalEntity> SavingsGoals => Set<SavingsGoalEntity>();
+    public DbSet<SpendingLimitEntity> SpendingLimits => Set<SpendingLimitEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -37,7 +37,7 @@ public static class BacklogTaskExtensions
         };
     }
 
-    public static BacklogTaskResponse ToResponse(this BacklogTask task, DateTime now)
+    public static BacklogTaskResponse ToResponse(this BacklogTask task, DateTime now, string[]? weekLabels = null)
     {
         return new BacklogTaskResponse
         {
@@ -52,7 +52,8 @@ public static class BacklogTaskExtensions
             IsCompleted = task.IsCompleted,
             InWeek = task.InWeek,
             ProgressPct = task.ProgressPct,
-            AssigneeIds = task.Assignees.Select(x => x.Id.ToString()).ToArray()
+            AssigneeIds = task.Assignees.Select(x => x.Id.ToString()).ToArray(),
+            WeekLabels = weekLabels
         };
     }
 

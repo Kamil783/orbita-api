@@ -14,4 +14,5 @@ public sealed class BacklogTaskResponse
     public bool InWeek { get; init; }
     public int? ProgressPct { get; init; }
     public string[]? AssigneeIds { get; init; }
+    public string[]? WeekLabels { get; init; }
 }

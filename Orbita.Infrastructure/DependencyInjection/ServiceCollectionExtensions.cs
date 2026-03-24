@@ -13,6 +13,8 @@ using Orbita.Contracts.Auth;
 using Orbita.Infrastructure.Entities;
 using Orbita.Infrastructure.Gateways;
 using Orbita.Infrastructure.Identity;
+using Orbita.Application.Abstractions.Jobs;
+using Orbita.Infrastructure.Jobs;
 using Orbita.Infrastructure.Logging;
 using Orbita.Infrastructure.Persistence;
 using Orbita.Infrastructure.Repositories;
@@ -71,6 +73,12 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IBacklogTaskRepository, BacklogTaskRepository>();
         services.AddScoped<IColumnRepository, ColumnRepository>();
         services.AddScoped<ITodoItemRepository, TodoItemRepository>();
+        services.AddScoped<IWeekRepository, WeekRepository>();
+        services.AddScoped<IFinanceBalanceRepository, FinanceBalanceRepository>();
+        services.AddScoped<IFinanceCategoryRepository, FinanceCategoryRepository>();
+        services.AddScoped<IFinanceTransactionRepository, FinanceTransactionRepository>();
+        services.AddScoped<ISavingsGoalRepository, SavingsGoalRepository>();
+        services.AddScoped<ISpendingLimitRepository, SpendingLimitRepository>();
 
         services.AddHttpContextAccessor();
         services.AddSingleton(Channel.CreateBounded<AppLogEntity>(new BoundedChannelOptions(10_000)
@@ -80,6 +88,9 @@ public static class ServiceCollectionExtensions
         }));
         services.AddSingleton<IAppLogger, AppLogger>();
         services.AddHostedService<LogBackgroundService>();
+
+        services.AddScoped<IDailyJob, MonthRolloverJob>();
+        services.AddHostedService<DailyTaskRunnerService>();
 
         return services;
     }

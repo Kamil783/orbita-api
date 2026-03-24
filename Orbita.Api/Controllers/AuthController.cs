@@ -1,6 +1,8 @@
 ﻿using Orbita.Api.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Orbita.Application.Abstractions.Services;
+using Orbita.Application.Models.Results;
+using Orbita.Contracts.ApiDto.Admin.Responses;
 using Orbita.Contracts.ApiDto.User.Requests;
 using Microsoft.AspNetCore.Authorization;
 
@@ -24,7 +26,15 @@ public class AuthController(IAuthService service) : ControllerBase
     {
         var result = await service.RegisterAsync(request.ToCommand(), ct);
 
-        return result.ToActionResult(HttpContext);
+        return result
+            .Map(user => new AdminUserResponse
+            {
+                Id = user.UserId.ToString(),
+                Name = request.Name,
+                Email = user.Email,
+                Role = user.Roles.FirstOrDefault() ?? "User"
+            })
+            .ToActionResult(HttpContext);
     }
 
     [HttpPost("refresh")]

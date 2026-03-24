@@ -1,12 +1,16 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Orbita.Application.Abstractions.Gateways;
 using Orbita.Application.Models.Dto;
 using Orbita.Infrastructure.Entities;
+using Orbita.Infrastructure.Persistence;
 
 namespace Orbita.Infrastructure.Gateways;
 
-public class IdentityAuthGateway(UserManager<UserEntity> userManager, SignInManager<UserEntity> signInManager) : IIdentityAuthGateway
+public class IdentityAuthGateway(
+    UserManager<UserEntity> userManager,
+    SignInManager<UserEntity> signInManager,
+    OrbitaDbContext db) : IIdentityAuthGateway
 {
     public async Task<AuthUserData?> FindByEmailAsync(string email, CancellationToken ct = default)
     {
@@ -35,7 +39,7 @@ public class IdentityAuthGateway(UserManager<UserEntity> userManager, SignInMana
         return result.Succeeded;
     }
 
-    public async Task<AuthUserData> CreateUserAsync(string email, string password, CancellationToken ct = default)
+    public async Task<AuthUserData> CreateUserAsync(string email, string password, string name, string? role = null, CancellationToken ct = default)
     {
         var user = new UserEntity { UserName = email, Email = email };
 
@@ -46,23 +50,19 @@ public class IdentityAuthGateway(UserManager<UserEntity> userManager, SignInMana
             throw new InvalidOperationException(errors);
         }
 
+        var assignedRole = role is "Admin" or "User" ? role : "User";
+        await userManager.AddToRoleAsync(user, assignedRole);
+
+        var profile = new UserProfileEntity
+        {
+            UserId = user.Id,
+            Name = name,
+            AvatarVersion = 0
+        };
+        db.UserProfiles.Add(profile);
+        await db.SaveChangesAsync(ct);
+
         var roles = await userManager.GetRolesAsync(user);
         return new AuthUserData(user.Id, user.Email ?? email, [.. roles]);
-    }
-
-    public async Task<UserData?> GetDataByEmailAsync(string email, CancellationToken ct = default)
-    {
-        var user = await userManager.FindByEmailAsync(email);
-        if (user is null) return null;
-
-        return new UserData(user.Id, user.Email ?? "", user.UserProfile?.Name ?? "", user.UserProfile?.AvatarData ?? []);
-    }
-
-    public async Task<UserData?> GetDataByIdAsync(Guid userId, CancellationToken ct = default)
-    {
-        var user = await userManager.Users.FirstOrDefaultAsync(x => x.Id == userId, ct);
-        if (user is null) return null;
-
-        return new UserData(user.Id, user.Email ?? "", user.UserProfile?.Name ?? "", user.UserProfile?.AvatarData ?? []);
     }
 }

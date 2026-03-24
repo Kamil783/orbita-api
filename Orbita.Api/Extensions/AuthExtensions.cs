@@ -18,8 +18,10 @@ public static class AuthExtensions
     {
         return new RegisterCommand
         {
+            Name = registerDto.Name,
             Email = registerDto.Email,
-            Password = registerDto.Password
+            Password = registerDto.Password,
+            Role = registerDto.Role
         };
     }
 }
