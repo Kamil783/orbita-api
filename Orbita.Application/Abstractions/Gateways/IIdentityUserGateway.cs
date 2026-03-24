@@ -6,4 +6,5 @@ public interface IIdentityUserGateway
 {
     Task<UserData?> GetDataByEmailAsync(string email, CancellationToken ct = default);
     Task<UserData?> GetDataByIdAsync(Guid userId, CancellationToken ct = default);
+    Task<IReadOnlyList<AdminUserData>> GetAllUsersAsync(CancellationToken ct = default);
 }

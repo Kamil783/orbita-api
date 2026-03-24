@@ -80,7 +80,8 @@ public class UserService(IIdentityUserGateway gateway, IUserProfileRepository re
         {
             Name = userData.Name,
             Email = userData.Email,
-            Avatar = userData.Avatar
+            Avatar = userData.Avatar,
+            Role = userData.Role
         };
 
         return Result<UserDataResponse>.Ok(result);

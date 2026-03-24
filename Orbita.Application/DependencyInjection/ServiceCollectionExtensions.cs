@@ -15,6 +15,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<ITodoItemService, TodoItemService>();
         services.AddTransient<IWeekService, WeekService>();
         services.AddTransient<IFinanceService, FinanceService>();
+        services.AddTransient<IAdminService, AdminService>();
         return services;
     }
 }

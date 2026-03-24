@@ -23,6 +23,11 @@ public class JwtTokenGenerator(IOptions<JwtOptions> options) : IJwtTokenGenerato
             new(JwtRegisteredClaimNames.Email, user.Email)
         };
 
+        foreach (var role in user.Roles)
+        {
+            claims.Add(new Claim(ClaimTypes.Role, role));
+        }
+
         var signingCredentials = new SigningCredentials(
             new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.Key)),
             SecurityAlgorithms.HmacSha256);

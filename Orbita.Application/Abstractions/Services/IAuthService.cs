@@ -1,4 +1,5 @@
 ﻿using Orbita.Application.Commands.Auth;
+using Orbita.Application.Models.Dto;
 using Orbita.Application.Models.Results;
 using Orbita.Contracts.ApiDto.User.Responses;
 
@@ -7,6 +8,6 @@ namespace Orbita.Application.Abstractions.Services;
 public interface IAuthService
 {
     Task<Result<AuthResponse>> AuthenticateAsync(LoginCommand command, CancellationToken ct = default);
-    Task<Result<AuthResponse>> RegisterAsync(RegisterCommand command, CancellationToken ct = default);
+    Task<Result<AuthUserData>> RegisterAsync(RegisterCommand command, CancellationToken ct = default);
     Task<Result<AuthResponse>> RefreshAsync(string refreshToken, CancellationToken ct = default);
 }

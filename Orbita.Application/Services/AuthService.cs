@@ -4,6 +4,7 @@ using Orbita.Application.Abstractions.Gateways;
 using Orbita.Application.Abstractions.Repositories;
 using Orbita.Application.Abstractions.Services;
 using Orbita.Application.Commands.Auth;
+using Orbita.Application.Models.Dto;
 using Orbita.Application.Models.Results;
 using Orbita.Contracts.ApiDto.User.Responses;
 using Orbita.Contracts.Auth;
@@ -41,16 +42,10 @@ public class AuthService(
         });
     }
 
-    public async Task<Result<AuthResponse>> RegisterAsync(RegisterCommand command, CancellationToken ct = default)
+    public async Task<Result<AuthUserData>> RegisterAsync(RegisterCommand command, CancellationToken ct = default)
     {
-        await gateway.CreateUserAsync(command.Email, command.Password, ct);
-        var loginCommand = new LoginCommand
-        {
-            Email = command.Email,
-            Password = command.Password
-        };
-
-        return await AuthenticateAsync(loginCommand, ct);
+        var user = await gateway.CreateUserAsync(command.Email, command.Password, command.Name, command.Role, ct);
+        return Result<AuthUserData>.Ok(user);
     }
 
     public async Task<Result<AuthResponse>> RefreshAsync(string refreshToken, CancellationToken ct = default)
