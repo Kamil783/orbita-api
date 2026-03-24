@@ -1,0 +1,10 @@
+using Orbita.Domain.Entities;
+
+namespace Orbita.Application.Abstractions.Repositories;
+
+public interface IFinanceCategoryRepository
+{
+    Task<List<FinanceCategory>> GetByUserAsync(Guid userId, CancellationToken ct = default);
+    Task<FinanceCategory?> GetAsync(Guid id, CancellationToken ct = default);
+    Task<FinanceCategory> CreateAsync(FinanceCategory category, CancellationToken ct = default);
+}

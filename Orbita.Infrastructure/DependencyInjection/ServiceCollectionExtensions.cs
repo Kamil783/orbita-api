@@ -72,6 +72,11 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IColumnRepository, ColumnRepository>();
         services.AddScoped<ITodoItemRepository, TodoItemRepository>();
         services.AddScoped<IWeekRepository, WeekRepository>();
+        services.AddScoped<IFinanceBalanceRepository, FinanceBalanceRepository>();
+        services.AddScoped<IFinanceCategoryRepository, FinanceCategoryRepository>();
+        services.AddScoped<IFinanceTransactionRepository, FinanceTransactionRepository>();
+        services.AddScoped<ISavingsGoalRepository, SavingsGoalRepository>();
+        services.AddScoped<ISpendingLimitRepository, SpendingLimitRepository>();
 
         services.AddHttpContextAccessor();
         services.AddSingleton(Channel.CreateBounded<AppLogEntity>(new BoundedChannelOptions(10_000)
