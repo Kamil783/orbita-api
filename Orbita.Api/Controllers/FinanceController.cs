@@ -125,7 +125,7 @@ public class FinanceController(IFinanceService financeService) : AuthorizedContr
         if (!Guid.TryParse(request.CategoryId, out var categoryId))
             return BadRequest("Invalid category id.");
 
-        var res = await financeService.CreateTransactionAsync(userId, categoryId, request.Title, request.Amount, ct);
+        var res = await financeService.CreateTransactionAsync(userId, categoryId, request.Title, request.Amount, request.FromBalance, ct);
 
         return res
             .Map(t => new TransactionResponse

@@ -83,7 +83,7 @@ public class FinanceService(
     }
 
     public async Task<Result<FinanceTransaction>> CreateTransactionAsync(
-        Guid userId, Guid categoryId, string title, long amount, CancellationToken ct = default)
+        Guid userId, Guid categoryId, string title, long amount, bool fromBalance, CancellationToken ct = default)
     {
         var category = await categoryRepository.GetAsync(categoryId, ct);
         if (category is null)
@@ -97,15 +97,18 @@ public class FinanceService(
 
         var created = await transactionRepository.CreateAsync(transaction, ct);
 
-        var balance = await balanceRepository.GetAsync(userId, ct);
-        if (balance is null)
+        if (fromBalance)
         {
-            balance = FinanceBalance.Create(new UserId(userId));
-            await balanceRepository.CreateAsync(balance, ct);
-        }
+            var balance = await balanceRepository.GetAsync(userId, ct);
+            if (balance is null)
+            {
+                balance = FinanceBalance.Create(new UserId(userId));
+                await balanceRepository.CreateAsync(balance, ct);
+            }
 
-        balance.Adjust(amount);
-        await balanceRepository.UpdateAsync(balance, ct);
+            balance.Adjust(amount);
+            await balanceRepository.UpdateAsync(balance, ct);
+        }
 
         return Result<FinanceTransaction>.Ok(created);
     }
