@@ -26,20 +26,16 @@ public class FinanceService(
         return Result<FinanceBalance>.Ok(balance);
     }
 
-    public async Task<Result<long>> GetPreviousMonthBalanceAsync(Guid userId, CancellationToken ct = default)
+    public async Task<Result<FinanceBalance>> GetPreviousMonthBalanceAsync(Guid userId, CancellationToken ct = default)
     {
         var balance = await balanceRepository.GetAsync(userId, ct);
-        var currentBalance = balance?.Balance ?? 0;
+        if (balance is null)
+        {
+            balance = FinanceBalance.Create(new UserId(userId));
+            balance = await balanceRepository.CreateAsync(balance, ct);
+        }
 
-        var now = DateTime.UtcNow;
-        var startOfMonth = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
-
-        var thisMonthTransactions = await transactionRepository.GetByUserInPeriodAsync(userId, startOfMonth, now, ct);
-        var thisMonthTotal = thisMonthTransactions.Sum(t => t.Amount);
-
-        var previousMonthBalance = currentBalance - thisMonthTotal;
-
-        return Result<long>.Ok(previousMonthBalance);
+        return Result<FinanceBalance>.Ok(balance);
     }
 
     public async Task<Result<FinanceBalance>> AdjustBalanceAsync(Guid userId, long amount, CancellationToken ct = default)

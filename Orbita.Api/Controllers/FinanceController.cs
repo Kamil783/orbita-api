@@ -32,7 +32,7 @@ public class FinanceController(IFinanceService financeService) : AuthorizedContr
         var res = await financeService.GetPreviousMonthBalanceAsync(userId, ct);
 
         return res
-            .Map(b => new BalanceResponse { Balance = b })
+            .Map(b => new BalanceResponse { Balance = b.PreviousMonthBalance })
             .ToActionResult(HttpContext);
     }
 

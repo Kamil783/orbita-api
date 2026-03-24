@@ -16,6 +16,12 @@ public class FinanceBalanceRepository(OrbitaDbContext db) : IFinanceBalanceRepos
         return entity?.ToDomain();
     }
 
+    public async Task<List<FinanceBalance>> GetAllAsync(CancellationToken ct = default)
+    {
+        var entities = await db.FinanceBalances.ToListAsync(ct);
+        return entities.Select(e => e.ToDomain()).ToList();
+    }
+
     public async Task<FinanceBalance> CreateAsync(FinanceBalance balance, CancellationToken ct = default)
     {
         var entity = balance.ToEntity();
@@ -37,6 +43,8 @@ public class FinanceBalanceRepository(OrbitaDbContext db) : IFinanceBalanceRepos
         else
         {
             entity.Balance = balance.Balance;
+            entity.PreviousMonthBalance = balance.PreviousMonthBalance;
+            entity.LastMonthClosedAt = balance.LastMonthClosedAt;
             entity.UpdatedAt = balance.UpdatedAt;
         }
 

@@ -6,7 +6,7 @@ namespace Orbita.Application.Abstractions.Services;
 public interface IFinanceService
 {
     Task<Result<FinanceBalance>> GetBalanceAsync(Guid userId, CancellationToken ct = default);
-    Task<Result<long>> GetPreviousMonthBalanceAsync(Guid userId, CancellationToken ct = default);
+    Task<Result<FinanceBalance>> GetPreviousMonthBalanceAsync(Guid userId, CancellationToken ct = default);
     Task<Result<FinanceBalance>> AdjustBalanceAsync(Guid userId, long amount, CancellationToken ct = default);
 
     Task<Result<List<FinanceCategory>>> GetCategoriesAsync(Guid userId, CancellationToken ct = default);

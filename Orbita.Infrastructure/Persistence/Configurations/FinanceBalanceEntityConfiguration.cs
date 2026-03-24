@@ -16,6 +16,12 @@ public class FinanceBalanceEntityConfiguration : IEntityTypeConfiguration<Financ
         b.Property(x => x.Balance)
             .IsRequired();
 
+        b.Property(x => x.PreviousMonthBalance)
+            .IsRequired();
+
+        b.Property(x => x.LastMonthClosedAt)
+            .IsRequired(false);
+
         b.Property(x => x.UpdatedAt)
             .IsRequired();
     }
