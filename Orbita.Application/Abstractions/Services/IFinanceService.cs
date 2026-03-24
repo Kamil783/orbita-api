@@ -18,6 +18,8 @@ public interface IFinanceService
 
     Task<Result<List<SavingsGoal>>> GetSavingsGoalsAsync(Guid userId, CancellationToken ct = default);
     Task<Result<SavingsGoal>> CreateSavingsGoalAsync(Guid userId, string name, long target, CancellationToken ct = default);
+    Task<Result<SavingsGoal>> TopUpSavingsGoalAsync(Guid userId, Guid goalId, long amount, CancellationToken ct = default);
+    Task<Result> DeleteSavingsGoalAsync(Guid userId, Guid goalId, CancellationToken ct = default);
 
     Task<Result<SpendingLimit>> GetSpendingLimitsAsync(Guid userId, CancellationToken ct = default);
     Task<Result<SpendingLimit>> UpdateSpendingLimitsAsync(Guid userId, long monthlyLimit, long weeklyLimit, CancellationToken ct = default);
