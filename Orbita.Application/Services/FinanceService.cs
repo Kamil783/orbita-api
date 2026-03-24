@@ -151,6 +151,33 @@ public class FinanceService(
         return Result<SavingsGoal>.Ok(created);
     }
 
+    public async Task<Result<SavingsGoal>> TopUpSavingsGoalAsync(Guid userId, Guid goalId, long amount, CancellationToken ct = default)
+    {
+        var goal = await savingsGoalRepository.GetAsync(goalId, ct);
+        if (goal is null)
+            return Result<SavingsGoal>.NotFound("Savings goal not found.");
+
+        if (goal.CreatorId.Id != userId)
+            return Result<SavingsGoal>.Forbidden("Access denied.");
+
+        goal.AddFunds(amount);
+        var updated = await savingsGoalRepository.UpdateAsync(goal, ct);
+        return Result<SavingsGoal>.Ok(updated);
+    }
+
+    public async Task<Result> DeleteSavingsGoalAsync(Guid userId, Guid goalId, CancellationToken ct = default)
+    {
+        var goal = await savingsGoalRepository.GetAsync(goalId, ct);
+        if (goal is null)
+            return Result.NotFound("Savings goal not found.");
+
+        if (goal.CreatorId.Id != userId)
+            return Result.Forbidden("Access denied.");
+
+        await savingsGoalRepository.DeleteAsync(goalId, ct);
+        return Result.Ok();
+    }
+
     public async Task<Result<SpendingLimit>> GetSpendingLimitsAsync(Guid userId, CancellationToken ct = default)
     {
         var limit = await spendingLimitRepository.GetAsync(userId, ct);
