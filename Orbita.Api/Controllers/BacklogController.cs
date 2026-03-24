@@ -1,13 +1,14 @@
 using Microsoft.AspNetCore.Mvc;
 using Orbita.Api.Extensions;
 using Orbita.Application.Abstractions.Services;
+using Orbita.Application.Helpers;
 using Orbita.Application.Models.Results;
 using Orbita.Contracts.ApiDto.Tasks.Requests;
 
 namespace Orbita.Api.Controllers;
 
 [Route("api/[controller]")]
-public class BacklogController(IBacklogTaskService service) : AuthorizedControllerBase
+public class BacklogController(IBacklogTaskService service, IWeekService weekService) : AuthorizedControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> GetBacklog(CancellationToken ct)
@@ -17,10 +18,23 @@ public class BacklogController(IBacklogTaskService service) : AuthorizedControll
 
         var res = await service.GetAsync(userId, ct);
 
-        var now = DateTime.UtcNow;
+        if (!res.IsSuccess)
+            return res.ToActionResult(HttpContext);
 
-        return res
-            .Map(tasks => tasks.Select(x => x.ToResponse(now)).ToList())
+        var now = DateTime.UtcNow;
+        var tasks = res.Value!;
+        var responses = new List<Contracts.ApiDto.Tasks.Responses.BacklogTaskResponse>();
+
+        foreach (var task in tasks)
+        {
+            var weeks = await weekService.GetWeeksByBacklogTaskAsync(task.Id.Id, ct);
+            var weekLabels = weeks.Count > 0
+                ? weeks.Select(w => BacklogTaskPresentationHelper.GetWeekLabel(w.StartDate, w.EndDate)).ToArray()
+                : null;
+            responses.Add(task.ToResponse(now, weekLabels));
+        }
+
+        return Result<List<Contracts.ApiDto.Tasks.Responses.BacklogTaskResponse>>.Ok(responses)
             .ToActionResult(HttpContext);
     }
 

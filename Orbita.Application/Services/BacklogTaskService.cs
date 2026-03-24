@@ -11,7 +11,8 @@ namespace Orbita.Application.Services;
 public class BacklogTaskService(
     IBacklogTaskRepository backlogRepository,
     ITodoItemRepository todoItemRepository,
-    IColumnRepository columnRepository) : IBacklogTaskService
+    IColumnRepository columnRepository,
+    IWeekRepository weekRepository) : IBacklogTaskService
 {
     public async Task<Result<List<BacklogTask>>> GetAsync(Guid userId, CancellationToken ct = default)
     {
@@ -109,6 +110,13 @@ public class BacklogTaskService(
 
         backlogTask.SetInWeek(true);
         await backlogRepository.UpdateAsync(backlogTask, ct);
+
+        var currentWeek = await weekRepository.GetCurrentAsync(userId, ct);
+        if (currentWeek is not null)
+        {
+            currentWeek.AddTask(backlogTask.Id);
+            await weekRepository.UpdateAsync(currentWeek, ct);
+        }
 
         return Result<TodoItem>.Ok(created);
     }

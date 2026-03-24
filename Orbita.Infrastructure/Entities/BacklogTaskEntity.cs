@@ -21,4 +21,5 @@ public class BacklogTaskEntity
     public int? ProgressPct { get; set; }
 
     public ICollection<BacklogTaskAssigneeEntity> Assignees { get; set; } = [];
+    public ICollection<BacklogTaskWeekEntity> BacklogTaskWeeks { get; set; } = [];
 }

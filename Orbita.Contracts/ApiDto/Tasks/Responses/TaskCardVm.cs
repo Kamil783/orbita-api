@@ -11,4 +11,5 @@ public sealed class TaskCardVm
     public int? ProgressPct { get; init; }
     public string[]? AssigneeIds { get; init; }
     public string? BacklogId { get; init; }
+    public string? WeekLabel { get; init; }
 }

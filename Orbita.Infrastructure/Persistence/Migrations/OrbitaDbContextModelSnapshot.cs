@@ -363,6 +363,102 @@ namespace Orbita.Infrastructure.Persistence.Migrations
                     b.ToTable("Columns");
                 });
 
+            modelBuilder.Entity("Orbita.Infrastructure.Entities.FinanceBalanceEntity", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<long>("Balance")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("LastMonthClosedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("PreviousMonthBalance")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("UserId");
+
+                    b.ToTable("FinanceBalances");
+                });
+
+            modelBuilder.Entity("Orbita.Infrastructure.Entities.FinanceCategoryEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Bg")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("Color")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<Guid>("CreatorId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Icon")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<long?>("MonthlyLimit")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<long?>("WeeklyLimit")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatorId");
+
+                    b.ToTable("FinanceCategories");
+                });
+
+            modelBuilder.Entity("Orbita.Infrastructure.Entities.FinanceTransactionEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<long>("Amount")
+                        .HasColumnType("bigint");
+
+                    b.Property<Guid>("CategoryId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreatorId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
+
+                    b.HasIndex("CreatorId");
+
+                    b.HasIndex("CreatorId", "CreatedAt");
+
+                    b.ToTable("FinanceTransactions");
+                });
+
             modelBuilder.Entity("Orbita.Infrastructure.Entities.Mapping.BacklogTaskAssigneeEntity", b =>
                 {
                     b.Property<Guid>("BacklogTaskId")
@@ -376,6 +472,21 @@ namespace Orbita.Infrastructure.Persistence.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("BacklogTaskAssigneeEntity");
+                });
+
+            modelBuilder.Entity("Orbita.Infrastructure.Entities.Mapping.BacklogTaskWeekEntity", b =>
+                {
+                    b.Property<Guid>("BacklogTaskId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("WeekId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("BacklogTaskId", "WeekId");
+
+                    b.HasIndex("WeekId");
+
+                    b.ToTable("BacklogTaskWeekEntity");
                 });
 
             modelBuilder.Entity("Orbita.Infrastructure.Entities.Mapping.TodoItemAssigneeEntity", b =>
@@ -496,6 +607,48 @@ namespace Orbita.Infrastructure.Persistence.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("RequestLogs", (string)null);
+                });
+
+            modelBuilder.Entity("Orbita.Infrastructure.Entities.SavingsGoalEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CreatorId")
+                        .HasColumnType("uuid");
+
+                    b.Property<long>("Current")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<long>("Target")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatorId");
+
+                    b.ToTable("SavingsGoals");
+                });
+
+            modelBuilder.Entity("Orbita.Infrastructure.Entities.SpendingLimitEntity", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<long>("MonthlyLimit")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("WeeklyLimit")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("UserId");
+
+                    b.ToTable("SpendingLimits");
                 });
 
             modelBuilder.Entity("Orbita.Infrastructure.Entities.TodoItemEntity", b =>
@@ -647,6 +800,35 @@ namespace Orbita.Infrastructure.Persistence.Migrations
                     b.ToTable("UserProfiles");
                 });
 
+            modelBuilder.Entity("Orbita.Infrastructure.Entities.WeekEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreatorId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsArchived")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatorId");
+
+                    b.HasIndex("CreatorId", "IsArchived");
+
+                    b.ToTable("Weeks");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", null)
@@ -708,6 +890,17 @@ namespace Orbita.Infrastructure.Persistence.Migrations
                     b.Navigation("Task");
                 });
 
+            modelBuilder.Entity("Orbita.Infrastructure.Entities.FinanceTransactionEntity", b =>
+                {
+                    b.HasOne("Orbita.Infrastructure.Entities.FinanceCategoryEntity", "Category")
+                        .WithMany()
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Category");
+                });
+
             modelBuilder.Entity("Orbita.Infrastructure.Entities.Mapping.BacklogTaskAssigneeEntity", b =>
                 {
                     b.HasOne("Orbita.Infrastructure.Entities.BacklogTaskEntity", "BacklogTask")
@@ -725,6 +918,25 @@ namespace Orbita.Infrastructure.Persistence.Migrations
                     b.Navigation("BacklogTask");
 
                     b.Navigation("UserProfile");
+                });
+
+            modelBuilder.Entity("Orbita.Infrastructure.Entities.Mapping.BacklogTaskWeekEntity", b =>
+                {
+                    b.HasOne("Orbita.Infrastructure.Entities.BacklogTaskEntity", "BacklogTask")
+                        .WithMany("BacklogTaskWeeks")
+                        .HasForeignKey("BacklogTaskId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Orbita.Infrastructure.Entities.WeekEntity", "Week")
+                        .WithMany("BacklogTaskWeeks")
+                        .HasForeignKey("WeekId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("BacklogTask");
+
+                    b.Navigation("Week");
                 });
 
             modelBuilder.Entity("Orbita.Infrastructure.Entities.Mapping.TodoItemAssigneeEntity", b =>
@@ -782,6 +994,8 @@ namespace Orbita.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Orbita.Infrastructure.Entities.BacklogTaskEntity", b =>
                 {
                     b.Navigation("Assignees");
+
+                    b.Navigation("BacklogTaskWeeks");
                 });
 
             modelBuilder.Entity("Orbita.Infrastructure.Entities.ColumnEntity", b =>
@@ -806,6 +1020,11 @@ namespace Orbita.Infrastructure.Persistence.Migrations
                     b.Navigation("AssignedBacklogTaskItems");
 
                     b.Navigation("AssignedTodoItems");
+                });
+
+            modelBuilder.Entity("Orbita.Infrastructure.Entities.WeekEntity", b =>
+                {
+                    b.Navigation("BacklogTaskWeeks");
                 });
 #pragma warning restore 612, 618
         }
