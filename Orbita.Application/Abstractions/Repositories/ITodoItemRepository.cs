@@ -7,6 +7,7 @@ public interface ITodoItemRepository
     Task<TodoItem?> GetAsync(Guid id, CancellationToken ct = default);
     Task<TodoItem?> GetByBacklogIdAsync(Guid backlogId, CancellationToken ct = default);
     Task<TodoItem> CreateAsync(TodoItem item, CancellationToken ct = default);
+    Task<TodoItem?> UpdateAsync(TodoItem item, CancellationToken ct = default);
     Task DeleteAsync(Guid id, CancellationToken ct = default);
     Task<int> GetMaxSortOrderAsync(Guid columnId, CancellationToken ct = default);
 

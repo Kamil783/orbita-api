@@ -107,6 +107,19 @@ public class TodoItem
         SortOrder = sortOrder;
     }
 
+    public void SyncFromBacklog(BacklogTask backlogTask)
+    {
+        Title = backlogTask.Title;
+        TaskPriority = backlogTask.Priority;
+        DeadlineUtc = NormalizeToUtc(backlogTask.DueDate);
+        ProgressPct = backlogTask.TrackProgress ? backlogTask.ProgressPct : null;
+
+        _assignees.Clear();
+        _assignees.AddRange(backlogTask.Assignees);
+
+        UpdatedAtUtc = DateTime.UtcNow;
+    }
+
     private static DateTime? NormalizeToUtc(DateTime? dt)
     {
         if (dt is null) return null;

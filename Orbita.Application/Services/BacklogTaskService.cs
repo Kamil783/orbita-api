@@ -75,6 +75,14 @@ public class BacklogTaskService(
         if (command.AssigneeIds is not null)
             backlogTask.SetAssignees(command.AssigneeIds.Select(x => new UserId(x)));
 
+        var todoItem = await todoItemRepository.GetByBacklogIdAsync(backlogTask.Id.Id, ct);
+
+        if (todoItem is not null)
+        {
+            todoItem.SyncFromBacklog(backlogTask);
+            await todoItemRepository.UpdateAsync(todoItem, ct);
+        }
+
         var updated = await backlogRepository.UpdateAsync(backlogTask, ct);
 
         return Result<BacklogTask>.Ok(updated!);
