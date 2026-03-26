@@ -17,7 +17,6 @@ using Orbita.Application.Abstractions.Jobs;
 using Orbita.Infrastructure.Jobs;
 using Orbita.Infrastructure.Logging;
 using Orbita.Infrastructure.Persistence;
-using Orbita.Infrastructure.Persistence;
 using Orbita.Infrastructure.Repositories;
 
 namespace Orbita.Infrastructure.DependencyInjection;

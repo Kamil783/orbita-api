@@ -11,6 +11,25 @@ namespace Orbita.Api.Controllers;
 [Route("api/[controller]")]
 public class WeeksController(IWeekService weekService) : AuthorizedControllerBase
 {
+    [HttpGet("current")]
+    public async Task<IActionResult> GetCurrentWeek(CancellationToken ct)
+    {
+        if (!TryGetUserId(out var userId))
+            return Unauthorized();
+
+        var week = await weekService.GetCurrentWeekAsync(userId, ct);
+        if (week is null)
+            return NotFound();
+
+        var response = new WeekResponse
+        {
+            StartDate = week.StartDate.ToString("yyyy-MM-dd"),
+            EndDate = week.EndDate.ToString("yyyy-MM-dd")
+        };
+
+        return Result<WeekResponse>.Ok(response).ToActionResult(HttpContext);
+    }
+
     [HttpPost("new")]
     public async Task<IActionResult> CreateNewWeek([FromBody] CreateWeekRequest request, CancellationToken ct)
     {
@@ -19,7 +38,13 @@ public class WeeksController(IWeekService weekService) : AuthorizedControllerBas
 
         var res = await weekService.CreateNewWeekAsync(userId, request.StartDate, request.EndDate, ct);
 
-        return res.ToActionResult(HttpContext);
+        return res
+            .Map(w => new WeekResponse
+            {
+                StartDate = w.StartDate.ToString("yyyy-MM-dd"),
+                EndDate = w.EndDate.ToString("yyyy-MM-dd")
+            })
+            .ToActionResult(HttpContext);
     }
 
     [HttpGet("archives")]

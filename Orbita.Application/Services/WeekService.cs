@@ -10,7 +10,7 @@ public class WeekService(
     IWeekRepository weekRepository,
     IBacklogTaskRepository backlogTaskRepository) : IWeekService
 {
-    public async Task<Result> CreateNewWeekAsync(Guid userId, DateTime startDate, DateTime endDate, CancellationToken ct = default)
+    public async Task<Result<Week>> CreateNewWeekAsync(Guid userId, DateTime startDate, DateTime endDate, CancellationToken ct = default)
     {
         var currentWeek = await weekRepository.GetCurrentAsync(userId, ct);
         if (currentWeek is not null)
@@ -30,9 +30,9 @@ public class WeekService(
             newWeek.AddTask(task.Id);
         }
 
-        await weekRepository.CreateAsync(newWeek, ct);
+        var created = await weekRepository.CreateAsync(newWeek, ct);
 
-        return Result.Ok();
+        return Result<Week>.Ok(created);
     }
 
     public async Task<Result<List<(Week Week, List<BacklogTask> Tasks)>>> GetArchivesAsync(Guid userId, CancellationToken ct = default)

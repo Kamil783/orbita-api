@@ -17,7 +17,7 @@ public class FinanceTransactionEntityConfiguration : IEntityTypeConfiguration<Fi
             .IsRequired();
 
         b.Property(x => x.CategoryId)
-            .IsRequired();
+            .IsRequired(false);
 
         b.Property(x => x.Title)
             .HasMaxLength(500)
@@ -32,6 +32,7 @@ public class FinanceTransactionEntityConfiguration : IEntityTypeConfiguration<Fi
         b.HasOne(x => x.Category)
             .WithMany()
             .HasForeignKey(x => x.CategoryId)
+            .IsRequired(false)
             .OnDelete(DeleteBehavior.Restrict);
 
         b.HasIndex(x => x.CreatorId);

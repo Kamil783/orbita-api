@@ -4,8 +4,8 @@ public class FinanceTransactionEntity
 {
     public Guid Id { get; set; }
     public Guid CreatorId { get; set; }
-    public Guid CategoryId { get; set; }
-    public FinanceCategoryEntity Category { get; set; } = default!;
+    public Guid? CategoryId { get; set; }
+    public FinanceCategoryEntity? Category { get; set; }
     public string Title { get; set; } = default!;
     public long Amount { get; set; }
     public DateTime CreatedAt { get; set; }

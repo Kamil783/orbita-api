@@ -6,7 +6,7 @@ public class FinanceTransaction
 {
     public FinanceTransactionId Id { get; private set; }
     public UserId CreatorId { get; private set; }
-    public FinanceCategoryId CategoryId { get; private set; }
+    public FinanceCategoryId? CategoryId { get; private set; }
     public string Title { get; private set; }
     public long Amount { get; private set; }
     public DateTime CreatedAt { get; private set; }
@@ -15,7 +15,7 @@ public class FinanceTransaction
 
     public static FinanceTransaction Create(
         UserId creatorId,
-        FinanceCategoryId categoryId,
+        FinanceCategoryId? categoryId,
         string title,
         long amount)
     {
@@ -33,10 +33,28 @@ public class FinanceTransaction
         };
     }
 
+    public void SetCategoryId(FinanceCategoryId? categoryId)
+    {
+        CategoryId = categoryId;
+    }
+
+    public void SetTitle(string title)
+    {
+        if (string.IsNullOrWhiteSpace(title))
+            throw new ArgumentException("Title is required.", nameof(title));
+
+        Title = title;
+    }
+
+    public void SetAmount(long amount)
+    {
+        Amount = amount;
+    }
+
     public static FinanceTransaction Restore(
         FinanceTransactionId id,
         UserId creatorId,
-        FinanceCategoryId categoryId,
+        FinanceCategoryId? categoryId,
         string title,
         long amount,
         DateTime createdAt)
