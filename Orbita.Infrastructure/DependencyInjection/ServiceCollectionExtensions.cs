@@ -17,6 +17,7 @@ using Orbita.Application.Abstractions.Jobs;
 using Orbita.Infrastructure.Jobs;
 using Orbita.Infrastructure.Logging;
 using Orbita.Infrastructure.Persistence;
+using Orbita.Infrastructure.Persistence;
 using Orbita.Infrastructure.Repositories;
 
 namespace Orbita.Infrastructure.DependencyInjection;
@@ -79,6 +80,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IFinanceTransactionRepository, FinanceTransactionRepository>();
         services.AddScoped<ISavingsGoalRepository, SavingsGoalRepository>();
         services.AddScoped<ISpendingLimitRepository, SpendingLimitRepository>();
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         services.AddHttpContextAccessor();
         services.AddSingleton(Channel.CreateBounded<AppLogEntity>(new BoundedChannelOptions(10_000)
