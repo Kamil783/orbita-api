@@ -1,3 +1,4 @@
+using Orbita.Application.Abstractions;
 using Orbita.Application.Abstractions.Repositories;
 using Orbita.Application.Abstractions.Services;
 using Orbita.Application.Commands.BacklogTasks;
@@ -12,7 +13,8 @@ public class BacklogTaskService(
     IBacklogTaskRepository backlogRepository,
     ITodoItemRepository todoItemRepository,
     IColumnRepository columnRepository,
-    IWeekRepository weekRepository) : IBacklogTaskService
+    IWeekRepository weekRepository,
+    IUnitOfWork unitOfWork) : IBacklogTaskService
 {
     public async Task<Result<List<BacklogTask>>> GetAsync(Guid userId, CancellationToken ct = default)
     {
@@ -75,17 +77,28 @@ public class BacklogTaskService(
         if (command.AssigneeIds is not null)
             backlogTask.SetAssignees(command.AssigneeIds.Select(x => new UserId(x)));
 
-        var todoItem = await todoItemRepository.GetByBacklogIdAsync(backlogTask.Id.Id, ct);
-
-        if (todoItem is not null)
+        await unitOfWork.BeginTransactionAsync(ct);
+        try
         {
-            todoItem.SyncFromBacklog(backlogTask);
-            await todoItemRepository.UpdateAsync(todoItem, ct);
+            var todoItem = await todoItemRepository.GetByBacklogIdAsync(backlogTask.Id.Id, ct);
+
+            if (todoItem is not null)
+            {
+                todoItem.SyncFromBacklog(backlogTask);
+                await todoItemRepository.UpdateAsync(todoItem, ct);
+            }
+
+            var updated = await backlogRepository.UpdateAsync(backlogTask, ct);
+
+            await unitOfWork.CommitAsync(ct);
+
+            return Result<BacklogTask>.Ok(updated!);
         }
-
-        var updated = await backlogRepository.UpdateAsync(backlogTask, ct);
-
-        return Result<BacklogTask>.Ok(updated!);
+        catch
+        {
+            await unitOfWork.RollbackAsync(ct);
+            throw;
+        }
     }
 
     public async Task<Result<TodoItem>> MoveToWeekAsync(Guid userId, Guid backlogTaskId, Guid targetColumnId, CancellationToken ct = default)
@@ -114,19 +127,30 @@ public class BacklogTaskService(
             backlogId: backlogTask.Id,
             assignees: backlogTask.Assignees);
 
-        var created = await todoItemRepository.CreateAsync(todoItem, ct);
-
-        backlogTask.SetInWeek(true);
-        await backlogRepository.UpdateAsync(backlogTask, ct);
-
-        var currentWeek = await weekRepository.GetCurrentAsync(userId, ct);
-        if (currentWeek is not null)
+        await unitOfWork.BeginTransactionAsync(ct);
+        try
         {
-            currentWeek.AddTask(backlogTask.Id);
-            await weekRepository.UpdateAsync(currentWeek, ct);
-        }
+            var created = await todoItemRepository.CreateAsync(todoItem, ct);
 
-        return Result<TodoItem>.Ok(created);
+            backlogTask.SetInWeek(true);
+            await backlogRepository.UpdateAsync(backlogTask, ct);
+
+            var currentWeek = await weekRepository.GetCurrentAsync(userId, ct);
+            if (currentWeek is not null)
+            {
+                currentWeek.AddTask(backlogTask.Id);
+                await weekRepository.UpdateAsync(currentWeek, ct);
+            }
+
+            await unitOfWork.CommitAsync(ct);
+
+            return Result<TodoItem>.Ok(created);
+        }
+        catch
+        {
+            await unitOfWork.RollbackAsync(ct);
+            throw;
+        }
     }
 
     public async Task<Result> RemoveFromWeekAsync(Guid userId, Guid backlogTaskId, CancellationToken ct = default)
@@ -138,14 +162,25 @@ public class BacklogTaskService(
         if (backlogTask.CreatorId.Id != userId)
             return Result.Forbidden("Access denied.");
 
-        var todoItem = await todoItemRepository.GetByBacklogIdAsync(backlogTaskId, ct);
-        if (todoItem is not null)
-            await todoItemRepository.DeleteAsync(todoItem.Id.Id, ct);
+        await unitOfWork.BeginTransactionAsync(ct);
+        try
+        {
+            var todoItem = await todoItemRepository.GetByBacklogIdAsync(backlogTaskId, ct);
+            if (todoItem is not null)
+                await todoItemRepository.DeleteAsync(todoItem.Id.Id, ct);
 
-        backlogTask.SetInWeek(false);
-        await backlogRepository.UpdateAsync(backlogTask, ct);
+            backlogTask.SetInWeek(false);
+            await backlogRepository.UpdateAsync(backlogTask, ct);
 
-        return Result.Ok();
+            await unitOfWork.CommitAsync(ct);
+
+            return Result.Ok();
+        }
+        catch
+        {
+            await unitOfWork.RollbackAsync(ct);
+            throw;
+        }
     }
 
     public async Task<Result> SetDoneAsync(Guid userId, Guid backlogTaskId, bool done, CancellationToken ct = default)

@@ -434,7 +434,7 @@ namespace Orbita.Infrastructure.Persistence.Migrations
                     b.Property<long>("Amount")
                         .HasColumnType("bigint");
 
-                    b.Property<Guid>("CategoryId")
+                    b.Property<Guid?>("CategoryId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
@@ -895,8 +895,7 @@ namespace Orbita.Infrastructure.Persistence.Migrations
                     b.HasOne("Orbita.Infrastructure.Entities.FinanceCategoryEntity", "Category")
                         .WithMany()
                         .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Category");
                 });

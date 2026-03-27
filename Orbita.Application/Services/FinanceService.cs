@@ -83,15 +83,21 @@ public class FinanceService(
     }
 
     public async Task<Result<FinanceTransaction>> CreateTransactionAsync(
-        Guid userId, Guid categoryId, string title, long amount, bool fromBalance, CancellationToken ct = default)
+        Guid userId, Guid? categoryId, string title, long amount, bool fromBalance, CancellationToken ct = default)
     {
-        var category = await categoryRepository.GetAsync(categoryId, ct);
-        if (category is null)
-            return Result<FinanceTransaction>.NotFound("Category not found.");
+        FinanceCategoryId? financeCategoryId = null;
+        if (categoryId.HasValue)
+        {
+            var category = await categoryRepository.GetAsync(categoryId.Value, ct);
+            if (category is null)
+                return Result<FinanceTransaction>.NotFound("Category not found.");
+
+            financeCategoryId = new FinanceCategoryId(categoryId.Value);
+        }
 
         var transaction = FinanceTransaction.Create(
             creatorId: new UserId(userId),
-            categoryId: new FinanceCategoryId(categoryId),
+            categoryId: financeCategoryId,
             title: title,
             amount: amount);
 
@@ -111,6 +117,47 @@ public class FinanceService(
         }
 
         return Result<FinanceTransaction>.Ok(created);
+    }
+
+    public async Task<Result<FinanceTransaction>> UpdateTransactionAsync(
+        Guid userId, Guid transactionId, Guid? categoryId, string? title, long? amount, CancellationToken ct = default)
+    {
+        var transaction = await transactionRepository.GetAsync(transactionId, ct);
+        if (transaction is null)
+            return Result<FinanceTransaction>.NotFound("Transaction not found.");
+
+        if (transaction.CreatorId.Id != userId)
+            return Result<FinanceTransaction>.Forbidden("Access denied.");
+
+        var oldAmount = transaction.Amount;
+
+        if (categoryId.HasValue)
+        {
+            var category = await categoryRepository.GetAsync(categoryId.Value, ct);
+            if (category is null)
+                return Result<FinanceTransaction>.NotFound("Category not found.");
+
+            transaction.SetCategoryId(new FinanceCategoryId(categoryId.Value));
+        }
+
+        if (title is not null)
+            transaction.SetTitle(title);
+
+        if (amount.HasValue)
+        {
+            transaction.SetAmount(amount.Value);
+
+            var balance = await balanceRepository.GetAsync(userId, ct);
+            if (balance is not null)
+            {
+                balance.Adjust(-oldAmount + amount.Value);
+                await balanceRepository.UpdateAsync(balance, ct);
+            }
+        }
+
+        var updated = await transactionRepository.UpdateAsync(transaction, ct);
+
+        return Result<FinanceTransaction>.Ok(updated!);
     }
 
     public async Task<Result> DeleteTransactionAsync(Guid userId, Guid transactionId, CancellationToken ct = default)

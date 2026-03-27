@@ -12,7 +12,7 @@ public static class FinanceTransactionExtensions
         {
             Id = transaction.Id.Id,
             CreatorId = transaction.CreatorId.Id,
-            CategoryId = transaction.CategoryId.Id,
+            CategoryId = transaction.CategoryId?.Id,
             Title = transaction.Title,
             Amount = transaction.Amount,
             CreatedAt = transaction.CreatedAt
@@ -24,7 +24,7 @@ public static class FinanceTransactionExtensions
         return FinanceTransaction.Restore(
             id: new FinanceTransactionId(entity.Id),
             creatorId: new UserId(entity.CreatorId),
-            categoryId: new FinanceCategoryId(entity.CategoryId),
+            categoryId: entity.CategoryId.HasValue ? new FinanceCategoryId(entity.CategoryId.Value) : null,
             title: entity.Title,
             amount: entity.Amount,
             createdAt: entity.CreatedAt

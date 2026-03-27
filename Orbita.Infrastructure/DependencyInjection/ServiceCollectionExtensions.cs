@@ -79,6 +79,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IFinanceTransactionRepository, FinanceTransactionRepository>();
         services.AddScoped<ISavingsGoalRepository, SavingsGoalRepository>();
         services.AddScoped<ISpendingLimitRepository, SpendingLimitRepository>();
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         services.AddHttpContextAccessor();
         services.AddSingleton(Channel.CreateBounded<AppLogEntity>(new BoundedChannelOptions(10_000)

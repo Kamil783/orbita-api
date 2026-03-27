@@ -34,6 +34,23 @@ public class FinanceTransactionRepository(OrbitaDbContext db) : IFinanceTransact
         return entity.ToDomain();
     }
 
+    public async Task<FinanceTransaction?> UpdateAsync(FinanceTransaction transaction, CancellationToken ct = default)
+    {
+        var entity = await db.FinanceTransactions
+            .FirstOrDefaultAsync(x => x.Id == transaction.Id.Id, ct);
+
+        if (entity is null)
+            return null;
+
+        entity.CategoryId = transaction.CategoryId?.Id;
+        entity.Title = transaction.Title;
+        entity.Amount = transaction.Amount;
+
+        await db.SaveChangesAsync(ct);
+
+        return entity.ToDomain();
+    }
+
     public async Task DeleteAsync(Guid id, CancellationToken ct = default)
     {
         var entity = await db.FinanceTransactions

@@ -107,7 +107,7 @@ public class FinanceController(IFinanceService financeService) : AuthorizedContr
             .Map(txs => txs.Select(t => new TransactionResponse
             {
                 Id = t.Id.Id.ToString(),
-                CategoryId = t.CategoryId.Id.ToString(),
+                CategoryId = t.CategoryId?.Id.ToString(),
                 Title = t.Title,
                 Date = t.CreatedAt.ToString("yyyy-MM-dd"),
                 Amount = t.Amount,
@@ -122,8 +122,13 @@ public class FinanceController(IFinanceService financeService) : AuthorizedContr
         if (!TryGetUserId(out var userId))
             return Unauthorized();
 
-        if (!Guid.TryParse(request.CategoryId, out var categoryId))
-            return BadRequest("Invalid category id.");
+        Guid? categoryId = null;
+        if (!string.IsNullOrEmpty(request.CategoryId))
+        {
+            if (!Guid.TryParse(request.CategoryId, out var parsedCategoryId))
+                return BadRequest("Invalid category id.");
+            categoryId = parsedCategoryId;
+        }
 
         var res = await financeService.CreateTransactionAsync(userId, categoryId, request.Title, request.Amount, request.FromBalance, ct);
 
@@ -131,7 +136,36 @@ public class FinanceController(IFinanceService financeService) : AuthorizedContr
             .Map(t => new TransactionResponse
             {
                 Id = t.Id.Id.ToString(),
-                CategoryId = t.CategoryId.Id.ToString(),
+                CategoryId = t.CategoryId?.Id.ToString(),
+                Title = t.Title,
+                Date = t.CreatedAt.ToString("yyyy-MM-dd"),
+                Amount = t.Amount,
+                Timestamp = new DateTimeOffset(t.CreatedAt, TimeSpan.Zero).ToUnixTimeMilliseconds()
+            })
+            .ToActionResult(HttpContext);
+    }
+
+    [HttpPatch("transactions/{id}")]
+    public async Task<IActionResult> UpdateTransaction([FromRoute] Guid id, [FromBody] UpdateTransactionRequest request, CancellationToken ct)
+    {
+        if (!TryGetUserId(out var userId))
+            return Unauthorized();
+
+        Guid? categoryId = null;
+        if (request.CategoryId is not null)
+        {
+            if (!Guid.TryParse(request.CategoryId, out var parsedCategoryId))
+                return BadRequest("Invalid category id.");
+            categoryId = parsedCategoryId;
+        }
+
+        var res = await financeService.UpdateTransactionAsync(userId, id, categoryId, request.Title, request.Amount, ct);
+
+        return res
+            .Map(t => new TransactionResponse
+            {
+                Id = t.Id.Id.ToString(),
+                CategoryId = t.CategoryId?.Id.ToString(),
                 Title = t.Title,
                 Date = t.CreatedAt.ToString("yyyy-MM-dd"),
                 Amount = t.Amount,
