@@ -9,4 +9,5 @@ public class FinanceTransactionEntity
     public string Title { get; set; } = default!;
     public long Amount { get; set; }
     public DateTime CreatedAt { get; set; }
+    public bool IsFromBalance { get; set; }
 }

@@ -45,6 +45,7 @@ public class FinanceTransactionRepository(OrbitaDbContext db) : IFinanceTransact
         entity.CategoryId = transaction.CategoryId?.Id;
         entity.Title = transaction.Title;
         entity.Amount = transaction.Amount;
+        entity.IsFromBalance = transaction.IsFromBalance;
 
         await db.SaveChangesAsync(ct);
 

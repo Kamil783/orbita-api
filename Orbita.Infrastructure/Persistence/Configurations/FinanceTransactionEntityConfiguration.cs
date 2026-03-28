@@ -29,6 +29,9 @@ public class FinanceTransactionEntityConfiguration : IEntityTypeConfiguration<Fi
         b.Property(x => x.CreatedAt)
             .IsRequired();
 
+        b.Property(x => x.IsFromBalance)
+            .IsRequired();
+
         b.HasOne(x => x.Category)
             .WithMany()
             .HasForeignKey(x => x.CategoryId)

@@ -15,7 +15,8 @@ public static class FinanceTransactionExtensions
             CategoryId = transaction.CategoryId?.Id,
             Title = transaction.Title,
             Amount = transaction.Amount,
-            CreatedAt = transaction.CreatedAt
+            CreatedAt = transaction.CreatedAt,
+            IsFromBalance = transaction.IsFromBalance
         };
     }
 
@@ -27,7 +28,8 @@ public static class FinanceTransactionExtensions
             categoryId: entity.CategoryId.HasValue ? new FinanceCategoryId(entity.CategoryId.Value) : null,
             title: entity.Title,
             amount: entity.Amount,
-            createdAt: entity.CreatedAt
+            createdAt: entity.CreatedAt,
+            isFromBalance: entity.IsFromBalance
         );
     }
 }

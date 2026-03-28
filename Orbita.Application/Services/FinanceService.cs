@@ -99,7 +99,8 @@ public class FinanceService(
             creatorId: new UserId(userId),
             categoryId: financeCategoryId,
             title: title,
-            amount: amount);
+            amount: amount,
+            isFromBalance: fromBalance);
 
         var created = await transactionRepository.CreateAsync(transaction, ct);
 
@@ -147,11 +148,14 @@ public class FinanceService(
         {
             transaction.SetAmount(amount.Value);
 
-            var balance = await balanceRepository.GetAsync(userId, ct);
-            if (balance is not null)
+            if (transaction.IsFromBalance)
             {
-                balance.Adjust(-oldAmount + amount.Value);
-                await balanceRepository.UpdateAsync(balance, ct);
+                var balance = await balanceRepository.GetAsync(userId, ct);
+                if (balance is not null)
+                {
+                    balance.Adjust(-oldAmount + amount.Value);
+                    await balanceRepository.UpdateAsync(balance, ct);
+                }
             }
         }
 
@@ -169,11 +173,14 @@ public class FinanceService(
         if (transaction.CreatorId.Id != userId)
             return Result.Forbidden("Access denied.");
 
-        var balance = await balanceRepository.GetAsync(userId, ct);
-        if (balance is not null)
+        if (transaction.IsFromBalance)
         {
-            balance.Adjust(-transaction.Amount);
-            await balanceRepository.UpdateAsync(balance, ct);
+            var balance = await balanceRepository.GetAsync(userId, ct);
+            if (balance is not null)
+            {
+                balance.Adjust(-transaction.Amount);
+                await balanceRepository.UpdateAsync(balance, ct);
+            }
         }
 
         await transactionRepository.DeleteAsync(transactionId, ct);

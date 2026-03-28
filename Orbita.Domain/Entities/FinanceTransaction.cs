@@ -10,6 +10,7 @@ public class FinanceTransaction
     public string Title { get; private set; }
     public long Amount { get; private set; }
     public DateTime CreatedAt { get; private set; }
+    public bool IsFromBalance { get; private set; }
 
     private FinanceTransaction() { }
 
@@ -17,7 +18,8 @@ public class FinanceTransaction
         UserId creatorId,
         FinanceCategoryId? categoryId,
         string title,
-        long amount)
+        long amount,
+        bool isFromBalance)
     {
         if (string.IsNullOrWhiteSpace(title))
             throw new ArgumentException("Title is required.", nameof(title));
@@ -29,7 +31,8 @@ public class FinanceTransaction
             CategoryId = categoryId,
             Title = title,
             Amount = amount,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            IsFromBalance = isFromBalance
         };
     }
 
@@ -51,13 +54,19 @@ public class FinanceTransaction
         Amount = amount;
     }
 
+    public void SetIsFromBalance(bool isFromBalance)
+    {
+        IsFromBalance = isFromBalance;
+    }
+
     public static FinanceTransaction Restore(
         FinanceTransactionId id,
         UserId creatorId,
         FinanceCategoryId? categoryId,
         string title,
         long amount,
-        DateTime createdAt)
+        DateTime createdAt,
+        bool isFromBalance)
     {
         return new FinanceTransaction
         {
@@ -66,7 +75,8 @@ public class FinanceTransaction
             CategoryId = categoryId,
             Title = title,
             Amount = amount,
-            CreatedAt = createdAt
+            CreatedAt = createdAt,
+            IsFromBalance = isFromBalance
         };
     }
 }
