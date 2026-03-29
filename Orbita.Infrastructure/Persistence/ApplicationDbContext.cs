@@ -22,6 +22,7 @@ public class OrbitaDbContext(DbContextOptions<OrbitaDbContext> options) : Identi
     public DbSet<FinanceTransactionEntity> FinanceTransactions => Set<FinanceTransactionEntity>();
     public DbSet<SavingsGoalEntity> SavingsGoals => Set<SavingsGoalEntity>();
     public DbSet<SpendingLimitEntity> SpendingLimits => Set<SpendingLimitEntity>();
+    public DbSet<TeamEntity> Teams => Set<TeamEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

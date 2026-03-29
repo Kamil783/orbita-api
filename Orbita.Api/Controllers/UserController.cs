@@ -32,7 +32,8 @@ public class UserController(IUserService service) : AuthorizedControllerBase
     }
 
     [HttpPut("avatar")]
-    public async Task<IActionResult> ChangeAvatar([FromForm] IFormFile file, CancellationToken ct)
+    [Consumes("multipart/form-data")]
+    public async Task<IActionResult> ChangeAvatar(IFormFile file, CancellationToken ct)
     {
         if(!TryGetUserId(out var userId))
             return Unauthorized();

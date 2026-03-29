@@ -1,8 +1,6 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Orbita.Api.Extensions;
 using Orbita.Application.Abstractions.Services;
-using System.Security.Claims;
 
 namespace Orbita.Api.Controllers
 {
