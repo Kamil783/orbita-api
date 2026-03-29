@@ -6,6 +6,7 @@ public class FinanceTransaction
 {
     public FinanceTransactionId Id { get; private set; }
     public UserId CreatorId { get; private set; }
+    public TeamId TeamId { get; private set; }
     public FinanceCategoryId? CategoryId { get; private set; }
     public string Title { get; private set; }
     public long Amount { get; private set; }

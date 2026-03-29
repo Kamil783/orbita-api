@@ -6,6 +6,7 @@ public class SavingsGoal
 {
     public SavingsGoalId Id { get; private set; }
     public UserId CreatorId { get; private set; }
+    public TeamId TeamId { get; private set; }
     public string Name { get; private set; }
     public long Target { get; private set; }
     public long Current { get; private set; }

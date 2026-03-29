@@ -10,6 +10,7 @@ public class BacklogTask
     public TodoItemPriority Priority { get; private set; }
     public string Description { get; private set; } = string.Empty;
     public UserId CreatorId { get; private set; }
+    public TeamId TeamId { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public bool InWeek { get; private set; }
     public bool IsCompleted { get; private set; }

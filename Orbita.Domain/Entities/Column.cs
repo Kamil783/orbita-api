@@ -12,6 +12,7 @@ public class Column
     public TodoItemStatus Status { get; private set; }
     public bool Muted { get; private set; }
     public UserId? CreatorId { get; private set; }
+    public TeamId TeamId { get; private set; }
 
     private readonly List<TodoItem> _todoItems = [];
     public IReadOnlyCollection<TodoItem> TodoItems => _todoItems.AsReadOnly();

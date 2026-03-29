@@ -6,6 +6,7 @@ public class FinanceCategory
 {
     public FinanceCategoryId Id { get; private set; }
     public UserId CreatorId { get; private set; }
+    public TeamId TeamId { get; private set; }
     public string Name { get; private set; }
     public string Icon { get; private set; }
     public string Bg { get; private set; }

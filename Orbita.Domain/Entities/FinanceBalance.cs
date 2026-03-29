@@ -5,6 +5,7 @@ namespace Orbita.Domain.Entities;
 public class FinanceBalance
 {
     public UserId UserId { get; private set; }
+    public TeamId TeamId { get; private set; }
     public long Balance { get; private set; }
     public long PreviousMonthBalance { get; private set; }
     public DateTime? LastMonthClosedAt { get; private set; }

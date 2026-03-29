@@ -5,6 +5,7 @@ namespace Orbita.Domain.Entities;
 public class SpendingLimit
 {
     public UserId UserId { get; private set; }
+    public TeamId TeamId { get; private set; }
     public long MonthlyLimit { get; private set; }
     public long WeeklyLimit { get; private set; }
 

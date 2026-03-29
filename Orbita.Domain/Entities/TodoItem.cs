@@ -10,6 +10,7 @@ public class TodoItem
     public TodoItemStatus TaskStatus { get; private set; }
     public TodoItemPriority TaskPriority { get; private set; }
     public UserId CreatorId { get; private set; }
+    public TeamId TeamId { get; private set; }
     public ColumnId ColumnId { get; private set; }
     public DateTime CreatedAtUtc { get; private set; }
 
