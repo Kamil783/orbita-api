@@ -28,6 +28,9 @@ public class TodoItemEntityConfiguration : IEntityTypeConfiguration<TodoItemEnti
         b.Property(x => x.CreatorId)
             .IsRequired();
 
+        b.Property(x => x.TeamId)
+            .IsRequired();
+
         b.Property(x => x.ColumnId)
             .IsRequired();
 
@@ -44,7 +47,7 @@ public class TodoItemEntityConfiguration : IEntityTypeConfiguration<TodoItemEnti
             .HasMaxLength(128);
 
         b.HasIndex(x => x.ColumnId);
-        b.HasIndex(x => x.CreatorId);
+        b.HasIndex(x => x.TeamId);
         b.HasIndex(x => x.TaskStatus);
         b.HasIndex(x => x.DeadlineUtc);
 

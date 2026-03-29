@@ -17,7 +17,9 @@ using Orbita.Application.Abstractions.Jobs;
 using Orbita.Infrastructure.Jobs;
 using Orbita.Infrastructure.Logging;
 using Orbita.Infrastructure.Persistence;
+using Orbita.Application.Abstractions.Services;
 using Orbita.Infrastructure.Repositories;
+using Orbita.Infrastructure.Services;
 
 namespace Orbita.Infrastructure.DependencyInjection;
 
@@ -79,6 +81,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IFinanceTransactionRepository, FinanceTransactionRepository>();
         services.AddScoped<ISavingsGoalRepository, SavingsGoalRepository>();
         services.AddScoped<ISpendingLimitRepository, SpendingLimitRepository>();
+        services.AddScoped<ITeamRepository, TeamRepository>();
+        services.AddScoped<ITeamProvider, TeamProvider>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         services.AddHttpContextAccessor();

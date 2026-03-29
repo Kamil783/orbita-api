@@ -4,6 +4,7 @@ public class FinanceCategoryEntity
 {
     public Guid Id { get; set; }
     public Guid CreatorId { get; set; }
+    public Guid TeamId { get; set; }
     public string Name { get; set; } = default!;
     public string Icon { get; set; } = default!;
     public string Bg { get; set; } = default!;

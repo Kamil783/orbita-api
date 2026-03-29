@@ -16,6 +16,9 @@ public class FinanceTransactionEntityConfiguration : IEntityTypeConfiguration<Fi
         b.Property(x => x.CreatorId)
             .IsRequired();
 
+        b.Property(x => x.TeamId)
+            .IsRequired();
+
         b.Property(x => x.CategoryId)
             .IsRequired(false);
 
@@ -38,8 +41,8 @@ public class FinanceTransactionEntityConfiguration : IEntityTypeConfiguration<Fi
             .IsRequired(false)
             .OnDelete(DeleteBehavior.Restrict);
 
-        b.HasIndex(x => x.CreatorId);
+        b.HasIndex(x => x.TeamId);
         b.HasIndex(x => x.CategoryId);
-        b.HasIndex(x => new { x.CreatorId, x.CreatedAt });
+        b.HasIndex(x => new { x.TeamId, x.CreatedAt });
     }
 }

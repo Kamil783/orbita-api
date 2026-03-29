@@ -17,6 +17,7 @@ public class FinanceTransaction
 
     public static FinanceTransaction Create(
         UserId creatorId,
+        TeamId teamId,
         FinanceCategoryId? categoryId,
         string title,
         long amount,
@@ -29,6 +30,7 @@ public class FinanceTransaction
         {
             Id = new FinanceTransactionId(Guid.NewGuid()),
             CreatorId = creatorId,
+            TeamId = teamId,
             CategoryId = categoryId,
             Title = title,
             Amount = amount,
@@ -63,6 +65,7 @@ public class FinanceTransaction
     public static FinanceTransaction Restore(
         FinanceTransactionId id,
         UserId creatorId,
+        TeamId teamId,
         FinanceCategoryId? categoryId,
         string title,
         long amount,
@@ -73,6 +76,7 @@ public class FinanceTransaction
         {
             Id = id,
             CreatorId = creatorId,
+            TeamId = teamId,
             CategoryId = categoryId,
             Title = title,
             Amount = amount,

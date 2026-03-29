@@ -26,8 +26,8 @@ public class MonthRolloverJob(
                 continue;
 
             logger.LogInformation(
-                "Rolling over month for user {UserId}: balance {Balance} -> previousMonthBalance",
-                balance.UserId.Id, balance.Balance);
+                "Rolling over month for team {TeamId}: balance {Balance} -> previousMonthBalance",
+                balance.TeamId.Id, balance.Balance);
 
             balance.CloseMonth();
             await balanceRepository.UpdateAsync(balance, ct);

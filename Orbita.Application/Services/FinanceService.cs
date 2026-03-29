@@ -12,14 +12,16 @@ public class FinanceService(
     IFinanceCategoryRepository categoryRepository,
     IFinanceTransactionRepository transactionRepository,
     ISavingsGoalRepository savingsGoalRepository,
-    ISpendingLimitRepository spendingLimitRepository) : IFinanceService
+    ISpendingLimitRepository spendingLimitRepository,
+    ITeamProvider teamProvider) : IFinanceService
 {
     public async Task<Result<FinanceBalance>> GetBalanceAsync(Guid userId, CancellationToken ct = default)
     {
-        var balance = await balanceRepository.GetAsync(userId, ct);
+        var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
+        var balance = await balanceRepository.GetAsync(teamId, ct);
         if (balance is null)
         {
-            balance = FinanceBalance.Create(new UserId(userId));
+            balance = FinanceBalance.Create(new TeamId(teamId));
             balance = await balanceRepository.CreateAsync(balance, ct);
         }
 
@@ -28,10 +30,11 @@ public class FinanceService(
 
     public async Task<Result<FinanceBalance>> GetPreviousMonthBalanceAsync(Guid userId, CancellationToken ct = default)
     {
-        var balance = await balanceRepository.GetAsync(userId, ct);
+        var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
+        var balance = await balanceRepository.GetAsync(teamId, ct);
         if (balance is null)
         {
-            balance = FinanceBalance.Create(new UserId(userId));
+            balance = FinanceBalance.Create(new TeamId(teamId));
             balance = await balanceRepository.CreateAsync(balance, ct);
         }
 
@@ -40,10 +43,11 @@ public class FinanceService(
 
     public async Task<Result<FinanceBalance>> AdjustBalanceAsync(Guid userId, long amount, CancellationToken ct = default)
     {
-        var balance = await balanceRepository.GetAsync(userId, ct);
+        var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
+        var balance = await balanceRepository.GetAsync(teamId, ct);
         if (balance is null)
         {
-            balance = FinanceBalance.Create(new UserId(userId));
+            balance = FinanceBalance.Create(new TeamId(teamId));
             balance = await balanceRepository.CreateAsync(balance, ct);
         }
 
@@ -55,7 +59,8 @@ public class FinanceService(
 
     public async Task<Result<List<FinanceCategory>>> GetCategoriesAsync(Guid userId, CancellationToken ct = default)
     {
-        var categories = await categoryRepository.GetByUserAsync(userId, ct);
+        var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
+        var categories = await categoryRepository.GetByTeamAsync(teamId, ct);
         return Result<List<FinanceCategory>>.Ok(categories);
     }
 
@@ -63,8 +68,11 @@ public class FinanceService(
         Guid userId, string name, string icon, string bg, string color,
         long? weeklyLimit, long? monthlyLimit, CancellationToken ct = default)
     {
+        var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
+
         var category = FinanceCategory.Create(
             creatorId: new UserId(userId),
+            teamId: new TeamId(teamId),
             name: name,
             icon: icon,
             bg: bg,
@@ -78,13 +86,16 @@ public class FinanceService(
 
     public async Task<Result<List<FinanceTransaction>>> GetTransactionsAsync(Guid userId, CancellationToken ct = default)
     {
-        var transactions = await transactionRepository.GetByUserAsync(userId, ct);
+        var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
+        var transactions = await transactionRepository.GetByTeamAsync(teamId, ct);
         return Result<List<FinanceTransaction>>.Ok(transactions);
     }
 
     public async Task<Result<FinanceTransaction>> CreateTransactionAsync(
         Guid userId, Guid? categoryId, string title, long amount, bool fromBalance, CancellationToken ct = default)
     {
+        var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
+
         FinanceCategoryId? financeCategoryId = null;
         if (categoryId.HasValue)
         {
@@ -97,6 +108,7 @@ public class FinanceService(
 
         var transaction = FinanceTransaction.Create(
             creatorId: new UserId(userId),
+            teamId: new TeamId(teamId),
             categoryId: financeCategoryId,
             title: title,
             amount: amount,
@@ -106,10 +118,10 @@ public class FinanceService(
 
         if (fromBalance)
         {
-            var balance = await balanceRepository.GetAsync(userId, ct);
+            var balance = await balanceRepository.GetAsync(teamId, ct);
             if (balance is null)
             {
-                balance = FinanceBalance.Create(new UserId(userId));
+                balance = FinanceBalance.Create(new TeamId(teamId));
                 await balanceRepository.CreateAsync(balance, ct);
             }
 
@@ -123,11 +135,13 @@ public class FinanceService(
     public async Task<Result<FinanceTransaction>> UpdateTransactionAsync(
         Guid userId, Guid transactionId, Guid? categoryId, string? title, long? amount, CancellationToken ct = default)
     {
+        var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
+
         var transaction = await transactionRepository.GetAsync(transactionId, ct);
         if (transaction is null)
             return Result<FinanceTransaction>.NotFound("Transaction not found.");
 
-        if (transaction.CreatorId.Id != userId)
+        if (transaction.TeamId.Id != teamId)
             return Result<FinanceTransaction>.Forbidden("Access denied.");
 
         var oldAmount = transaction.Amount;
@@ -150,7 +164,7 @@ public class FinanceService(
 
             if (transaction.IsFromBalance)
             {
-                var balance = await balanceRepository.GetAsync(userId, ct);
+                var balance = await balanceRepository.GetAsync(teamId, ct);
                 if (balance is not null)
                 {
                     balance.Adjust(-oldAmount + amount.Value);
@@ -166,16 +180,18 @@ public class FinanceService(
 
     public async Task<Result> DeleteTransactionAsync(Guid userId, Guid transactionId, CancellationToken ct = default)
     {
+        var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
+
         var transaction = await transactionRepository.GetAsync(transactionId, ct);
         if (transaction is null)
             return Result.NotFound("Transaction not found.");
 
-        if (transaction.CreatorId.Id != userId)
+        if (transaction.TeamId.Id != teamId)
             return Result.Forbidden("Access denied.");
 
         if (transaction.IsFromBalance)
         {
-            var balance = await balanceRepository.GetAsync(userId, ct);
+            var balance = await balanceRepository.GetAsync(teamId, ct);
             if (balance is not null)
             {
                 balance.Adjust(-transaction.Amount);
@@ -190,14 +206,18 @@ public class FinanceService(
 
     public async Task<Result<List<SavingsGoal>>> GetSavingsGoalsAsync(Guid userId, CancellationToken ct = default)
     {
-        var goals = await savingsGoalRepository.GetByUserAsync(userId, ct);
+        var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
+        var goals = await savingsGoalRepository.GetByTeamAsync(teamId, ct);
         return Result<List<SavingsGoal>>.Ok(goals);
     }
 
     public async Task<Result<SavingsGoal>> CreateSavingsGoalAsync(Guid userId, string name, long target, CancellationToken ct = default)
     {
+        var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
+
         var goal = SavingsGoal.Create(
             creatorId: new UserId(userId),
+            teamId: new TeamId(teamId),
             name: name,
             target: target);
 
@@ -207,11 +227,13 @@ public class FinanceService(
 
     public async Task<Result<SavingsGoal>> TopUpSavingsGoalAsync(Guid userId, Guid goalId, long amount, CancellationToken ct = default)
     {
+        var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
+
         var goal = await savingsGoalRepository.GetAsync(goalId, ct);
         if (goal is null)
             return Result<SavingsGoal>.NotFound("Savings goal not found.");
 
-        if (goal.CreatorId.Id != userId)
+        if (goal.TeamId.Id != teamId)
             return Result<SavingsGoal>.Forbidden("Access denied.");
 
         goal.AddFunds(amount);
@@ -221,11 +243,13 @@ public class FinanceService(
 
     public async Task<Result> DeleteSavingsGoalAsync(Guid userId, Guid goalId, CancellationToken ct = default)
     {
+        var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
+
         var goal = await savingsGoalRepository.GetAsync(goalId, ct);
         if (goal is null)
             return Result.NotFound("Savings goal not found.");
 
-        if (goal.CreatorId.Id != userId)
+        if (goal.TeamId.Id != teamId)
             return Result.Forbidden("Access denied.");
 
         await savingsGoalRepository.DeleteAsync(goalId, ct);
@@ -234,10 +258,12 @@ public class FinanceService(
 
     public async Task<Result<SpendingLimit>> GetSpendingLimitsAsync(Guid userId, CancellationToken ct = default)
     {
-        var limit = await spendingLimitRepository.GetAsync(userId, ct);
+        var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
+
+        var limit = await spendingLimitRepository.GetAsync(teamId, ct);
         if (limit is null)
         {
-            limit = SpendingLimit.Create(new UserId(userId));
+            limit = SpendingLimit.Create(new TeamId(teamId));
             limit = await spendingLimitRepository.CreateAsync(limit, ct);
         }
 
@@ -247,10 +273,12 @@ public class FinanceService(
     public async Task<Result<SpendingLimit>> UpdateSpendingLimitsAsync(
         Guid userId, long monthlyLimit, long weeklyLimit, CancellationToken ct = default)
     {
-        var limit = await spendingLimitRepository.GetAsync(userId, ct);
+        var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
+
+        var limit = await spendingLimitRepository.GetAsync(teamId, ct);
         if (limit is null)
         {
-            limit = SpendingLimit.Create(new UserId(userId));
+            limit = SpendingLimit.Create(new TeamId(teamId));
             await spendingLimitRepository.CreateAsync(limit, ct);
         }
 
@@ -263,6 +291,7 @@ public class FinanceService(
     public async Task<Result<List<(string Label, decimal Value)>>> GetChartDataAsync(
         Guid userId, string period, CancellationToken ct = default)
     {
+        var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
         var now = DateTime.UtcNow;
         var culture = new CultureInfo("ru-RU");
 
@@ -277,7 +306,7 @@ public class FinanceService(
 
             var from = DateTime.SpecifyKind(startOfWeek, DateTimeKind.Utc);
             var to = DateTime.SpecifyKind(startOfWeek.AddDays(7), DateTimeKind.Utc);
-            var transactions = await transactionRepository.GetByUserInPeriodAsync(userId, from, to, ct);
+            var transactions = await transactionRepository.GetByTeamInPeriodAsync(teamId, from, to, ct);
 
             for (var i = 0; i < 7; i++)
             {
@@ -301,7 +330,7 @@ public class FinanceService(
             var daysInMonth = DateTime.DaysInMonth(now.Year, now.Month);
             var endOfMonth = startOfMonth.AddMonths(1);
 
-            var transactions = await transactionRepository.GetByUserInPeriodAsync(userId, startOfMonth, endOfMonth, ct);
+            var transactions = await transactionRepository.GetByTeamInPeriodAsync(teamId, startOfMonth, endOfMonth, ct);
 
             var weekStart = startOfMonth;
             var weekNumber = 1;

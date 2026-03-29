@@ -11,6 +11,7 @@ public class BacklogTaskEntity
     public string Description { get; set; } = string.Empty;
 
     public Guid CreatorId { get; set; }
+    public Guid TeamId { get; set; }
     public DateTime CreatedAt { get; set; }
 
     public bool InWeek { get; set; }

@@ -12,6 +12,7 @@ public static class FinanceCategoryExtensions
         {
             Id = category.Id.Id,
             CreatorId = category.CreatorId.Id,
+            TeamId = category.TeamId.Id,
             Name = category.Name,
             Icon = category.Icon,
             Bg = category.Bg,
@@ -26,6 +27,7 @@ public static class FinanceCategoryExtensions
         return FinanceCategory.Restore(
             id: new FinanceCategoryId(entity.Id),
             creatorId: new UserId(entity.CreatorId),
+            teamId: new TeamId(entity.TeamId),
             name: entity.Name,
             icon: entity.Icon,
             bg: entity.Bg,

@@ -152,6 +152,7 @@ public class TodoItemRepository(OrbitaDbContext db) : ITodoItemRepository
         target.TaskStatus = source.TaskStatus;
         target.TaskPriority = source.TaskPriority;
         target.CreatorId = source.CreatorId.Id;
+        target.TeamId = source.TeamId.Id;
         target.ColumnId = source.ColumnId.Id;
         target.UpdatedAtUtc = source.UpdatedAtUtc;
         target.DeadlineUtc = source.DeadlineUtc;

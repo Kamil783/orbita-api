@@ -16,6 +16,9 @@ public class WeekEntityConfiguration : IEntityTypeConfiguration<WeekEntity>
         b.Property(x => x.CreatorId)
             .IsRequired();
 
+        b.Property(x => x.TeamId)
+            .IsRequired();
+
         b.Property(x => x.StartDate)
             .IsRequired();
 
@@ -28,7 +31,7 @@ public class WeekEntityConfiguration : IEntityTypeConfiguration<WeekEntity>
         b.Property(x => x.CreatedAt)
             .IsRequired();
 
-        b.HasIndex(x => x.CreatorId);
-        b.HasIndex(x => new { x.CreatorId, x.IsArchived });
+        b.HasIndex(x => x.TeamId);
+        b.HasIndex(x => new { x.TeamId, x.IsArchived });
     }
 }

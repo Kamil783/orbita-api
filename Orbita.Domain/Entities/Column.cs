@@ -1,4 +1,4 @@
-﻿using Orbita.Domain.Enums;
+using Orbita.Domain.Enums;
 using Orbita.Domain.ValueObjects;
 
 namespace Orbita.Domain.Entities;
@@ -21,7 +21,7 @@ public class Column
 
     private Column() { }
 
-    public static Column Create(string title, TodoItemStatus status, string headerActionIcon, bool muted = false, UserId? creatorId = null)
+    public static Column Create(string title, TodoItemStatus status, string headerActionIcon, TeamId teamId, bool muted = false, UserId? creatorId = null)
     {
         return new Column
         {
@@ -31,7 +31,8 @@ public class Column
             HeaderActionIcon = headerActionIcon,
             Status = status,
             Muted = muted,
-            CreatorId = creatorId
+            CreatorId = creatorId,
+            TeamId = teamId
         };
     }
 
@@ -43,6 +44,7 @@ public class Column
         TodoItemStatus status,
         bool muted,
         UserId? creatorId,
+        TeamId teamId,
         IEnumerable<TodoItem> todoItems)
     {
         var column = new Column
@@ -53,7 +55,8 @@ public class Column
             HeaderActionIcon = headerActionIcon,
             Status = status,
             Muted = muted,
-            CreatorId = creatorId
+            CreatorId = creatorId,
+            TeamId = teamId
         };
         column._todoItems.AddRange(todoItems);
         return column;

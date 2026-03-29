@@ -10,7 +10,7 @@ public static class FinanceBalanceExtensions
     {
         return new FinanceBalanceEntity
         {
-            UserId = balance.UserId.Id,
+            TeamId = balance.TeamId.Id,
             Balance = balance.Balance,
             PreviousMonthBalance = balance.PreviousMonthBalance,
             LastMonthClosedAt = balance.LastMonthClosedAt,
@@ -21,7 +21,7 @@ public static class FinanceBalanceExtensions
     public static FinanceBalance ToDomain(this FinanceBalanceEntity entity)
     {
         return FinanceBalance.Restore(
-            userId: new UserId(entity.UserId),
+            teamId: new TeamId(entity.TeamId),
             balance: entity.Balance,
             previousMonthBalance: entity.PreviousMonthBalance,
             lastMonthClosedAt: entity.LastMonthClosedAt,

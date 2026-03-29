@@ -19,6 +19,7 @@ public class Week
 
     public static Week Create(
         UserId creatorId,
+        TeamId teamId,
         DateTime startDate,
         DateTime endDate)
     {
@@ -29,6 +30,7 @@ public class Week
         {
             Id = new WeekId(Guid.NewGuid()),
             CreatorId = creatorId,
+            TeamId = teamId,
             StartDate = NormalizeToUtc(startDate),
             EndDate = NormalizeToUtc(endDate),
             IsArchived = false,
@@ -39,6 +41,7 @@ public class Week
     public static Week Restore(
         WeekId id,
         UserId creatorId,
+        TeamId teamId,
         DateTime startDate,
         DateTime endDate,
         bool isArchived,
@@ -49,6 +52,7 @@ public class Week
         {
             Id = id,
             CreatorId = creatorId,
+            TeamId = teamId,
             StartDate = startDate,
             EndDate = endDate,
             IsArchived = isArchived,

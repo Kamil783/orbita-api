@@ -8,9 +8,9 @@ public class FinanceBalanceEntityConfiguration : IEntityTypeConfiguration<Financ
 {
     public void Configure(EntityTypeBuilder<FinanceBalanceEntity> b)
     {
-        b.HasKey(x => x.UserId);
+        b.HasKey(x => x.TeamId);
 
-        b.Property(x => x.UserId)
+        b.Property(x => x.TeamId)
             .ValueGeneratedNever();
 
         b.Property(x => x.Balance)

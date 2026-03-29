@@ -8,10 +8,10 @@ namespace Orbita.Infrastructure.Repositories;
 
 public class FinanceTransactionRepository(OrbitaDbContext db) : IFinanceTransactionRepository
 {
-    public async Task<List<FinanceTransaction>> GetByUserAsync(Guid userId, CancellationToken ct = default)
+    public async Task<List<FinanceTransaction>> GetByTeamAsync(Guid teamId, CancellationToken ct = default)
     {
         var entities = await db.FinanceTransactions
-            .Where(x => x.CreatorId == userId)
+            .Where(x => x.TeamId == teamId)
             .OrderByDescending(x => x.CreatedAt)
             .ToListAsync(ct);
 
@@ -64,10 +64,10 @@ public class FinanceTransactionRepository(OrbitaDbContext db) : IFinanceTransact
         }
     }
 
-    public async Task<List<FinanceTransaction>> GetByUserInPeriodAsync(Guid userId, DateTime from, DateTime to, CancellationToken ct = default)
+    public async Task<List<FinanceTransaction>> GetByTeamInPeriodAsync(Guid teamId, DateTime from, DateTime to, CancellationToken ct = default)
     {
         var entities = await db.FinanceTransactions
-            .Where(x => x.CreatorId == userId && x.CreatedAt >= from && x.CreatedAt < to)
+            .Where(x => x.TeamId == teamId && x.CreatedAt >= from && x.CreatedAt < to)
             .OrderBy(x => x.CreatedAt)
             .ToListAsync(ct);
 

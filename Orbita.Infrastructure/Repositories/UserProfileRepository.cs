@@ -37,8 +37,17 @@ public class UserProfileRepository(OrbitaDbContext db) : IUserProfileRepository
 
     public async Task<IEnumerable<UserProfile>> GetTeamUserProfilesAsync(Guid userId, CancellationToken ct = default)
     {
+        var user = await db.Users.FirstOrDefaultAsync(u => u.Id == userId, ct);
+        if (user?.TeamId is null)
+            return [];
+
+        var teamMemberIds = await db.Users
+            .Where(u => u.TeamId == user.TeamId)
+            .Select(u => u.Id)
+            .ToListAsync(ct);
+
         var entities = await db.UserProfiles
-            .Where(p => true)
+            .Where(p => teamMemberIds.Contains(p.UserId))
             .AsNoTracking()
             .ToListAsync(ct);
 
