@@ -16,7 +16,6 @@ public class TeamProvider(ITeamRepository teamRepository) : ITeamProvider
         var team = Team.Create($"Personal");
         await teamRepository.CreateAsync(team, ct);
         await teamRepository.SetUserTeamAsync(userId, team.Id.Id, ct);
-        await teamRepository.SeedDefaultColumnsAsync(team.Id.Id, ct);
 
         return team.Id.Id;
     }

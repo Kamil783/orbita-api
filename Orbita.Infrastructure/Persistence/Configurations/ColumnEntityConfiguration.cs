@@ -31,7 +31,7 @@ public class ColumnEntityConfiguration : IEntityTypeConfiguration<ColumnEntity>
 
         b.Property(x => x.CreatorId).IsRequired(false);
 
-        b.Property(x => x.TeamId).IsRequired();
+        b.Property(x => x.TeamId).IsRequired(false);
 
         b.HasMany(x => x.TodoItems)
             .WithOne(x => x.Column)

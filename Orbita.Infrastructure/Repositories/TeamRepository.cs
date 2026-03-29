@@ -58,9 +58,4 @@ public class TeamRepository(OrbitaDbContext db) : ITeamRepository
             await db.SaveChangesAsync(ct);
         }
     }
-
-    public async Task SeedDefaultColumnsAsync(Guid teamId, CancellationToken ct = default)
-    {
-        await SeedDatabase.SeedDefaultColumnsForTeamAsync(db, teamId);
-    }
 }

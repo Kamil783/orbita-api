@@ -17,7 +17,6 @@ public class TeamService(ITeamRepository teamRepository) : ITeamService
         var created = await teamRepository.CreateAsync(team, ct);
 
         await teamRepository.SetUserTeamAsync(userId, created.Id.Id, ct);
-        await teamRepository.SeedDefaultColumnsAsync(created.Id.Id, ct);
 
         return Result<Team>.Ok(created);
     }

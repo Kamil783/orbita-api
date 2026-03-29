@@ -87,11 +87,13 @@ public static class SeedDatabase
         {
 
         }
+
+        await SeedDefaultColumnsAsync(db);
     }
 
-    public static async Task SeedDefaultColumnsForTeamAsync(OrbitaDbContext db, Guid teamId)
+    private static async Task SeedDefaultColumnsAsync(OrbitaDbContext db)
     {
-        var hasColumns = await db.Columns.AnyAsync(c => c.TeamId == teamId);
+        var hasColumns = await db.Columns.AnyAsync(c => c.TeamId == null);
         if (hasColumns)
             return;
 
@@ -106,7 +108,7 @@ public static class SeedDatabase
                 Muted = false,
                 TotalCount = 0,
                 CreatorId = null,
-                TeamId = teamId
+                TeamId = null
             },
             new()
             {
@@ -117,7 +119,7 @@ public static class SeedDatabase
                 Muted = false,
                 TotalCount = 0,
                 CreatorId = null,
-                TeamId = teamId
+                TeamId = null
             },
             new()
             {
@@ -128,7 +130,7 @@ public static class SeedDatabase
                 Muted = true,
                 TotalCount = 0,
                 CreatorId = null,
-                TeamId = teamId
+                TeamId = null
             }
         };
 
