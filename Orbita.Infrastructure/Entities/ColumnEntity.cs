@@ -11,6 +11,7 @@ public class ColumnEntity
     public TodoItemStatus Status { get; set; }
     public bool Muted { get; set; }
     public Guid? CreatorId { get; set; }
+    public Guid TeamId { get; set; }
 
     public List<TodoItemEntity> TodoItems { get; set; } = new();
 }

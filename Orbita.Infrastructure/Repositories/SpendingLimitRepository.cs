@@ -8,10 +8,10 @@ namespace Orbita.Infrastructure.Repositories;
 
 public class SpendingLimitRepository(OrbitaDbContext db) : ISpendingLimitRepository
 {
-    public async Task<SpendingLimit?> GetAsync(Guid userId, CancellationToken ct = default)
+    public async Task<SpendingLimit?> GetAsync(Guid teamId, CancellationToken ct = default)
     {
         var entity = await db.SpendingLimits
-            .FirstOrDefaultAsync(x => x.UserId == userId, ct);
+            .FirstOrDefaultAsync(x => x.TeamId == teamId, ct);
 
         return entity?.ToDomain();
     }
@@ -27,7 +27,7 @@ public class SpendingLimitRepository(OrbitaDbContext db) : ISpendingLimitReposit
     public async Task<SpendingLimit> UpdateAsync(SpendingLimit limit, CancellationToken ct = default)
     {
         var entity = await db.SpendingLimits
-            .FirstOrDefaultAsync(x => x.UserId == limit.UserId.Id, ct);
+            .FirstOrDefaultAsync(x => x.TeamId == limit.TeamId.Id, ct);
 
         if (entity is null)
         {

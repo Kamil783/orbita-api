@@ -14,11 +14,13 @@ public class BacklogTaskService(
     ITodoItemRepository todoItemRepository,
     IColumnRepository columnRepository,
     IWeekRepository weekRepository,
+    ITeamProvider teamProvider,
     IUnitOfWork unitOfWork) : IBacklogTaskService
 {
     public async Task<Result<List<BacklogTask>>> GetAsync(Guid userId, CancellationToken ct = default)
     {
-        var tasks = await backlogRepository.GetByUserAsync(userId, ct);
+        var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
+        var tasks = await backlogRepository.GetByTeamAsync(teamId, ct);
         return Result<List<BacklogTask>>.Ok(tasks.ToList());
     }
 
@@ -27,11 +29,14 @@ public class BacklogTaskService(
         if (!Enum.TryParse<TodoItemPriority>(command.Priority, true, out var priority))
             return Result<BacklogTask>.Fail("Invalid priority.");
 
+        var teamId = await teamProvider.GetTeamIdAsync(currentUserId, ct);
+
         var task = BacklogTask.Create(
             title: command.Title,
             priority: priority,
             description: command.Description ?? string.Empty,
             creatorId: new UserId(currentUserId),
+            teamId: new TeamId(teamId),
             dueDate: command.DueDate,
             estimateMinutes: command.EstimateMinutes,
             progressPct: command.ProgressPct,
@@ -44,11 +49,12 @@ public class BacklogTaskService(
 
     public async Task<Result<BacklogTask>> UpdateAsync(Guid userId, Guid backlogTaskId, UpdateBacklogTaskCommand command, CancellationToken ct = default)
     {
+        var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
         var backlogTask = await backlogRepository.GetAsync(backlogTaskId, ct);
         if (backlogTask is null)
             return Result<BacklogTask>.NotFound("Backlog task not found.");
 
-        if (backlogTask.CreatorId.Id != userId)
+        if (backlogTask.TeamId.Id != teamId)
             return Result<BacklogTask>.Forbidden("Access denied.");
 
         if (command.Title is not null)
@@ -103,11 +109,12 @@ public class BacklogTaskService(
 
     public async Task<Result<TodoItem>> MoveToWeekAsync(Guid userId, Guid backlogTaskId, Guid targetColumnId, CancellationToken ct = default)
     {
+        var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
         var backlogTask = await backlogRepository.GetAsync(backlogTaskId, ct);
         if (backlogTask is null)
             return Result<TodoItem>.NotFound("Backlog task not found.");
 
-        if (backlogTask.CreatorId.Id != userId)
+        if (backlogTask.TeamId.Id != teamId)
             return Result<TodoItem>.Forbidden("Access denied.");
 
         var column = await columnRepository.GetAsync(targetColumnId, ct);
@@ -120,6 +127,7 @@ public class BacklogTaskService(
             title: backlogTask.Title,
             priority: backlogTask.Priority,
             creatorId: new UserId(userId),
+            teamId: new TeamId(teamId),
             columnId: new ColumnId(targetColumnId),
             sortOrder: maxSort + 1,
             deadlineUtc: backlogTask.DueDate,
@@ -135,7 +143,7 @@ public class BacklogTaskService(
             backlogTask.SetInWeek(true);
             await backlogRepository.UpdateAsync(backlogTask, ct);
 
-            var currentWeek = await weekRepository.GetCurrentAsync(userId, ct);
+            var currentWeek = await weekRepository.GetCurrentAsync(teamId, ct);
             if (currentWeek is not null)
             {
                 currentWeek.AddTask(backlogTask.Id);
@@ -155,11 +163,12 @@ public class BacklogTaskService(
 
     public async Task<Result> RemoveFromWeekAsync(Guid userId, Guid backlogTaskId, CancellationToken ct = default)
     {
+        var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
         var backlogTask = await backlogRepository.GetAsync(backlogTaskId, ct);
         if (backlogTask is null)
             return Result.NotFound("Backlog task not found.");
 
-        if (backlogTask.CreatorId.Id != userId)
+        if (backlogTask.TeamId.Id != teamId)
             return Result.Forbidden("Access denied.");
 
         await unitOfWork.BeginTransactionAsync(ct);
@@ -185,11 +194,12 @@ public class BacklogTaskService(
 
     public async Task<Result> SetDoneAsync(Guid userId, Guid backlogTaskId, bool done, CancellationToken ct = default)
     {
+        var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
         var backlogTask = await backlogRepository.GetAsync(backlogTaskId, ct);
         if (backlogTask is null)
             return Result.NotFound("Backlog task not found.");
 
-        if (backlogTask.CreatorId.Id != userId)
+        if (backlogTask.TeamId.Id != teamId)
             return Result.Forbidden("Access denied.");
 
         backlogTask.SetCompleted(done);

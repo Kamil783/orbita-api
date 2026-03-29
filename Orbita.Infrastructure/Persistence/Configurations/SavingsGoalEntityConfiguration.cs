@@ -16,6 +16,9 @@ public class SavingsGoalEntityConfiguration : IEntityTypeConfiguration<SavingsGo
         b.Property(x => x.CreatorId)
             .IsRequired();
 
+        b.Property(x => x.TeamId)
+            .IsRequired();
+
         b.Property(x => x.Name)
             .HasMaxLength(200)
             .IsRequired();
@@ -26,6 +29,6 @@ public class SavingsGoalEntityConfiguration : IEntityTypeConfiguration<SavingsGo
         b.Property(x => x.Current)
             .IsRequired();
 
-        b.HasIndex(x => x.CreatorId);
+        b.HasIndex(x => x.TeamId);
     }
 }

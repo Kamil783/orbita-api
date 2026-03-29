@@ -11,6 +11,7 @@ public class TodoItemEntity
     public TodoItemPriority TaskPriority { get; set; }
 
     public Guid CreatorId { get; set; }
+    public Guid TeamId { get; set; }
     public Guid ColumnId { get; set; }
     public ColumnEntity Column { get; set; } = default!;
 

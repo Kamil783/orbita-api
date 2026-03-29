@@ -13,6 +13,10 @@ public class TeamEntityConfiguration : IEntityTypeConfiguration<TeamEntity>
         b.Property(x => x.Id)
             .ValueGeneratedNever();
 
+        b.Property(x => x.Name)
+            .HasMaxLength(200)
+            .IsRequired();
+
         b.Property(x => x.CreatedAt)
             .IsRequired();
 

@@ -57,11 +57,11 @@ public class BacklogTaskRepository(OrbitaDbContext db) : IBacklogTaskRepository
             .ToList();
     }
 
-    public async Task<IReadOnlyCollection<BacklogTask>> GetByUserAsync(Guid userId, CancellationToken ct = default)
+    public async Task<IReadOnlyCollection<BacklogTask>> GetByTeamAsync(Guid teamId, CancellationToken ct = default)
     {
         var entities = await db.BacklogTasks
             .Include(x => x.Assignees)
-            .Where(x => x.CreatorId == userId)
+            .Where(x => x.TeamId == teamId)
             .ToListAsync(ct);
 
         return entities
@@ -92,6 +92,7 @@ public class BacklogTaskRepository(OrbitaDbContext db) : IBacklogTaskRepository
         target.Title = source.Title;
         target.Priority = source.Priority;
         target.Description = source.Description;
+        target.TeamId = source.TeamId.Id;
         target.InWeek = source.InWeek;
         target.IsCompleted = source.IsCompleted;
         target.DueDate = source.DueDate;

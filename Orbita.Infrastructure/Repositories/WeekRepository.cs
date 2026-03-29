@@ -9,22 +9,22 @@ namespace Orbita.Infrastructure.Repositories;
 
 public class WeekRepository(OrbitaDbContext db) : IWeekRepository
 {
-    public async Task<Week?> GetCurrentAsync(Guid userId, CancellationToken ct = default)
+    public async Task<Week?> GetCurrentAsync(Guid teamId, CancellationToken ct = default)
     {
         var entity = await db.Weeks
             .Include(w => w.BacklogTaskWeeks)
-            .Where(w => w.CreatorId == userId && !w.IsArchived)
+            .Where(w => w.TeamId == teamId && !w.IsArchived)
             .OrderByDescending(w => w.CreatedAt)
             .FirstOrDefaultAsync(ct);
 
         return entity?.ToDomain();
     }
 
-    public async Task<List<Week>> GetArchivedAsync(Guid userId, CancellationToken ct = default)
+    public async Task<List<Week>> GetArchivedAsync(Guid teamId, CancellationToken ct = default)
     {
         var entities = await db.Weeks
             .Include(w => w.BacklogTaskWeeks)
-            .Where(w => w.CreatorId == userId && w.IsArchived)
+            .Where(w => w.TeamId == teamId && w.IsArchived)
             .OrderByDescending(w => w.StartDate)
             .ToListAsync(ct);
 

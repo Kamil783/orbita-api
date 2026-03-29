@@ -8,10 +8,10 @@ namespace Orbita.Infrastructure.Repositories;
 
 public class FinanceBalanceRepository(OrbitaDbContext db) : IFinanceBalanceRepository
 {
-    public async Task<FinanceBalance?> GetAsync(Guid userId, CancellationToken ct = default)
+    public async Task<FinanceBalance?> GetAsync(Guid teamId, CancellationToken ct = default)
     {
         var entity = await db.FinanceBalances
-            .FirstOrDefaultAsync(x => x.UserId == userId, ct);
+            .FirstOrDefaultAsync(x => x.TeamId == teamId, ct);
 
         return entity?.ToDomain();
     }
@@ -33,7 +33,7 @@ public class FinanceBalanceRepository(OrbitaDbContext db) : IFinanceBalanceRepos
     public async Task<FinanceBalance> UpdateAsync(FinanceBalance balance, CancellationToken ct = default)
     {
         var entity = await db.FinanceBalances
-            .FirstOrDefaultAsync(x => x.UserId == balance.UserId.Id, ct);
+            .FirstOrDefaultAsync(x => x.TeamId == balance.TeamId.Id, ct);
 
         if (entity is null)
         {

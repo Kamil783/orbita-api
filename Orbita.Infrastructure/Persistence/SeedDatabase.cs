@@ -20,8 +20,6 @@ public static class SeedDatabase
         var db = sp.GetRequiredService<OrbitaDbContext>();
         await db.Database.MigrateAsync();
 
-        await SeedDefaultColumnsAsync(db);
-
         var roleManager = sp.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
         var userManager = sp.GetRequiredService<UserManager<UserEntity>>();
 
@@ -91,50 +89,50 @@ public static class SeedDatabase
         }
     }
 
-    private static async Task SeedDefaultColumnsAsync(OrbitaDbContext db)
+    public static async Task SeedDefaultColumnsForTeamAsync(OrbitaDbContext db, Guid teamId)
     {
+        var hasColumns = await db.Columns.AnyAsync(c => c.TeamId == teamId);
+        if (hasColumns)
+            return;
+
         var defaultColumns = new List<ColumnEntity>
         {
             new()
             {
-                Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
+                Id = Guid.NewGuid(),
                 Title = "К выполнению",
                 Status = TodoItemStatus.Todo,
                 HeaderActionIcon = "add_circle",
                 Muted = false,
                 TotalCount = 0,
-                CreatorId = null
+                CreatorId = null,
+                TeamId = teamId
             },
             new()
             {
-                Id = Guid.Parse("00000000-0000-0000-0000-000000000002"),
+                Id = Guid.NewGuid(),
                 Title = "В процессе",
                 Status = TodoItemStatus.InProgress,
                 HeaderActionIcon = "add_circle",
                 Muted = false,
                 TotalCount = 0,
-                CreatorId = null
+                CreatorId = null,
+                TeamId = teamId
             },
             new()
             {
-                Id = Guid.Parse("00000000-0000-0000-0000-000000000003"),
+                Id = Guid.NewGuid(),
                 Title = "Готово",
                 Status = TodoItemStatus.Done,
                 HeaderActionIcon = "checklist",
                 Muted = true,
                 TotalCount = 0,
-                CreatorId = null
+                CreatorId = null,
+                TeamId = teamId
             }
         };
 
-        foreach (var column in defaultColumns)
-        {
-            if (!await db.Columns.AnyAsync(c => c.Id == column.Id))
-            {
-                db.Columns.Add(column);
-            }
-        }
-
+        db.Columns.AddRange(defaultColumns);
         await db.SaveChangesAsync();
     }
 }

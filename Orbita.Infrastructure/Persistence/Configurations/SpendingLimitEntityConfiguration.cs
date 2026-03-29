@@ -8,9 +8,9 @@ public class SpendingLimitEntityConfiguration : IEntityTypeConfiguration<Spendin
 {
     public void Configure(EntityTypeBuilder<SpendingLimitEntity> b)
     {
-        b.HasKey(x => x.UserId);
+        b.HasKey(x => x.TeamId);
 
-        b.Property(x => x.UserId)
+        b.Property(x => x.TeamId)
             .ValueGeneratedNever();
 
         b.Property(x => x.MonthlyLimit)
