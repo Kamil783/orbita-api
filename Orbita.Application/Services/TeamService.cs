@@ -21,6 +21,13 @@ public class TeamService(ITeamRepository teamRepository) : ITeamService
         return Result<Team>.Ok(created);
     }
 
+    public async Task<Result<List<Team>>> GetAsync(CancellationToken ct = default)
+    {
+        var teams = await teamRepository.GetAllAsync(ct);
+
+        return Result<List<Team>>.Ok(teams);
+    }
+
     public async Task<Result> AddMemberAsync(Guid currentUserId, Guid targetUserId, CancellationToken ct = default)
     {
         var teamId = await teamRepository.GetTeamIdByUserAsync(currentUserId, ct);

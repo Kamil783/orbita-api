@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Orbita.Application.Abstractions.Repositories;
 using Orbita.Domain.Entities;
+using Orbita.Domain.ValueObjects;
 using Orbita.Infrastructure.Entities;
 using Orbita.Infrastructure.Persistence;
 
@@ -12,16 +13,17 @@ public class TeamRepository(OrbitaDbContext db) : ITeamRepository
     {
         var entity = await db.Teams
             .Include(t => t.TeamMembers)
+            .ThenInclude(tm => tm.UserProfile)
             .FirstOrDefaultAsync(t => t.Id == teamId, ct);
 
         if (entity is null)
             return null;
 
-        var members = entity.TeamMembers.Select(m => new User
+        var members = entity.TeamMembers.Select(m => new UserProfile
         {
-            Id = m.Id,
-            FullName = "",
-            Email = m.Email ?? ""
+            UserId = new UserId(m.Id),
+            Name = m.UserProfile!.Name,
+            AvatarData = m.UserProfile.AvatarData,
         });
 
         return Team.Restore(entity.Id, entity.Name, entity.CreatedAt, entity.UpdatedAt ?? entity.CreatedAt, members);
@@ -57,5 +59,26 @@ public class TeamRepository(OrbitaDbContext db) : ITeamRepository
             user.TeamId = teamId;
             await db.SaveChangesAsync(ct);
         }
+    }
+
+    public async Task<List<Team>> GetAllAsync(CancellationToken ct = default)
+    {
+        var teams = await db.Teams
+            .Include(t => t.TeamMembers)
+            .ThenInclude(u => u.UserProfile)
+            .ToListAsync(ct);
+
+        var result = teams.Select(entity =>
+        {
+            var members = entity.TeamMembers.Select(m => new UserProfile
+            {
+                UserId = new UserId(m.Id),
+                Name = m.UserProfile!.Name,
+                AvatarData = m.UserProfile.AvatarData,
+            });
+            return Team.Restore(entity.Id, entity.Name, entity.CreatedAt, entity.UpdatedAt ?? entity.CreatedAt, members);
+        }).ToList();
+
+        return result;
     }
 }

@@ -9,8 +9,8 @@ public class Team
     public DateTime CreatedAt { get; private set; }
     public DateTime UpdatedAt { get; private set; }
 
-    private readonly List<User> _teamMembers = [];
-    public IReadOnlyCollection<User> TeamMembers => _teamMembers.AsReadOnly();
+    private readonly List<UserProfile> _teamMembers = [];
+    public IReadOnlyCollection<UserProfile> TeamMembers => _teamMembers.AsReadOnly();
 
     private Team() { }
 
@@ -33,7 +33,7 @@ public class Team
         string name,
         DateTime createdAt,
         DateTime updatedAt,
-        IEnumerable<User> teamMembers)
+        IEnumerable<UserProfile> teamMembers)
     {
         var team = new Team
         {

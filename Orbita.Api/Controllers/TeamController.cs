@@ -33,6 +33,19 @@ namespace Orbita.Api.Controllers
                 .ToActionResult(HttpContext);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> Get(CancellationToken ct)
+        {
+            if (!TryGetUserId(out var userId))
+                return Unauthorized();
+
+            var result = await teamService.GetAsync(ct);
+
+            return result
+                .Map(x => x.Select(t =>  new { id = t.Id.Id.ToString(), name = t.Name, members = t.TeamMembers.Select(tm => new { Id = tm.UserId, Name = tm.Name, Avatar = tm.AvatarData }) }))
+                .ToActionResult(HttpContext);
+        }
+
         [HttpPost("members")]
         public async Task<IActionResult> AddMember([FromBody] AddMemberRequest request, CancellationToken ct)
         {
