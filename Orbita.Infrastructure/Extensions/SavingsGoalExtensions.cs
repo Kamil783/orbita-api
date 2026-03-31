@@ -12,6 +12,7 @@ public static class SavingsGoalExtensions
         {
             Id = goal.Id.Id,
             CreatorId = goal.CreatorId.Id,
+            TeamId = goal.TeamId.Id,
             Name = goal.Name,
             Target = goal.Target,
             Current = goal.Current
@@ -23,6 +24,7 @@ public static class SavingsGoalExtensions
         return SavingsGoal.Restore(
             id: new SavingsGoalId(entity.Id),
             creatorId: new UserId(entity.CreatorId),
+            teamId: new TeamId(entity.TeamId),
             name: entity.Name,
             target: entity.Target,
             current: entity.Current

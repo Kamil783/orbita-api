@@ -10,7 +10,7 @@ public static class SpendingLimitExtensions
     {
         return new SpendingLimitEntity
         {
-            UserId = limit.UserId.Id,
+            TeamId = limit.TeamId.Id,
             MonthlyLimit = limit.MonthlyLimit,
             WeeklyLimit = limit.WeeklyLimit
         };
@@ -19,7 +19,7 @@ public static class SpendingLimitExtensions
     public static SpendingLimit ToDomain(this SpendingLimitEntity entity)
     {
         return SpendingLimit.Restore(
-            userId: new UserId(entity.UserId),
+            teamId: new TeamId(entity.TeamId),
             monthlyLimit: entity.MonthlyLimit,
             weeklyLimit: entity.WeeklyLimit
         );

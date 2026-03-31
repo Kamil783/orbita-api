@@ -4,7 +4,7 @@ namespace Orbita.Domain.Entities;
 
 public class FinanceBalance
 {
-    public UserId UserId { get; private set; }
+    public TeamId TeamId { get; private set; }
     public long Balance { get; private set; }
     public long PreviousMonthBalance { get; private set; }
     public DateTime? LastMonthClosedAt { get; private set; }
@@ -12,11 +12,11 @@ public class FinanceBalance
 
     private FinanceBalance() { }
 
-    public static FinanceBalance Create(UserId userId)
+    public static FinanceBalance Create(TeamId teamId)
     {
         return new FinanceBalance
         {
-            UserId = userId,
+            TeamId = teamId,
             Balance = 0,
             PreviousMonthBalance = 0,
             LastMonthClosedAt = null,
@@ -25,7 +25,7 @@ public class FinanceBalance
     }
 
     public static FinanceBalance Restore(
-        UserId userId,
+        TeamId teamId,
         long balance,
         long previousMonthBalance,
         DateTime? lastMonthClosedAt,
@@ -33,7 +33,7 @@ public class FinanceBalance
     {
         return new FinanceBalance
         {
-            UserId = userId,
+            TeamId = teamId,
             Balance = balance,
             PreviousMonthBalance = previousMonthBalance,
             LastMonthClosedAt = lastMonthClosedAt,

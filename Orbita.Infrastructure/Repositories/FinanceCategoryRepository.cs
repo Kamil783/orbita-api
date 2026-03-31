@@ -8,10 +8,10 @@ namespace Orbita.Infrastructure.Repositories;
 
 public class FinanceCategoryRepository(OrbitaDbContext db) : IFinanceCategoryRepository
 {
-    public async Task<List<FinanceCategory>> GetByUserAsync(Guid userId, CancellationToken ct = default)
+    public async Task<List<FinanceCategory>> GetByTeamAsync(Guid teamId, CancellationToken ct = default)
     {
         var entities = await db.FinanceCategories
-            .Where(x => x.CreatorId == userId)
+            .Where(x => x.TeamId == teamId)
             .ToListAsync(ct);
 
         return entities.Select(x => x.ToDomain()).ToList();

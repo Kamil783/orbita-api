@@ -16,7 +16,8 @@ public static class ColumnExtensions
             HeaderActionIcon = column.HeaderActionIcon,
             Status = column.Status,
             Muted = column.Muted,
-            CreatorId = column.CreatorId?.Id
+            CreatorId = column.CreatorId?.Id,
+            TeamId = column.TeamId?.Id
         };
     }
 
@@ -34,6 +35,7 @@ public static class ColumnExtensions
             status: entity.Status,
             muted: entity.Muted,
             creatorId: entity.CreatorId.HasValue ? new UserId(entity.CreatorId.Value) : null,
+            teamId: entity.TeamId.HasValue ? new TeamId(entity.TeamId.Value) : null,
             todoItems: todoItems
         );
     }

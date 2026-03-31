@@ -1,8 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using Orbita.Application.Abstractions.Repositories;
 using Orbita.Domain.Entities;
+using Orbita.Infrastructure.Entities;
+using Orbita.Infrastructure.Entities.Mapping;
 using Orbita.Infrastructure.Extensions;
 using Orbita.Infrastructure.Persistence;
+using System.Threading.Tasks;
 
 namespace Orbita.Infrastructure.Repositories;
 
@@ -31,6 +34,24 @@ public class TodoItemRepository(OrbitaDbContext db) : ITodoItemRepository
         var entity = item.ToEntity();
 
         await db.TodoItems.AddAsync(entity, ct);
+        await db.SaveChangesAsync(ct);
+
+        return entity.ToDomain();
+    }
+
+    public async Task<TodoItem?> UpdateAsync(TodoItem item, CancellationToken ct = default)
+    {
+        var entity = await db.TodoItems
+             .Include(x => x.Assignees)
+             .FirstOrDefaultAsync(x => x.Id == item.Id.Id, ct);
+
+        if (entity is null)
+        {
+            return null;
+        }
+
+        MapToExistingEntity(item, entity);
+
         await db.SaveChangesAsync(ct);
 
         return entity.ToDomain();
@@ -123,5 +144,32 @@ public class TodoItemRepository(OrbitaDbContext db) : ITodoItemRepository
         entity.UpdatedAtUtc = DateTime.UtcNow;
 
         await db.SaveChangesAsync(ct);
+    }
+
+    private static void MapToExistingEntity(TodoItem source, TodoItemEntity target)
+    {
+        target.Title = source.Title;
+        target.TaskStatus = source.TaskStatus;
+        target.TaskPriority = source.TaskPriority;
+        target.CreatorId = source.CreatorId.Id;
+        target.TeamId = source.TeamId.Id;
+        target.ColumnId = source.ColumnId.Id;
+        target.UpdatedAtUtc = source.UpdatedAtUtc;
+        target.DeadlineUtc = source.DeadlineUtc;
+        target.ProgressPct = source.ProgressPct;
+        target.BacklogId = source.BacklogId?.Id;
+        target.CompletedText = source.CompletedText;
+        target.SortOrder = source.SortOrder;
+
+        target.Assignees.Clear();
+
+        foreach(var item in source.Assignees)
+        {
+            target.Assignees.Add(new TodoItemAssigneeEntity
+            {
+                TodoItemId = target.Id,
+                UserId = item.Id
+            });
+        }
     }
 }

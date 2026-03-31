@@ -260,6 +260,9 @@ namespace Orbita.Infrastructure.Persistence.Migrations
                     b.Property<int?>("ProgressPct")
                         .HasColumnType("integer");
 
+                    b.Property<Guid>("TeamId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -267,9 +270,9 @@ namespace Orbita.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CreatorId");
-
                     b.HasIndex("DueDate");
+
+                    b.HasIndex("TeamId");
 
                     b.HasIndex("IsCompleted", "InWeek");
 
@@ -346,6 +349,9 @@ namespace Orbita.Infrastructure.Persistence.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("integer");
 
+                    b.Property<Guid?>("TeamId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(120)
@@ -356,16 +362,16 @@ namespace Orbita.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CreatorId");
-
                     b.HasIndex("Status");
+
+                    b.HasIndex("TeamId");
 
                     b.ToTable("Columns");
                 });
 
             modelBuilder.Entity("Orbita.Infrastructure.Entities.FinanceBalanceEntity", b =>
                 {
-                    b.Property<Guid>("UserId")
+                    b.Property<Guid>("TeamId")
                         .HasColumnType("uuid");
 
                     b.Property<long>("Balance")
@@ -380,7 +386,7 @@ namespace Orbita.Infrastructure.Persistence.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.HasKey("UserId");
+                    b.HasKey("TeamId");
 
                     b.ToTable("FinanceBalances");
                 });
@@ -416,12 +422,15 @@ namespace Orbita.Infrastructure.Persistence.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
+                    b.Property<Guid>("TeamId")
+                        .HasColumnType("uuid");
+
                     b.Property<long?>("WeeklyLimit")
                         .HasColumnType("bigint");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CreatorId");
+                    b.HasIndex("TeamId");
 
                     b.ToTable("FinanceCategories");
                 });
@@ -434,13 +443,19 @@ namespace Orbita.Infrastructure.Persistence.Migrations
                     b.Property<long>("Amount")
                         .HasColumnType("bigint");
 
-                    b.Property<Guid>("CategoryId")
+                    b.Property<Guid?>("CategoryId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("CreatorId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsFromBalance")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("TeamId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("Title")
@@ -452,9 +467,9 @@ namespace Orbita.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.HasIndex("CreatorId");
+                    b.HasIndex("TeamId");
 
-                    b.HasIndex("CreatorId", "CreatedAt");
+                    b.HasIndex("TeamId", "CreatedAt");
 
                     b.ToTable("FinanceTransactions");
                 });
@@ -628,16 +643,71 @@ namespace Orbita.Infrastructure.Persistence.Migrations
                     b.Property<long>("Target")
                         .HasColumnType("bigint");
 
+                    b.Property<Guid>("TeamId")
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("CreatorId");
+                    b.HasIndex("TeamId");
 
                     b.ToTable("SavingsGoals");
                 });
 
+            modelBuilder.Entity("Orbita.Infrastructure.Entities.ShoppingListEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreatorId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<Guid>("TeamId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TeamId");
+
+                    b.ToTable("ShoppingLists");
+                });
+
+            modelBuilder.Entity("Orbita.Infrastructure.Entities.ShoppingListItemEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("Bought")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("ListId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<long?>("Price")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ListId");
+
+                    b.ToTable("ShoppingListItems");
+                });
+
             modelBuilder.Entity("Orbita.Infrastructure.Entities.SpendingLimitEntity", b =>
                 {
-                    b.Property<Guid>("UserId")
+                    b.Property<Guid>("TeamId")
                         .HasColumnType("uuid");
 
                     b.Property<long>("MonthlyLimit")
@@ -646,9 +716,32 @@ namespace Orbita.Infrastructure.Persistence.Migrations
                     b.Property<long>("WeeklyLimit")
                         .HasColumnType("bigint");
 
-                    b.HasKey("UserId");
+                    b.HasKey("TeamId");
 
                     b.ToTable("SpendingLimits");
+                });
+
+            modelBuilder.Entity("Orbita.Infrastructure.Entities.TeamEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Id");
+
+                    b.ToTable("Teams");
                 });
 
             modelBuilder.Entity("Orbita.Infrastructure.Entities.TodoItemEntity", b =>
@@ -687,6 +780,9 @@ namespace Orbita.Infrastructure.Persistence.Migrations
                     b.Property<int>("TaskStatus")
                         .HasColumnType("integer");
 
+                    b.Property<Guid>("TeamId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -699,11 +795,11 @@ namespace Orbita.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("ColumnId");
 
-                    b.HasIndex("CreatorId");
-
                     b.HasIndex("DeadlineUtc");
 
                     b.HasIndex("TaskStatus");
+
+                    b.HasIndex("TeamId");
 
                     b.HasIndex("ColumnId", "SortOrder");
 
@@ -756,6 +852,9 @@ namespace Orbita.Infrastructure.Persistence.Migrations
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("text");
 
+                    b.Property<Guid?>("TeamId")
+                        .HasColumnType("uuid");
+
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("boolean");
 
@@ -771,6 +870,8 @@ namespace Orbita.Infrastructure.Persistence.Migrations
                     b.HasIndex("NormalizedUserName")
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex");
+
+                    b.HasIndex("TeamId");
 
                     b.ToTable("AspNetUsers", (string)null);
                 });
@@ -820,11 +921,14 @@ namespace Orbita.Infrastructure.Persistence.Migrations
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid>("TeamId")
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("CreatorId");
+                    b.HasIndex("TeamId");
 
-                    b.HasIndex("CreatorId", "IsArchived");
+                    b.HasIndex("TeamId", "IsArchived");
 
                     b.ToTable("Weeks");
                 });
@@ -895,8 +999,7 @@ namespace Orbita.Infrastructure.Persistence.Migrations
                     b.HasOne("Orbita.Infrastructure.Entities.FinanceCategoryEntity", "Category")
                         .WithMany()
                         .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Category");
                 });
@@ -969,6 +1072,17 @@ namespace Orbita.Infrastructure.Persistence.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Orbita.Infrastructure.Entities.ShoppingListItemEntity", b =>
+                {
+                    b.HasOne("Orbita.Infrastructure.Entities.ShoppingListEntity", "List")
+                        .WithMany("Items")
+                        .HasForeignKey("ListId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("List");
+                });
+
             modelBuilder.Entity("Orbita.Infrastructure.Entities.TodoItemEntity", b =>
                 {
                     b.HasOne("Orbita.Infrastructure.Entities.ColumnEntity", "Column")
@@ -978,6 +1092,14 @@ namespace Orbita.Infrastructure.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("Column");
+                });
+
+            modelBuilder.Entity("Orbita.Infrastructure.Entities.UserEntity", b =>
+                {
+                    b.HasOne("Orbita.Infrastructure.Entities.TeamEntity", null)
+                        .WithMany("TeamMembers")
+                        .HasForeignKey("TeamId")
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("Orbita.Infrastructure.Entities.UserProfileEntity", b =>
@@ -1001,6 +1123,16 @@ namespace Orbita.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Orbita.Infrastructure.Entities.ColumnEntity", b =>
                 {
                     b.Navigation("TodoItems");
+                });
+
+            modelBuilder.Entity("Orbita.Infrastructure.Entities.ShoppingListEntity", b =>
+                {
+                    b.Navigation("Items");
+                });
+
+            modelBuilder.Entity("Orbita.Infrastructure.Entities.TeamEntity", b =>
+                {
+                    b.Navigation("TeamMembers");
                 });
 
             modelBuilder.Entity("Orbita.Infrastructure.Entities.TodoItemEntity", b =>

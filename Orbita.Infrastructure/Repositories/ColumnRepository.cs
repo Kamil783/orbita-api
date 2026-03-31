@@ -16,12 +16,12 @@ public class ColumnRepository(OrbitaDbContext db) : IColumnRepository
         return entity?.ToDomain();
     }
 
-    public async Task<IReadOnlyCollection<Column>> GetAllWithItemsAsync(Guid userId, CancellationToken ct = default)
+    public async Task<IReadOnlyCollection<Column>> GetAllWithItemsAsync(Guid teamId, CancellationToken ct = default)
     {
         var entities = await db.Columns
-            .Where(c => c.CreatorId == null || c.CreatorId == userId)
+            .Where(c => c.TeamId == null || c.TeamId == teamId)
             .Include(c => c.TodoItems
-                .Where(t => t.CreatorId == userId)
+                .Where(t => t.TeamId == teamId)
                 .OrderBy(t => t.SortOrder))
                 .ThenInclude(t => t.Assignees)
             .OrderBy(c => c.Status)

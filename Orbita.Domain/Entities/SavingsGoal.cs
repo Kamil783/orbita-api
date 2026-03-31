@@ -6,6 +6,7 @@ public class SavingsGoal
 {
     public SavingsGoalId Id { get; private set; }
     public UserId CreatorId { get; private set; }
+    public TeamId TeamId { get; private set; }
     public string Name { get; private set; }
     public long Target { get; private set; }
     public long Current { get; private set; }
@@ -14,6 +15,7 @@ public class SavingsGoal
 
     public static SavingsGoal Create(
         UserId creatorId,
+        TeamId teamId,
         string name,
         long target)
     {
@@ -27,6 +29,7 @@ public class SavingsGoal
         {
             Id = new SavingsGoalId(Guid.NewGuid()),
             CreatorId = creatorId,
+            TeamId = teamId,
             Name = name,
             Target = target,
             Current = 0
@@ -36,6 +39,7 @@ public class SavingsGoal
     public static SavingsGoal Restore(
         SavingsGoalId id,
         UserId creatorId,
+        TeamId teamId,
         string name,
         long target,
         long current)
@@ -44,6 +48,7 @@ public class SavingsGoal
         {
             Id = id,
             CreatorId = creatorId,
+            TeamId = teamId,
             Name = name,
             Target = target,
             Current = current

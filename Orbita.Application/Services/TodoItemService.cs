@@ -7,11 +7,13 @@ namespace Orbita.Application.Services;
 
 public class TodoItemService(
     ITodoItemRepository todoItemRepository,
-    IColumnRepository columnRepository) : ITodoItemService
+    IColumnRepository columnRepository,
+    ITeamProvider teamProvider) : ITodoItemService
 {
     public async Task<Result<List<Column>>> GetWeeklyBoardAsync(Guid userId, CancellationToken ct = default)
     {
-        var columns = await columnRepository.GetAllWithItemsAsync(userId, ct);
+        var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
+        var columns = await columnRepository.GetAllWithItemsAsync(teamId, ct);
         return Result<List<Column>>.Ok(columns.ToList());
     }
 
@@ -19,11 +21,12 @@ public class TodoItemService(
         Guid userId, Guid taskId, Guid fromColumnId, Guid toColumnId,
         int fromIndex, int toIndex, CancellationToken ct = default)
     {
+        var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
         var item = await todoItemRepository.GetAsync(taskId, ct);
         if (item is null)
             return Result.NotFound("Task not found.");
 
-        if (item.CreatorId.Id != userId)
+        if (item.TeamId.Id != teamId)
             return Result.Forbidden("Access denied.");
 
         var success = await todoItemRepository.MoveCardAsync(taskId, fromColumnId, toColumnId, fromIndex, toIndex, ct);
@@ -36,11 +39,12 @@ public class TodoItemService(
 
     public async Task<Result> MoveToAsync(Guid userId, Guid taskId, Guid targetColumnId, CancellationToken ct = default)
     {
+        var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
         var item = await todoItemRepository.GetAsync(taskId, ct);
         if (item is null)
             return Result.NotFound("Task not found.");
 
-        if (item.CreatorId.Id != userId)
+        if (item.TeamId.Id != teamId)
             return Result.Forbidden("Access denied.");
 
         var column = await columnRepository.GetAsync(targetColumnId, ct);
@@ -53,11 +57,12 @@ public class TodoItemService(
 
     public async Task<Result> DeleteAsync(Guid userId, Guid taskId, CancellationToken ct = default)
     {
+        var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
         var item = await todoItemRepository.GetAsync(taskId, ct);
         if (item is null)
             return Result.NotFound("Task not found.");
 
-        if (item.CreatorId.Id != userId)
+        if (item.TeamId.Id != teamId)
             return Result.Forbidden("Access denied.");
 
         await todoItemRepository.DeleteAsync(taskId, ct);

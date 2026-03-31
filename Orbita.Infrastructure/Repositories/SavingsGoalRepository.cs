@@ -8,10 +8,10 @@ namespace Orbita.Infrastructure.Repositories;
 
 public class SavingsGoalRepository(OrbitaDbContext db) : ISavingsGoalRepository
 {
-    public async Task<List<SavingsGoal>> GetByUserAsync(Guid userId, CancellationToken ct = default)
+    public async Task<List<SavingsGoal>> GetByTeamAsync(Guid teamId, CancellationToken ct = default)
     {
         var entities = await db.SavingsGoals
-            .Where(x => x.CreatorId == userId)
+            .Where(x => x.TeamId == teamId)
             .ToListAsync(ct);
 
         return entities.Select(x => x.ToDomain()).ToList();

@@ -16,8 +16,11 @@ public class FinanceTransactionEntityConfiguration : IEntityTypeConfiguration<Fi
         b.Property(x => x.CreatorId)
             .IsRequired();
 
-        b.Property(x => x.CategoryId)
+        b.Property(x => x.TeamId)
             .IsRequired();
+
+        b.Property(x => x.CategoryId)
+            .IsRequired(false);
 
         b.Property(x => x.Title)
             .HasMaxLength(500)
@@ -29,13 +32,17 @@ public class FinanceTransactionEntityConfiguration : IEntityTypeConfiguration<Fi
         b.Property(x => x.CreatedAt)
             .IsRequired();
 
+        b.Property(x => x.IsFromBalance)
+            .IsRequired();
+
         b.HasOne(x => x.Category)
             .WithMany()
             .HasForeignKey(x => x.CategoryId)
+            .IsRequired(false)
             .OnDelete(DeleteBehavior.Restrict);
 
-        b.HasIndex(x => x.CreatorId);
+        b.HasIndex(x => x.TeamId);
         b.HasIndex(x => x.CategoryId);
-        b.HasIndex(x => new { x.CreatorId, x.CreatedAt });
+        b.HasIndex(x => new { x.TeamId, x.CreatedAt });
     }
 }

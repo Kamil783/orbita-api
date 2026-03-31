@@ -107,7 +107,7 @@ public class FinanceController(IFinanceService financeService) : AuthorizedContr
             .Map(txs => txs.Select(t => new TransactionResponse
             {
                 Id = t.Id.Id.ToString(),
-                CategoryId = t.CategoryId.Id.ToString(),
+                CategoryId = t.CategoryId?.Id.ToString(),
                 Title = t.Title,
                 Date = t.CreatedAt.ToString("yyyy-MM-dd"),
                 Amount = t.Amount,
@@ -122,8 +122,13 @@ public class FinanceController(IFinanceService financeService) : AuthorizedContr
         if (!TryGetUserId(out var userId))
             return Unauthorized();
 
-        if (!Guid.TryParse(request.CategoryId, out var categoryId))
-            return BadRequest("Invalid category id.");
+        Guid? categoryId = null;
+        if (!string.IsNullOrEmpty(request.CategoryId))
+        {
+            if (!Guid.TryParse(request.CategoryId, out var parsedCategoryId))
+                return BadRequest("Invalid category id.");
+            categoryId = parsedCategoryId;
+        }
 
         var res = await financeService.CreateTransactionAsync(userId, categoryId, request.Title, request.Amount, request.FromBalance, ct);
 
@@ -131,7 +136,36 @@ public class FinanceController(IFinanceService financeService) : AuthorizedContr
             .Map(t => new TransactionResponse
             {
                 Id = t.Id.Id.ToString(),
-                CategoryId = t.CategoryId.Id.ToString(),
+                CategoryId = t.CategoryId?.Id.ToString(),
+                Title = t.Title,
+                Date = t.CreatedAt.ToString("yyyy-MM-dd"),
+                Amount = t.Amount,
+                Timestamp = new DateTimeOffset(t.CreatedAt, TimeSpan.Zero).ToUnixTimeMilliseconds()
+            })
+            .ToActionResult(HttpContext);
+    }
+
+    [HttpPatch("transactions/{id}")]
+    public async Task<IActionResult> UpdateTransaction([FromRoute] Guid id, [FromBody] UpdateTransactionRequest request, CancellationToken ct)
+    {
+        if (!TryGetUserId(out var userId))
+            return Unauthorized();
+
+        Guid? categoryId = null;
+        if (request.CategoryId is not null)
+        {
+            if (!Guid.TryParse(request.CategoryId, out var parsedCategoryId))
+                return BadRequest("Invalid category id.");
+            categoryId = parsedCategoryId;
+        }
+
+        var res = await financeService.UpdateTransactionAsync(userId, id, categoryId, request.Title, request.Amount, ct);
+
+        return res
+            .Map(t => new TransactionResponse
+            {
+                Id = t.Id.Id.ToString(),
+                CategoryId = t.CategoryId?.Id.ToString(),
                 Title = t.Title,
                 Date = t.CreatedAt.ToString("yyyy-MM-dd"),
                 Amount = t.Amount,
@@ -249,6 +283,116 @@ public class FinanceController(IFinanceService financeService) : AuthorizedContr
             {
                 MonthlyLimit = l.MonthlyLimit,
                 WeeklyLimit = l.WeeklyLimit
+            })
+            .ToActionResult(HttpContext);
+    }
+
+    [HttpGet("shopping-lists")]
+    public async Task<IActionResult> GetShoppingLists(CancellationToken ct)
+    {
+        if (!TryGetUserId(out var userId))
+            return Unauthorized();
+
+        var res = await financeService.GetShoppingListsAsync(userId, ct);
+
+        return res
+            .Map(lists => lists.Select(l => new ShoppingListResponse
+            {
+                Id = l.Id.Id.ToString(),
+                Name = l.Name,
+                CreatedAt = new DateTimeOffset(l.CreatedAt, TimeSpan.Zero).ToUnixTimeMilliseconds(),
+                Items = l.Items.Select(i => new ShoppingListItemResponse
+                {
+                    Id = i.Id.Id.ToString(),
+                    Name = i.Name,
+                    Price = i.Price,
+                    Bought = i.Bought
+                }).ToList()
+            }).ToList())
+            .ToActionResult(HttpContext);
+    }
+
+    [HttpPost("shopping-lists")]
+    public async Task<IActionResult> CreateShoppingList([FromBody] CreateShoppingListRequest request, CancellationToken ct)
+    {
+        if (!TryGetUserId(out var userId))
+            return Unauthorized();
+
+        var res = await financeService.CreateShoppingListAsync(userId, request.Name, ct);
+
+        return res
+            .Map(l => new ShoppingListResponse
+            {
+                Id = l.Id.Id.ToString(),
+                Name = l.Name,
+                CreatedAt = new DateTimeOffset(l.CreatedAt, TimeSpan.Zero).ToUnixTimeMilliseconds(),
+                Items = l.Items.Select(i => new ShoppingListItemResponse
+                {
+                    Id = i.Id.Id.ToString(),
+                    Name = i.Name,
+                    Price = i.Price,
+                    Bought = i.Bought
+                }).ToList()
+            })
+            .ToActionResult(HttpContext);
+    }
+
+    [HttpDelete("shopping-lists/{id}")]
+    public async Task<IActionResult> DeleteShoppingList([FromRoute] Guid id, CancellationToken ct)
+    {
+        if (!TryGetUserId(out var userId))
+            return Unauthorized();
+
+        var res = await financeService.DeleteShoppingListAsync(userId, id, ct);
+
+        return res.ToActionResult(HttpContext);
+    }
+
+    [HttpPost("shopping-lists/{listId}/items")]
+    public async Task<IActionResult> AddShoppingListItem([FromRoute] Guid listId, [FromBody] AddShoppingListItemRequest request, CancellationToken ct)
+    {
+        if (!TryGetUserId(out var userId))
+            return Unauthorized();
+
+        var res = await financeService.AddShoppingListItemAsync(userId, listId, request.Name, request.Price, ct);
+
+        return res
+            .Map(i => new ShoppingListItemResponse
+            {
+                Id = i.Id.Id.ToString(),
+                Name = i.Name,
+                Price = i.Price,
+                Bought = i.Bought
+            })
+            .ToActionResult(HttpContext);
+    }
+
+    [HttpDelete("shopping-lists/{listId}/items/{itemId}")]
+    public async Task<IActionResult> DeleteShoppingListItem([FromRoute] Guid listId, [FromRoute] Guid itemId, CancellationToken ct)
+    {
+        if (!TryGetUserId(out var userId))
+            return Unauthorized();
+
+        var res = await financeService.DeleteShoppingListItemAsync(userId, listId, itemId, ct);
+
+        return res.ToActionResult(HttpContext);
+    }
+
+    [HttpPatch("shopping-lists/{listId}/items/{itemId}")]
+    public async Task<IActionResult> UpdateShoppingListItem([FromRoute] Guid listId, [FromRoute] Guid itemId, [FromBody] UpdateShoppingListItemRequest request, CancellationToken ct)
+    {
+        if (!TryGetUserId(out var userId))
+            return Unauthorized();
+
+        var res = await financeService.UpdateShoppingListItemAsync(userId, listId, itemId, request.Bought, ct);
+
+        return res
+            .Map(i => new ShoppingListItemResponse
+            {
+                Id = i.Id.Id.ToString(),
+                Name = i.Name,
+                Price = i.Price,
+                Bought = i.Bought
             })
             .ToActionResult(HttpContext);
     }

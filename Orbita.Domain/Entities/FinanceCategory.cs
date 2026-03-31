@@ -6,6 +6,7 @@ public class FinanceCategory
 {
     public FinanceCategoryId Id { get; private set; }
     public UserId CreatorId { get; private set; }
+    public TeamId TeamId { get; private set; }
     public string Name { get; private set; }
     public string Icon { get; private set; }
     public string Bg { get; private set; }
@@ -17,6 +18,7 @@ public class FinanceCategory
 
     public static FinanceCategory Create(
         UserId creatorId,
+        TeamId teamId,
         string name,
         string icon,
         string bg,
@@ -31,6 +33,7 @@ public class FinanceCategory
         {
             Id = new FinanceCategoryId(Guid.NewGuid()),
             CreatorId = creatorId,
+            TeamId = teamId,
             Name = name,
             Icon = icon,
             Bg = bg,
@@ -43,6 +46,7 @@ public class FinanceCategory
     public static FinanceCategory Restore(
         FinanceCategoryId id,
         UserId creatorId,
+        TeamId teamId,
         string name,
         string icon,
         string bg,
@@ -54,6 +58,7 @@ public class FinanceCategory
         {
             Id = id,
             CreatorId = creatorId,
+            TeamId = teamId,
             Name = name,
             Icon = icon,
             Bg = bg,

@@ -1,4 +1,4 @@
-﻿using Orbita.Domain.Entities;
+using Orbita.Domain.Entities;
 using Orbita.Domain.ValueObjects;
 using Orbita.Infrastructure.Entities;
 using Orbita.Infrastructure.Entities.Mapping;
@@ -16,6 +16,7 @@ public static class BacklogTaskExtensions
             Priority = backlogTask.Priority,
             Description = backlogTask.Description,
             CreatorId = backlogTask.CreatorId.Id,
+            TeamId = backlogTask.TeamId.Id,
             CreatedAt = backlogTask.CreatedAt,
             InWeek = backlogTask.InWeek,
             IsCompleted = backlogTask.IsCompleted,
@@ -40,6 +41,7 @@ public static class BacklogTaskExtensions
              priority: entity.Priority,
              description: entity.Description,
              creatorId: new UserId(entity.CreatorId),
+             teamId: new TeamId(entity.TeamId),
              createdAt: entity.CreatedAt,
              inWeek: entity.InWeek,
              isCompleted: entity.IsCompleted,

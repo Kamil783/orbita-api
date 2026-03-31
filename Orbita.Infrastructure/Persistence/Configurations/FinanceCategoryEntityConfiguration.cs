@@ -16,6 +16,9 @@ public class FinanceCategoryEntityConfiguration : IEntityTypeConfiguration<Finan
         b.Property(x => x.CreatorId)
             .IsRequired();
 
+        b.Property(x => x.TeamId)
+            .IsRequired();
+
         b.Property(x => x.Name)
             .HasMaxLength(200)
             .IsRequired();
@@ -38,6 +41,6 @@ public class FinanceCategoryEntityConfiguration : IEntityTypeConfiguration<Finan
         b.Property(x => x.MonthlyLimit)
             .IsRequired(false);
 
-        b.HasIndex(x => x.CreatorId);
+        b.HasIndex(x => x.TeamId);
     }
 }

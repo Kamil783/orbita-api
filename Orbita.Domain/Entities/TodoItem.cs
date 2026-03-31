@@ -10,6 +10,7 @@ public class TodoItem
     public TodoItemStatus TaskStatus { get; private set; }
     public TodoItemPriority TaskPriority { get; private set; }
     public UserId CreatorId { get; private set; }
+    public TeamId TeamId { get; private set; }
     public ColumnId ColumnId { get; private set; }
     public DateTime CreatedAtUtc { get; private set; }
 
@@ -30,6 +31,7 @@ public class TodoItem
         string title,
         TodoItemPriority priority,
         UserId creatorId,
+        TeamId teamId,
         ColumnId columnId,
         int sortOrder,
         DateTime? deadlineUtc = null,
@@ -45,6 +47,7 @@ public class TodoItem
             TaskStatus = TodoItemStatus.Todo,
             TaskPriority = priority,
             CreatorId = creatorId,
+            TeamId = teamId,
             ColumnId = columnId,
             CreatedAtUtc = DateTime.UtcNow,
             SortOrder = sortOrder,
@@ -64,6 +67,7 @@ public class TodoItem
         TodoItemStatus taskStatus,
         TodoItemPriority taskPriority,
         UserId creatorId,
+        TeamId teamId,
         ColumnId columnId,
         DateTime createdAtUtc,
         int sortOrder,
@@ -81,6 +85,7 @@ public class TodoItem
             TaskStatus = taskStatus,
             TaskPriority = taskPriority,
             CreatorId = creatorId,
+            TeamId = teamId,
             ColumnId = columnId,
             CreatedAtUtc = createdAtUtc,
             SortOrder = sortOrder,
@@ -105,6 +110,19 @@ public class TodoItem
     public void SetSortOrder(int sortOrder)
     {
         SortOrder = sortOrder;
+    }
+
+    public void SyncFromBacklog(BacklogTask backlogTask)
+    {
+        Title = backlogTask.Title;
+        TaskPriority = backlogTask.Priority;
+        DeadlineUtc = NormalizeToUtc(backlogTask.DueDate);
+        ProgressPct = backlogTask.TrackProgress ? backlogTask.ProgressPct : null;
+
+        _assignees.Clear();
+        _assignees.AddRange(backlogTask.Assignees);
+
+        UpdatedAtUtc = DateTime.UtcNow;
     }
 
     private static DateTime? NormalizeToUtc(DateTime? dt)

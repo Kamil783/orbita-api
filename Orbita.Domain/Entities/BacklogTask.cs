@@ -1,4 +1,4 @@
-﻿using Orbita.Domain.Enums;
+using Orbita.Domain.Enums;
 using Orbita.Domain.ValueObjects;
 
 namespace Orbita.Domain.Entities;
@@ -10,6 +10,7 @@ public class BacklogTask
     public TodoItemPriority Priority { get; private set; }
     public string Description { get; private set; } = string.Empty;
     public UserId CreatorId { get; private set; }
+    public TeamId TeamId { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public bool InWeek { get; private set; }
     public bool IsCompleted { get; private set; }
@@ -29,6 +30,7 @@ public class BacklogTask
         TodoItemPriority priority,
         string description,
         UserId creatorId,
+        TeamId teamId,
         DateTime createdAt,
         bool inWeek,
         bool isCompleted,
@@ -42,6 +44,7 @@ public class BacklogTask
         Priority = priority;
         Description = description;
         CreatorId = creatorId;
+        TeamId = teamId;
         CreatedAt = createdAt;
         InWeek = inWeek;
         IsCompleted = isCompleted;
@@ -57,6 +60,7 @@ public class BacklogTask
         TodoItemPriority priority,
         string description,
         UserId creatorId,
+        TeamId teamId,
         DateTime createdAt,
         bool inWeek,
         bool isCompleted,
@@ -71,6 +75,7 @@ public class BacklogTask
             priority,
             description,
             creatorId,
+            teamId,
             createdAt,
             inWeek,
             isCompleted,
@@ -85,6 +90,7 @@ public class BacklogTask
         TodoItemPriority priority,
         string description,
         UserId creatorId,
+        TeamId teamId,
         DateTime? dueDate,
         int? estimateMinutes,
         int? progressPct,
@@ -102,6 +108,7 @@ public class BacklogTask
             priority,
             description,
             creatorId,
+            teamId,
             DateTime.UtcNow,
             false,
             false,
