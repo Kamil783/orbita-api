@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Orbita.Api.Extensions;
 using Orbita.Application.Abstractions.Services;
@@ -21,6 +22,7 @@ namespace Orbita.Api.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create([FromBody] CreateTeamRequest request, CancellationToken ct)
         {
             if (!TryGetUserId(out var userId))
@@ -34,6 +36,7 @@ namespace Orbita.Api.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Get(CancellationToken ct)
         {
             if (!TryGetUserId(out var userId))
@@ -47,6 +50,7 @@ namespace Orbita.Api.Controllers
         }
 
         [HttpPost("members")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> AddMember([FromBody] AddMemberRequest request, CancellationToken ct)
         {
             if (!TryGetUserId(out var userId))
