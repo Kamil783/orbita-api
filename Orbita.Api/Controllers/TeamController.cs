@@ -52,7 +52,7 @@ namespace Orbita.Api.Controllers
             if (!TryGetUserId(out var userId))
                 return Unauthorized();
 
-            var result = await teamService.AddMemberAsync(userId, request.UserId, ct);
+            var result = await teamService.AddMemberAsync(request.TeamId, request.UserId, ct);
 
             return result.ToActionResult(HttpContext);
         }

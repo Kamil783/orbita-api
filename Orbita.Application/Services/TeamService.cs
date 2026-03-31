@@ -28,17 +28,13 @@ public class TeamService(ITeamRepository teamRepository) : ITeamService
         return Result<List<Team>>.Ok(teams);
     }
 
-    public async Task<Result> AddMemberAsync(Guid currentUserId, Guid targetUserId, CancellationToken ct = default)
+    public async Task<Result> AddMemberAsync(Guid teamId, Guid targetUserId, CancellationToken ct = default)
     {
-        var teamId = await teamRepository.GetTeamIdByUserAsync(currentUserId, ct);
-        if (teamId is null)
-            return Result.Fail("You do not belong to any team.");
-
         var targetTeamId = await teamRepository.GetTeamIdByUserAsync(targetUserId, ct);
         if (targetTeamId is not null)
             return Result.Fail("Target user already belongs to a team.");
 
-        await teamRepository.SetUserTeamAsync(targetUserId, teamId.Value, ct);
+        await teamRepository.SetUserTeamAsync(targetUserId, teamId, ct);
 
         return Result.Ok();
     }
