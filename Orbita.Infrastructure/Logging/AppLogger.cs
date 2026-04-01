@@ -114,13 +114,27 @@ public class AppLogger : IAppLogger
             Id = Guid.NewGuid(),
             Level = level,
             Message = message,
-            Exception = exception?.Message,
-            StackTrace = exception?.StackTrace,
+            Exception = GetFullExceptionMessage(exception),
+            StackTrace = exception?.ToString(),
             Source = source,
             TraceId = traceId,
             CreatedAt = DateTime.UtcNow
         };
 
         _appLogChannel.Writer.TryWrite(entity);
+    }
+
+    private static string? GetFullExceptionMessage(Exception? exception)
+    {
+        if (exception is null) return null;
+
+        var messages = new List<string>();
+        var current = exception;
+        while (current is not null)
+        {
+            messages.Add(current.Message);
+            current = current.InnerException;
+        }
+        return string.Join(" -> ", messages);
     }
 }
