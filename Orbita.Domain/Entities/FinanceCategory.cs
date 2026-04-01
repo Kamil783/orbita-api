@@ -67,4 +67,55 @@ public class FinanceCategory
             MonthlyLimit = monthlyLimit
         };
     }
+
+    public void SetName(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Name is required.", nameof(name));
+
+        Name = name;
+    }
+
+    public void SetIcon(string icon)
+    {
+        Icon = icon ?? throw new ArgumentNullException(nameof(icon));
+    }
+
+    public void SetBg(string bg)
+    {
+        Bg = bg ?? throw new ArgumentNullException(nameof(bg));
+    }
+
+    public void SetColor(string color)
+    {
+        Color = color ?? throw new ArgumentNullException(nameof(color));
+    }
+
+    public void SetWeeklyLimit(long? weeklyLimit)
+    {
+        if (weeklyLimit < 0)
+            throw new ArgumentException("Weekly limit cannot be negative.", nameof(weeklyLimit));
+
+        WeeklyLimit = weeklyLimit;
+    }
+
+    public void SetMonthlyLimit(long? monthlyLimit)
+    {
+        if (monthlyLimit < 0)
+            throw new ArgumentException("Monthly limit cannot be negative.", nameof(monthlyLimit));
+
+        MonthlyLimit = monthlyLimit;
+    }
+
+    public void SetLimits(long? weeklyLimit, long? monthlyLimit)
+    {
+        if (weeklyLimit < 0)
+            throw new ArgumentException("Weekly limit cannot be negative.", nameof(weeklyLimit));
+
+        if (monthlyLimit < 0)
+            throw new ArgumentException("Monthly limit cannot be negative.", nameof(monthlyLimit));
+
+        WeeklyLimit = weeklyLimit;
+        MonthlyLimit = monthlyLimit;
+    }
 }

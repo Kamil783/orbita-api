@@ -95,6 +95,30 @@ public class FinanceController(IFinanceService financeService) : AuthorizedContr
             .ToActionResult(HttpContext);
     }
 
+    [HttpPatch("categories/{id}")]
+    public async Task<IActionResult> UpdateCategory([FromRoute] Guid id, [FromBody] UpdateCategoryRequest request, CancellationToken ct)
+    {
+        if (!TryGetUserId(out var userId))
+            return Unauthorized();
+
+        var res = await financeService.UpdateCategoryAsync(
+             userId, id, request.Name, request.Icon, request.Bg, request.Color,
+             request.WeeklyLimit, request.MonthlyLimit, ct);
+
+        return res
+            .Map(c => new CategoryResponse
+            {
+                Id = c.Id.Id.ToString(),
+                Name = c.Name,
+                Icon = c.Icon,
+                Bg = c.Bg,
+                Color = c.Color,
+                WeeklyLimit = c.WeeklyLimit,
+                MonthlyLimit = c.MonthlyLimit
+            })
+            .ToActionResult(HttpContext);
+    }
+
     [HttpGet("transactions")]
     public async Task<IActionResult> GetTransactions(CancellationToken ct)
     {
@@ -111,7 +135,8 @@ public class FinanceController(IFinanceService financeService) : AuthorizedContr
                 Title = t.Title,
                 Date = t.CreatedAt.ToString("yyyy-MM-dd"),
                 Amount = t.Amount,
-                Timestamp = new DateTimeOffset(t.CreatedAt, TimeSpan.Zero).ToUnixTimeMilliseconds()
+                Timestamp = new DateTimeOffset(t.CreatedAt, TimeSpan.Zero).ToUnixTimeMilliseconds(),
+                FromBalance = t.IsFromBalance
             }).ToList())
             .ToActionResult(HttpContext);
     }
@@ -130,7 +155,7 @@ public class FinanceController(IFinanceService financeService) : AuthorizedContr
             categoryId = parsedCategoryId;
         }
 
-        var res = await financeService.CreateTransactionAsync(userId, categoryId, request.Title, request.Amount, request.FromBalance, ct);
+        var res = await financeService.CreateTransactionAsync(userId, categoryId, request.Title, request.Amount, request.FromBalance, request.Date, ct);
 
         return res
             .Map(t => new TransactionResponse
@@ -140,7 +165,8 @@ public class FinanceController(IFinanceService financeService) : AuthorizedContr
                 Title = t.Title,
                 Date = t.CreatedAt.ToString("yyyy-MM-dd"),
                 Amount = t.Amount,
-                Timestamp = new DateTimeOffset(t.CreatedAt, TimeSpan.Zero).ToUnixTimeMilliseconds()
+                Timestamp = new DateTimeOffset(t.CreatedAt, TimeSpan.Zero).ToUnixTimeMilliseconds(),
+                FromBalance = t.IsFromBalance
             })
             .ToActionResult(HttpContext);
     }
@@ -159,7 +185,7 @@ public class FinanceController(IFinanceService financeService) : AuthorizedContr
             categoryId = parsedCategoryId;
         }
 
-        var res = await financeService.UpdateTransactionAsync(userId, id, categoryId, request.Title, request.Amount, ct);
+        var res = await financeService.UpdateTransactionAsync(userId, id, categoryId, request.Title, request.Amount, request.Date, ct);
 
         return res
             .Map(t => new TransactionResponse
@@ -169,7 +195,8 @@ public class FinanceController(IFinanceService financeService) : AuthorizedContr
                 Title = t.Title,
                 Date = t.CreatedAt.ToString("yyyy-MM-dd"),
                 Amount = t.Amount,
-                Timestamp = new DateTimeOffset(t.CreatedAt, TimeSpan.Zero).ToUnixTimeMilliseconds()
+                Timestamp = new DateTimeOffset(t.CreatedAt, TimeSpan.Zero).ToUnixTimeMilliseconds(),
+                FromBalance = t.IsFromBalance
             })
             .ToActionResult(HttpContext);
     }

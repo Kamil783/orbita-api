@@ -21,7 +21,8 @@ public class FinanceTransaction
         FinanceCategoryId? categoryId,
         string title,
         long amount,
-        bool isFromBalance)
+        bool isFromBalance,
+        DateTime? createdAt = null)
     {
         if (string.IsNullOrWhiteSpace(title))
             throw new ArgumentException("Title is required.", nameof(title));
@@ -34,7 +35,7 @@ public class FinanceTransaction
             CategoryId = categoryId,
             Title = title,
             Amount = amount,
-            CreatedAt = DateTime.UtcNow,
+            CreatedAt = createdAt ?? DateTime.UtcNow,
             IsFromBalance = isFromBalance
         };
     }
@@ -60,6 +61,10 @@ public class FinanceTransaction
     public void SetIsFromBalance(bool isFromBalance)
     {
         IsFromBalance = isFromBalance;
+    }
+    public void SetCreatedAt(DateTime createdAt)
+    {
+        CreatedAt = createdAt;
     }
 
     public static FinanceTransaction Restore(
