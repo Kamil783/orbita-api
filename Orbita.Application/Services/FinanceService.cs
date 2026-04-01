@@ -1,9 +1,10 @@
-using System.Globalization;
 using Orbita.Application.Abstractions.Repositories;
 using Orbita.Application.Abstractions.Services;
 using Orbita.Application.Models.Results;
 using Orbita.Domain.Entities;
 using Orbita.Domain.ValueObjects;
+using System.Globalization;
+using System.Threading;
 
 namespace Orbita.Application.Services;
 
@@ -85,6 +86,43 @@ public class FinanceService(
         return Result<FinanceCategory>.Ok(created);
     }
 
+    public async Task<Result<FinanceCategory>> UpdateCategoryAsync(
+        Guid userId, Guid categoryId, string? name, string? icon, string? bg, string? color,
+        long? weeklyLimit, long? monthlyLimit, CancellationToken ct = default)
+    {
+
+        var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
+
+        var category = await categoryRepository.GetAsync(categoryId, ct);
+        if (category is null)
+            return Result<FinanceCategory>.NotFound("Category not found.");
+
+        if (category.TeamId.Id != teamId)
+            return Result<FinanceCategory>.Forbidden("Access denied.");
+
+        if (name is not null)
+            category.SetName(name);
+
+        if (icon is not null)
+            category.SetIcon(icon);
+
+        if (bg is not null)
+            category.SetBg(bg);
+
+        if (color is not null)
+            category.SetColor(color);
+
+        if (weeklyLimit.HasValue || monthlyLimit.HasValue)
+        {
+            category.SetLimits(
+                weeklyLimit ?? category.WeeklyLimit,
+                monthlyLimit ?? category.MonthlyLimit);
+        }
+
+        var updated = await categoryRepository.UpdateAsync(category, ct);
+        return Result<FinanceCategory>.Ok(updated);
+    }
+
     public async Task<Result<List<FinanceTransaction>>> GetTransactionsAsync(Guid userId, CancellationToken ct = default)
     {
         var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
@@ -93,9 +131,13 @@ public class FinanceService(
     }
 
     public async Task<Result<FinanceTransaction>> CreateTransactionAsync(
-        Guid userId, Guid? categoryId, string title, long amount, bool fromBalance, CancellationToken ct = default)
+        Guid userId, Guid? categoryId, string title, long amount, bool fromBalance, DateTime? createdAt, CancellationToken ct = default)
     {
         var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
+
+        var utc = createdAt.HasValue
+           ? DateTime.SpecifyKind(createdAt.Value, DateTimeKind.Utc)
+           : DateTime.UtcNow;
 
         FinanceCategoryId? financeCategoryId = null;
         if (categoryId.HasValue)
@@ -113,7 +155,8 @@ public class FinanceService(
             categoryId: financeCategoryId,
             title: title,
             amount: amount,
-            isFromBalance: fromBalance);
+            isFromBalance: fromBalance,
+            createdAt: utc);
 
         var created = await transactionRepository.CreateAsync(transaction, ct);
 
@@ -134,7 +177,7 @@ public class FinanceService(
     }
 
     public async Task<Result<FinanceTransaction>> UpdateTransactionAsync(
-        Guid userId, Guid transactionId, Guid? categoryId, string? title, long? amount, CancellationToken ct = default)
+        Guid userId, Guid transactionId, Guid? categoryId, string? title, long? amount, DateTime? createdAt, CancellationToken ct = default)
     {
         var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
 
@@ -173,6 +216,10 @@ public class FinanceService(
                 }
             }
         }
+
+        if (createdAt.HasValue)
+            transaction.SetCreatedAt(createdAt.Value);
+        
 
         var updated = await transactionRepository.UpdateAsync(transaction, ct);
 

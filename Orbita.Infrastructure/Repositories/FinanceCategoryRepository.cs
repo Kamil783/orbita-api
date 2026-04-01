@@ -32,4 +32,24 @@ public class FinanceCategoryRepository(OrbitaDbContext db) : IFinanceCategoryRep
         await db.SaveChangesAsync(ct);
         return entity.ToDomain();
     }
+
+    public async Task<FinanceCategory?> UpdateAsync(FinanceCategory category, CancellationToken ct = default)
+    {
+        var entity = await db.FinanceCategories
+        .FirstOrDefaultAsync(x => x.Id == category.Id.Id, ct);
+
+        if (entity is null)
+            return null;
+
+        entity.Name = category.Name;
+        entity.Icon = category.Icon;
+        entity.Bg = category.Bg;
+        entity.Color = category.Color;
+        entity.WeeklyLimit = category.WeeklyLimit;
+        entity.MonthlyLimit = category.MonthlyLimit;
+
+        await db.SaveChangesAsync(ct);
+
+        return entity.ToDomain();
+    }
 }
