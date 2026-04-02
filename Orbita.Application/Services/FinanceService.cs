@@ -3,6 +3,7 @@ using Orbita.Application.Abstractions.Services;
 using Orbita.Application.Models.Results;
 using Orbita.Domain.Entities;
 using Orbita.Domain.ValueObjects;
+using System.Data.Common;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
@@ -289,6 +290,13 @@ public class FinanceService(
         if (goal.TeamId.Id != teamId)
             return Result<SavingsGoal>.Forbidden("Access denied.");
 
+        var balance = await balanceRepository.GetAsync(teamId, ct);
+        if (balance is not null)
+        {
+            balance.Adjust(-amount);
+            await balanceRepository.UpdateAsync(balance, ct);
+        }
+
         goal.AddFunds(amount);
         var updated = await savingsGoalRepository.UpdateAsync(goal, ct);
         return Result<SavingsGoal>.Ok(updated);
@@ -304,6 +312,13 @@ public class FinanceService(
 
         if (goal.TeamId.Id != teamId)
             return Result<SavingsGoal>.Forbidden("Access denied.");
+
+        var balance = await balanceRepository.GetAsync(teamId, ct);
+        if (balance is not null)
+        {
+            balance.Adjust(amount);
+            await balanceRepository.UpdateAsync(balance, ct);
+        }
 
         goal.WithdrawFunds(amount);
         var updated = await savingsGoalRepository.UpdateAsync(goal, ct);
