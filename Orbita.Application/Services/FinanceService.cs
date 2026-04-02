@@ -218,7 +218,10 @@ public class FinanceService(
         }
 
         if (createdAt.HasValue)
-            transaction.SetCreatedAt(createdAt.Value);
+        {
+            var utc = DateTime.SpecifyKind(createdAt.Value, DateTimeKind.Utc);
+            transaction.SetCreatedAt(utc);
+        }
         
 
         var updated = await transactionRepository.UpdateAsync(transaction, ct);
