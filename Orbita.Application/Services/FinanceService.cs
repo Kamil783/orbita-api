@@ -5,6 +5,8 @@ using Orbita.Domain.Entities;
 using Orbita.Domain.ValueObjects;
 using System.Globalization;
 using System.Threading;
+using System.Threading.Tasks;
+using System.Transactions;
 
 namespace Orbita.Application.Services;
 
@@ -292,6 +294,21 @@ public class FinanceService(
         return Result<SavingsGoal>.Ok(updated);
     }
 
+    public async Task<Result<SavingsGoal>> WithdrawFromSavingsGoalAsync(Guid userId, Guid goalId, long amount, CancellationToken ct = default)
+    {
+        var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
+
+        var goal = await savingsGoalRepository.GetAsync(goalId, ct);
+        if (goal is null)
+            return Result<SavingsGoal>.NotFound("Savings goal not found.");
+
+        if (goal.TeamId.Id != teamId)
+            return Result<SavingsGoal>.Forbidden("Access denied.");
+
+        goal.WithdrawFunds(amount);
+        var updated = await savingsGoalRepository.UpdateAsync(goal, ct);
+        return Result<SavingsGoal>.Ok(updated);
+    }
     public async Task<Result> DeleteSavingsGoalAsync(Guid userId, Guid goalId, CancellationToken ct = default)
     {
         var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
@@ -346,66 +363,20 @@ public class FinanceService(
         var now = DateTime.UtcNow;
         var culture = new CultureInfo("ru-RU");
 
-        if (period == "weekly")
+        return period switch
         {
-            var result = new List<(string Label, decimal Value)>();
-            var today = now.Date;
-            var dayOfWeek = today.DayOfWeek == DayOfWeek.Sunday ? 6 : (int)today.DayOfWeek - 1;
-            var startOfWeek = today.AddDays(-dayOfWeek);
+            "weekly" => Result<List<(string Label, decimal Value)>>.Ok(
+                await GetWeeklyChartDataAsync(teamId, now, ct)),
 
-            string[] dayLabels = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"];
+            "monthly" => Result<List<(string Label, decimal Value)>>.Ok(
+                await GetMonthlyChartDataAsync(teamId, now, culture, ct)),
 
-            var from = DateTime.SpecifyKind(startOfWeek, DateTimeKind.Utc);
-            var to = DateTime.SpecifyKind(startOfWeek.AddDays(7), DateTimeKind.Utc);
-            var transactions = await transactionRepository.GetByTeamInPeriodAsync(teamId, from, to, ct);
+            "yearly" => Result<List<(string Label, decimal Value)>>.Ok(
+                await GetYearlyChartDataAsync(teamId, now, culture, ct)),
 
-            for (var i = 0; i < 7; i++)
-            {
-                var dayStart = startOfWeek.AddDays(i);
-                var dayEnd = dayStart.AddDays(1);
-
-                var dayExpenses = transactions
-                    .Where(t => t.CreatedAt.Date == dayStart && t.Amount < 0)
-                    .Sum(t => Math.Abs(t.Amount));
-
-                result.Add((dayLabels[i], Math.Round((decimal)dayExpenses / 100, 2)));
-            }
-
-            return Result<List<(string Label, decimal Value)>>.Ok(result);
-        }
-
-        if (period == "monthly")
-        {
-            var result = new List<(string Label, decimal Value)>();
-            var startOfMonth = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
-            var daysInMonth = DateTime.DaysInMonth(now.Year, now.Month);
-            var endOfMonth = startOfMonth.AddMonths(1);
-
-            var transactions = await transactionRepository.GetByTeamInPeriodAsync(teamId, startOfMonth, endOfMonth, ct);
-
-            var weekStart = startOfMonth;
-            var weekNumber = 1;
-            while (weekStart < endOfMonth)
-            {
-                var weekEnd = weekStart.AddDays(7);
-                if (weekEnd > endOfMonth)
-                    weekEnd = endOfMonth;
-
-                var weekExpenses = transactions
-                    .Where(t => t.CreatedAt >= weekStart && t.CreatedAt < weekEnd && t.Amount < 0)
-                    .Sum(t => Math.Abs(t.Amount));
-
-                var label = $"{weekStart.Day}–{Math.Min(weekEnd.AddDays(-1).Day, daysInMonth)} {weekStart.ToString("MMM", culture)}";
-                result.Add((label, Math.Round((decimal)weekExpenses / 100, 2)));
-
-                weekStart = weekEnd;
-                weekNumber++;
-            }
-
-            return Result<List<(string Label, decimal Value)>>.Ok(result);
-        }
-
-        return Result<List<(string Label, decimal Value)>>.Fail("Invalid period. Use 'weekly' or 'monthly'.");
+            _ => Result<List<(string Label, decimal Value)>>.Fail(
+                "Invalid period. Use 'weekly', 'monthly' or 'yearly'.")
+        };
     }
 
     public async Task<Result<List<ShoppingList>>> GetShoppingListsAsync(Guid userId, CancellationToken ct = default)
@@ -506,5 +477,101 @@ public class FinanceService(
         item.SetBought(bought);
         var updated = await shoppingListRepository.UpdateItemAsync(item, ct);
         return Result<ShoppingListItem>.Ok(updated);
+    }
+
+    private async Task<List<(string Label, decimal Value)>> GetWeeklyChartDataAsync(
+        Guid teamId,
+        DateTime now,
+        CancellationToken ct)
+    {
+        var result = new List<(string Label, decimal Value)>();
+
+        var today = now.Date;
+        var dayOfWeek = today.DayOfWeek == DayOfWeek.Sunday ? 6 : (int)today.DayOfWeek - 1;
+        var startOfWeek = today.AddDays(-dayOfWeek);
+
+        string[] dayLabels = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"];
+
+        var from = DateTime.SpecifyKind(startOfWeek, DateTimeKind.Utc);
+        var to = from.AddDays(7);
+
+        var transactions = await transactionRepository.GetByTeamInPeriodAsync(teamId, from, to, ct);
+
+        for (var i = 0; i < 7; i++)
+        {
+            var dayStart = from.AddDays(i);
+            var dayEnd = dayStart.AddDays(1);
+
+            result.Add((dayLabels[i], CalculateExpenses(transactions, dayStart, dayEnd)));
+        }
+
+        return result;
+    }
+
+    private async Task<List<(string Label, decimal Value)>> GetMonthlyChartDataAsync(
+        Guid teamId,
+        DateTime now,
+        CultureInfo culture,
+        CancellationToken ct)
+    {
+        var result = new List<(string Label, decimal Value)>();
+
+        var startOfMonth = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+        var endOfMonth = startOfMonth.AddMonths(1);
+        var daysInMonth = DateTime.DaysInMonth(now.Year, now.Month);
+
+        var transactions = await transactionRepository.GetByTeamInPeriodAsync(teamId, startOfMonth, endOfMonth, ct);
+
+        var weekStart = startOfMonth;
+        while (weekStart < endOfMonth)
+        {
+            var weekEnd = weekStart.AddDays(7);
+            if (weekEnd > endOfMonth)
+                weekEnd = endOfMonth;
+
+            var label = $"{weekStart.Day}–{Math.Min(weekEnd.AddDays(-1).Day, daysInMonth)} {weekStart.ToString("MMM", culture)}";
+            result.Add((label, CalculateExpenses(transactions, weekStart, weekEnd)));
+
+            weekStart = weekEnd;
+        }
+
+        return result;
+    }
+
+    private async Task<List<(string Label, decimal Value)>> GetYearlyChartDataAsync(
+        Guid teamId,
+        DateTime now,
+        CultureInfo culture,
+        CancellationToken ct)
+    {
+        var result = new List<(string Label, decimal Value)>();
+
+        var startOfYear = new DateTime(now.Year, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        var endOfYear = startOfYear.AddYears(1);
+
+        var transactions = await transactionRepository.GetByTeamInPeriodAsync(teamId, startOfYear, endOfYear, ct);
+
+        for (var month = 1; month <= 12; month++)
+        {
+            var monthStart = new DateTime(now.Year, month, 1, 0, 0, 0, DateTimeKind.Utc);
+            var monthEnd = monthStart.AddMonths(1);
+
+            var label = culture.DateTimeFormat.GetAbbreviatedMonthName(month);
+            result.Add((label, CalculateExpenses(transactions, monthStart, monthEnd)));
+        }
+
+        return result;
+    }
+
+    private static decimal CalculateExpenses(
+        IEnumerable<FinanceTransaction> transactions,
+        DateTime from,
+        DateTime to)
+    {
+        var expenses = transactions
+            .Where(t => t.CreatedAt >= from && t.CreatedAt < to && t.Amount < 0)
+            .Sum(t => Math.Abs(t.Amount));
+
+        return Math.Round((decimal)expenses / 100, 2);
     }
 }
