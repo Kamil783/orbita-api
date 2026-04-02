@@ -62,4 +62,15 @@ public class SavingsGoal
 
         Current += amount;
     }
+
+    public void WithdrawFunds(long amount)
+    {
+        if (amount <= 0)
+            throw new ArgumentOutOfRangeException(nameof(amount), "Amount must be positive.");
+
+        if (amount > Current)
+            throw new InvalidOperationException("Insufficient funds.");
+
+        Current -= amount;
+    }
 }

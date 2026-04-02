@@ -269,6 +269,25 @@ public class FinanceController(IFinanceService financeService) : AuthorizedContr
             .ToActionResult(HttpContext);
     }
 
+    [HttpPatch("savings-goals/{id}/withdraw")]
+    public async Task<IActionResult> WithdrawFromSavingsGoal([FromRoute] Guid id, [FromBody] WithdrawSavingsGoalRequest request, CancellationToken ct)
+    {
+        if (!TryGetUserId(out var userId))
+            return Unauthorized();
+
+        var res = await financeService.WithdrawFromSavingsGoalAsync(userId, id, request.Amount, ct);
+
+        return res
+            .Map(g => new SavingsGoalResponse
+            {
+                Id = g.Id.Id.ToString(),
+                Name = g.Name,
+                Target = g.Target,
+                Current = g.Current
+            })
+            .ToActionResult(HttpContext);
+    }
+
     [HttpDelete("savings-goals/{id}")]
     public async Task<IActionResult> DeleteSavingsGoal([FromRoute] Guid id, CancellationToken ct)
     {

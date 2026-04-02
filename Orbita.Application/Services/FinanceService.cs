@@ -5,6 +5,7 @@ using Orbita.Domain.Entities;
 using Orbita.Domain.ValueObjects;
 using System.Globalization;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Transactions;
 
 namespace Orbita.Application.Services;
@@ -293,6 +294,21 @@ public class FinanceService(
         return Result<SavingsGoal>.Ok(updated);
     }
 
+    public async Task<Result<SavingsGoal>> WithdrawFromSavingsGoalAsync(Guid userId, Guid goalId, long amount, CancellationToken ct = default)
+    {
+        var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
+
+        var goal = await savingsGoalRepository.GetAsync(goalId, ct);
+        if (goal is null)
+            return Result<SavingsGoal>.NotFound("Savings goal not found.");
+
+        if (goal.TeamId.Id != teamId)
+            return Result<SavingsGoal>.Forbidden("Access denied.");
+
+        goal.WithdrawFunds(amount);
+        var updated = await savingsGoalRepository.UpdateAsync(goal, ct);
+        return Result<SavingsGoal>.Ok(updated);
+    }
     public async Task<Result> DeleteSavingsGoalAsync(Guid userId, Guid goalId, CancellationToken ct = default)
     {
         var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
