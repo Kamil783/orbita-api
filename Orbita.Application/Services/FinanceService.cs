@@ -182,7 +182,7 @@ public class FinanceService(
     }
 
     public async Task<Result<FinanceTransaction>> UpdateTransactionAsync(
-        Guid userId, Guid transactionId, Guid? categoryId, string? title, long? amount, DateTime? createdAt, CancellationToken ct = default)
+        Guid userId, Guid transactionId, Guid? categoryId, string? title, long? amount, bool? fromBalance, DateTime? createdAt, CancellationToken ct = default)
     {
         var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
 
@@ -194,6 +194,7 @@ public class FinanceService(
             return Result<FinanceTransaction>.Forbidden("Access denied.");
 
         var oldAmount = transaction.Amount;
+        var balance = await balanceRepository.GetAsync(teamId, ct);
 
         if (categoryId.HasValue)
         {
@@ -207,19 +208,26 @@ public class FinanceService(
         if (title is not null)
             transaction.SetTitle(title);
 
-        if (amount.HasValue)
-        {
-            transaction.SetAmount(amount.Value);
+        var oldIsFromBalance = transaction.IsFromBalance;
+        var newIsFromBalance = fromBalance ?? oldIsFromBalance;
+        var newAmount = amount ?? oldAmount;
 
-            if (transaction.IsFromBalance)
-            {
-                var balance = await balanceRepository.GetAsync(teamId, ct);
-                if (balance is not null)
-                {
-                    balance.Adjust(-oldAmount + amount.Value);
-                    await balanceRepository.UpdateAsync(balance, ct);
-                }
-            }
+        if (fromBalance.HasValue)
+            transaction.SetIsFromBalance(newIsFromBalance);
+
+        if (amount.HasValue)
+            transaction.SetAmount(newAmount);
+
+        var balanceDelta = CalculateBalanceDelta(
+            oldIsFromBalance,
+            oldAmount,
+            newIsFromBalance,
+            newAmount);
+
+        if (balanceDelta != 0 && balance is not null)
+        {
+            balance.Adjust(balanceDelta);
+            await balanceRepository.UpdateAsync(balance, ct);
         }
 
         if (createdAt.HasValue)
@@ -227,7 +235,6 @@ public class FinanceService(
             var utc = DateTime.SpecifyKind(createdAt.Value, DateTimeKind.Utc);
             transaction.SetCreatedAt(utc);
         }
-        
 
         var updated = await transactionRepository.UpdateAsync(transaction, ct);
 
@@ -633,5 +640,17 @@ public class FinanceService(
             .Sum(t => Math.Abs(t.Amount));
 
         return Math.Round((decimal)expenses / 100, 2);
+    }
+
+    private static long CalculateBalanceDelta(
+        bool wasFromBalance,
+        long previousAmount,
+        bool isFromBalance,
+        long currentAmount)
+    {
+        var previousImpact = wasFromBalance ? previousAmount : 0L;
+        var currentImpact = isFromBalance ? currentAmount : 0L;
+
+        return currentImpact - previousImpact;
     }
 }
