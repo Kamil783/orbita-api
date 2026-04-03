@@ -15,7 +15,7 @@ public interface IFinanceService
 
     Task<Result<List<FinanceTransaction>>> GetTransactionsAsync(Guid userId, CancellationToken ct = default);
     Task<Result<FinanceTransaction>> CreateTransactionAsync(Guid userId, Guid? categoryId, string title, long amount, bool fromBalance, DateTime? createdAt, CancellationToken ct = default);
-    Task<Result<FinanceTransaction>> UpdateTransactionAsync(Guid userId, Guid transactionId, Guid? categoryId, string? title, long? amount, DateTime? createdAt, CancellationToken ct = default);
+    Task<Result<FinanceTransaction>> UpdateTransactionAsync(Guid userId, Guid transactionId, Guid? categoryId, string? title, long? amount, bool? fromBalance, DateTime? createdAt, CancellationToken ct = default);
     Task<Result> DeleteTransactionAsync(Guid userId, Guid transactionId, CancellationToken ct = default);
 
     Task<Result<List<SavingsGoal>>> GetSavingsGoalsAsync(Guid userId, CancellationToken ct = default);

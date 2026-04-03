@@ -185,7 +185,7 @@ public class FinanceController(IFinanceService financeService) : AuthorizedContr
             categoryId = parsedCategoryId;
         }
 
-        var res = await financeService.UpdateTransactionAsync(userId, id, categoryId, request.Title, request.Amount, request.Date, ct);
+        var res = await financeService.UpdateTransactionAsync(userId, id, categoryId, request.Title, request.Amount, request.FromBalance, request.Date, ct);
 
         return res
             .Map(t => new TransactionResponse

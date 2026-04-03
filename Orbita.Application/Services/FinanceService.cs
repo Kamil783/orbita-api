@@ -1,8 +1,10 @@
+using Orbita.Application.Abstractions;
 using Orbita.Application.Abstractions.Repositories;
 using Orbita.Application.Abstractions.Services;
 using Orbita.Application.Models.Results;
 using Orbita.Domain.Entities;
 using Orbita.Domain.ValueObjects;
+using System.Data.Common;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,7 +19,8 @@ public class FinanceService(
     ISavingsGoalRepository savingsGoalRepository,
     ISpendingLimitRepository spendingLimitRepository,
     IShoppingListRepository shoppingListRepository,
-    ITeamProvider teamProvider) : IFinanceService
+    ITeamProvider teamProvider,
+    IUnitOfWork unitOfWork) : IFinanceService
 {
     public async Task<Result<FinanceBalance>> GetBalanceAsync(Guid userId, CancellationToken ct = default)
     {
@@ -179,7 +182,7 @@ public class FinanceService(
     }
 
     public async Task<Result<FinanceTransaction>> UpdateTransactionAsync(
-        Guid userId, Guid transactionId, Guid? categoryId, string? title, long? amount, DateTime? createdAt, CancellationToken ct = default)
+        Guid userId, Guid transactionId, Guid? categoryId, string? title, long? amount, bool? fromBalance, DateTime? createdAt, CancellationToken ct = default)
     {
         var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
 
@@ -191,6 +194,7 @@ public class FinanceService(
             return Result<FinanceTransaction>.Forbidden("Access denied.");
 
         var oldAmount = transaction.Amount;
+        var balance = await balanceRepository.GetAsync(teamId, ct);
 
         if (categoryId.HasValue)
         {
@@ -204,19 +208,26 @@ public class FinanceService(
         if (title is not null)
             transaction.SetTitle(title);
 
-        if (amount.HasValue)
-        {
-            transaction.SetAmount(amount.Value);
+        var oldIsFromBalance = transaction.IsFromBalance;
+        var newIsFromBalance = fromBalance ?? oldIsFromBalance;
+        var newAmount = amount ?? oldAmount;
 
-            if (transaction.IsFromBalance)
-            {
-                var balance = await balanceRepository.GetAsync(teamId, ct);
-                if (balance is not null)
-                {
-                    balance.Adjust(-oldAmount + amount.Value);
-                    await balanceRepository.UpdateAsync(balance, ct);
-                }
-            }
+        if (fromBalance.HasValue)
+            transaction.SetIsFromBalance(newIsFromBalance);
+
+        if (amount.HasValue)
+            transaction.SetAmount(newAmount);
+
+        var balanceDelta = CalculateBalanceDelta(
+            oldIsFromBalance,
+            oldAmount,
+            newIsFromBalance,
+            newAmount);
+
+        if (balanceDelta != 0 && balance is not null)
+        {
+            balance.Adjust(balanceDelta);
+            await balanceRepository.UpdateAsync(balance, ct);
         }
 
         if (createdAt.HasValue)
@@ -224,7 +235,6 @@ public class FinanceService(
             var utc = DateTime.SpecifyKind(createdAt.Value, DateTimeKind.Utc);
             transaction.SetCreatedAt(utc);
         }
-        
 
         var updated = await transactionRepository.UpdateAsync(transaction, ct);
 
@@ -289,9 +299,30 @@ public class FinanceService(
         if (goal.TeamId.Id != teamId)
             return Result<SavingsGoal>.Forbidden("Access denied.");
 
-        goal.AddFunds(amount);
-        var updated = await savingsGoalRepository.UpdateAsync(goal, ct);
-        return Result<SavingsGoal>.Ok(updated);
+        await unitOfWork.BeginTransactionAsync(ct);
+        try
+        {
+            var balance = await balanceRepository.GetAsync(teamId, ct);
+            if (balance is null)
+            {
+                await unitOfWork.RollbackAsync(ct);
+                return Result<SavingsGoal>.Conflict("Balance not found.");
+            }
+
+            balance.Adjust(-amount);
+            await balanceRepository.UpdateAsync(balance, ct);
+
+            goal.AddFunds(amount);
+            var updated = await savingsGoalRepository.UpdateAsync(goal, ct);
+
+            await unitOfWork.CommitAsync(ct);
+            return Result<SavingsGoal>.Ok(updated);
+        }
+        catch
+        {
+            await unitOfWork.RollbackAsync(ct);
+            throw;
+        }
     }
 
     public async Task<Result<SavingsGoal>> WithdrawFromSavingsGoalAsync(Guid userId, Guid goalId, long amount, CancellationToken ct = default)
@@ -305,10 +336,32 @@ public class FinanceService(
         if (goal.TeamId.Id != teamId)
             return Result<SavingsGoal>.Forbidden("Access denied.");
 
-        goal.WithdrawFunds(amount);
-        var updated = await savingsGoalRepository.UpdateAsync(goal, ct);
-        return Result<SavingsGoal>.Ok(updated);
+        await unitOfWork.BeginTransactionAsync(ct);
+        try
+        {
+            var balance = await balanceRepository.GetAsync(teamId, ct);
+            if (balance is null)
+            {
+                await unitOfWork.RollbackAsync(ct);
+                return Result<SavingsGoal>.Conflict("Balance not found.");
+            }
+
+            balance.Adjust(amount);
+            await balanceRepository.UpdateAsync(balance, ct);
+
+            goal.WithdrawFunds(amount);
+            var updated = await savingsGoalRepository.UpdateAsync(goal, ct);
+
+            await unitOfWork.CommitAsync(ct);
+            return Result<SavingsGoal>.Ok(updated);
+        }
+        catch
+        {
+            await unitOfWork.RollbackAsync(ct);
+            throw;
+        }
     }
+
     public async Task<Result> DeleteSavingsGoalAsync(Guid userId, Guid goalId, CancellationToken ct = default)
     {
         var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
@@ -474,9 +527,23 @@ public class FinanceService(
         if (item.ListId.Id != listId)
             return Result<ShoppingListItem>.NotFound("Shopping list item not found.");
 
-        item.SetBought(bought);
-        var updated = await shoppingListRepository.UpdateItemAsync(item, ct);
-        return Result<ShoppingListItem>.Ok(updated);
+        return await unitOfWork.ExecuteAsync(async token =>
+        {
+            var delta = item.ChangeBoughtStatus(bought);
+
+            if (delta != 0)
+            {
+                var balance = await balanceRepository.GetAsync(teamId, token);
+                if (balance is null)
+                    return Result<ShoppingListItem>.Conflict("Balance not found.");
+
+                balance.Adjust(delta);
+                await balanceRepository.UpdateAsync(balance, token);
+            }
+
+            var updated = await shoppingListRepository.UpdateItemAsync(item, token);
+            return Result<ShoppingListItem>.Ok(updated);
+        }, ct);
     }
 
     private async Task<List<(string Label, decimal Value)>> GetWeeklyChartDataAsync(
@@ -573,5 +640,17 @@ public class FinanceService(
             .Sum(t => Math.Abs(t.Amount));
 
         return Math.Round((decimal)expenses / 100, 2);
+    }
+
+    private static long CalculateBalanceDelta(
+        bool wasFromBalance,
+        long previousAmount,
+        bool isFromBalance,
+        long currentAmount)
+    {
+        var previousImpact = wasFromBalance ? previousAmount : 0L;
+        var currentImpact = isFromBalance ? currentAmount : 0L;
+
+        return currentImpact - previousImpact;
     }
 }
