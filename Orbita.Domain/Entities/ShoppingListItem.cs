@@ -50,8 +50,21 @@ public class ShoppingListItem
         };
     }
 
-    public void SetBought(bool bought)
+    public long ChangeBoughtStatus(bool bought)
     {
+        var price = Price ?? 0L;
+
+        if (Bought == bought)
+            return 0;
+
+        var delta = 0L;
+
+        if (!Bought && bought)
+            delta = -price;
+        else if (Bought && !bought)
+            delta = price;
+
         Bought = bought;
+        return delta;
     }
 }

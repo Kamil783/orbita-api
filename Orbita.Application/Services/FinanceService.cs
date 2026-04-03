@@ -1,3 +1,4 @@
+using Orbita.Application.Abstractions;
 using Orbita.Application.Abstractions.Repositories;
 using Orbita.Application.Abstractions.Services;
 using Orbita.Application.Models.Results;
@@ -18,7 +19,8 @@ public class FinanceService(
     ISavingsGoalRepository savingsGoalRepository,
     ISpendingLimitRepository spendingLimitRepository,
     IShoppingListRepository shoppingListRepository,
-    ITeamProvider teamProvider) : IFinanceService
+    ITeamProvider teamProvider,
+    IUnitOfWork unitOfWork) : IFinanceService
 {
     public async Task<Result<FinanceBalance>> GetBalanceAsync(Guid userId, CancellationToken ct = default)
     {
@@ -290,16 +292,30 @@ public class FinanceService(
         if (goal.TeamId.Id != teamId)
             return Result<SavingsGoal>.Forbidden("Access denied.");
 
-        var balance = await balanceRepository.GetAsync(teamId, ct);
-        if (balance is not null)
+        await unitOfWork.BeginTransactionAsync(ct);
+        try
         {
+            var balance = await balanceRepository.GetAsync(teamId, ct);
+            if (balance is null)
+            {
+                await unitOfWork.RollbackAsync(ct);
+                return Result<SavingsGoal>.Conflict("Balance not found.");
+            }
+
             balance.Adjust(-amount);
             await balanceRepository.UpdateAsync(balance, ct);
-        }
 
-        goal.AddFunds(amount);
-        var updated = await savingsGoalRepository.UpdateAsync(goal, ct);
-        return Result<SavingsGoal>.Ok(updated);
+            goal.AddFunds(amount);
+            var updated = await savingsGoalRepository.UpdateAsync(goal, ct);
+
+            await unitOfWork.CommitAsync(ct);
+            return Result<SavingsGoal>.Ok(updated);
+        }
+        catch
+        {
+            await unitOfWork.RollbackAsync(ct);
+            throw;
+        }
     }
 
     public async Task<Result<SavingsGoal>> WithdrawFromSavingsGoalAsync(Guid userId, Guid goalId, long amount, CancellationToken ct = default)
@@ -313,17 +329,32 @@ public class FinanceService(
         if (goal.TeamId.Id != teamId)
             return Result<SavingsGoal>.Forbidden("Access denied.");
 
-        var balance = await balanceRepository.GetAsync(teamId, ct);
-        if (balance is not null)
+        await unitOfWork.BeginTransactionAsync(ct);
+        try
         {
+            var balance = await balanceRepository.GetAsync(teamId, ct);
+            if (balance is null)
+            {
+                await unitOfWork.RollbackAsync(ct);
+                return Result<SavingsGoal>.Conflict("Balance not found.");
+            }
+
             balance.Adjust(amount);
             await balanceRepository.UpdateAsync(balance, ct);
-        }
 
-        goal.WithdrawFunds(amount);
-        var updated = await savingsGoalRepository.UpdateAsync(goal, ct);
-        return Result<SavingsGoal>.Ok(updated);
+            goal.WithdrawFunds(amount);
+            var updated = await savingsGoalRepository.UpdateAsync(goal, ct);
+
+            await unitOfWork.CommitAsync(ct);
+            return Result<SavingsGoal>.Ok(updated);
+        }
+        catch
+        {
+            await unitOfWork.RollbackAsync(ct);
+            throw;
+        }
     }
+
     public async Task<Result> DeleteSavingsGoalAsync(Guid userId, Guid goalId, CancellationToken ct = default)
     {
         var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
@@ -489,9 +520,23 @@ public class FinanceService(
         if (item.ListId.Id != listId)
             return Result<ShoppingListItem>.NotFound("Shopping list item not found.");
 
-        item.SetBought(bought);
-        var updated = await shoppingListRepository.UpdateItemAsync(item, ct);
-        return Result<ShoppingListItem>.Ok(updated);
+        return await unitOfWork.ExecuteAsync(async token =>
+        {
+            var delta = item.ChangeBoughtStatus(bought);
+
+            if (delta != 0)
+            {
+                var balance = await balanceRepository.GetAsync(teamId, token);
+                if (balance is null)
+                    return Result<ShoppingListItem>.Conflict("Balance not found.");
+
+                balance.Adjust(delta);
+                await balanceRepository.UpdateAsync(balance, token);
+            }
+
+            var updated = await shoppingListRepository.UpdateItemAsync(item, token);
+            return Result<ShoppingListItem>.Ok(updated);
+        }, ct);
     }
 
     private async Task<List<(string Label, decimal Value)>> GetWeeklyChartDataAsync(
