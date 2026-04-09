@@ -288,6 +288,30 @@ public class FinanceService(
         return Result<SavingsGoal>.Ok(created);
     }
 
+    public async Task<Result<SavingsGoal>> UpdateSavingsGoalDetailsAsync(Guid userId, Guid goalId, string? name, long? target, CancellationToken ct = default)
+    {
+        var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
+
+        var goal = await savingsGoalRepository.GetAsync(goalId, ct);
+        if (goal is null)
+            return Result<SavingsGoal>.NotFound("Savings goal not found.");
+
+        if (goal.TeamId.Id != teamId)
+            return Result<SavingsGoal>.Forbidden("Access denied.");
+
+        try
+        {
+            goal.UpdateDetails(name, target);
+        }
+        catch (Exception ex)
+        {
+            return Result<SavingsGoal>.Fail(ex.Message, ErrorType.Validation);
+        }
+
+        var updated = await savingsGoalRepository.UpdateAsync(goal, ct);
+        return Result<SavingsGoal>.Ok(updated);
+    }
+
     public async Task<Result<SavingsGoal>> TopUpSavingsGoalAsync(Guid userId, Guid goalId, long amount, CancellationToken ct = default)
     {
         var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
@@ -439,17 +463,43 @@ public class FinanceService(
         return Result<List<ShoppingList>>.Ok(lists);
     }
 
-    public async Task<Result<ShoppingList>> CreateShoppingListAsync(Guid userId, string name, CancellationToken ct = default)
+    public async Task<Result<ShoppingList>> CreateShoppingListAsync(Guid userId, string name, bool fromBalance, CancellationToken ct = default)
     {
         var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
 
         var list = ShoppingList.Create(
             creatorId: new UserId(userId),
             teamId: new TeamId(teamId),
-            name: name);
+            name: name,
+            isFromBalance: fromBalance);
 
         var created = await shoppingListRepository.CreateAsync(list, ct);
         return Result<ShoppingList>.Ok(created);
+    }
+
+    public async Task<Result<ShoppingList>> UpdateShoppingListAsync(Guid userId, Guid listId, string? name, CancellationToken ct = default)
+    {
+        var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
+
+        var list = await shoppingListRepository.GetAsync(listId, ct);
+        if (list is null)
+            return Result<ShoppingList>.NotFound("Shopping list not found.");
+
+        if (list.TeamId.Id != teamId)
+            return Result<ShoppingList>.Forbidden("Access denied.");
+
+        try
+        {
+            if (name is not null)
+                list.SetName(name);
+        }
+        catch (Exception ex)
+        {
+            return Result<ShoppingList>.Fail(ex.Message, ErrorType.Validation);
+        }
+
+        var updated = await shoppingListRepository.UpdateAsync(list, ct);
+        return Result<ShoppingList>.Ok(updated);
     }
 
     public async Task<Result> DeleteShoppingListAsync(Guid userId, Guid listId, CancellationToken ct = default)
@@ -530,6 +580,51 @@ public class FinanceService(
         return await unitOfWork.ExecuteAsync(async token =>
         {
             var delta = item.ChangeBoughtStatus(bought);
+
+            if (delta != 0)
+            {
+                var balance = await balanceRepository.GetAsync(teamId, token);
+                if (balance is null)
+                    return Result<ShoppingListItem>.Conflict("Balance not found.");
+
+                balance.Adjust(delta);
+                await balanceRepository.UpdateAsync(balance, token);
+            }
+
+            var updated = await shoppingListRepository.UpdateItemAsync(item, token);
+            return Result<ShoppingListItem>.Ok(updated);
+        }, ct);
+    }
+
+    public async Task<Result<ShoppingListItem>> UpdateShoppingListItemDetailsAsync(Guid userId, Guid listId, Guid itemId, string? name, long? price, CancellationToken ct = default)
+    {
+        var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
+
+        var list = await shoppingListRepository.GetAsync(listId, ct);
+        if (list is null)
+            return Result<ShoppingListItem>.NotFound("Shopping list not found.");
+
+        if (list.TeamId.Id != teamId)
+            return Result<ShoppingListItem>.Forbidden("Access denied.");
+
+        var item = await shoppingListRepository.GetItemAsync(itemId, ct);
+        if (item is null)
+            return Result<ShoppingListItem>.NotFound("Shopping list item not found.");
+
+        if (item.ListId.Id != listId)
+            return Result<ShoppingListItem>.NotFound("Shopping list item not found.");
+
+        return await unitOfWork.ExecuteAsync(async token =>
+        {
+            long delta;
+            try
+            {
+                delta = item.UpdateDetails(name, price);
+            }
+            catch (Exception ex)
+            {
+                return Result<ShoppingListItem>.Fail(ex.Message, ErrorType.Validation);
+            }
 
             if (delta != 0)
             {

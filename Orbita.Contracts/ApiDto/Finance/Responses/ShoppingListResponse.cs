@@ -4,6 +4,7 @@ public sealed class ShoppingListResponse
 {
     public string Id { get; init; } = default!;
     public string Name { get; init; } = default!;
+    public bool FromBalance { get; init; }
     public long CreatedAt { get; init; }
     public List<ShoppingListItemResponse> Items { get; init; } = new();
 }

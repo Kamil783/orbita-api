@@ -269,6 +269,25 @@ public class FinanceController(IFinanceService financeService) : AuthorizedContr
             .ToActionResult(HttpContext);
     }
 
+    [HttpPatch("savings-goals/{id}/details")]
+    public async Task<IActionResult> UpdateSavingsGoalDetails([FromRoute] Guid id, [FromBody] UpdateSavingsGoalRequest request, CancellationToken ct)
+    {
+        if (!TryGetUserId(out var userId))
+            return Unauthorized();
+
+        var res = await financeService.UpdateSavingsGoalDetailsAsync(userId, id, request.Name, request.Target, ct);
+
+        return res
+            .Map(g => new SavingsGoalResponse
+            {
+                Id = g.Id.Id.ToString(),
+                Name = g.Name,
+                Target = g.Target,
+                Current = g.Current
+            })
+            .ToActionResult(HttpContext);
+    }
+
     [HttpPatch("savings-goals/{id}/withdraw")]
     public async Task<IActionResult> WithdrawFromSavingsGoal([FromRoute] Guid id, [FromBody] WithdrawSavingsGoalRequest request, CancellationToken ct)
     {
@@ -346,6 +365,7 @@ public class FinanceController(IFinanceService financeService) : AuthorizedContr
             {
                 Id = l.Id.Id.ToString(),
                 Name = l.Name,
+                FromBalance = l.IsFromBalance,
                 CreatedAt = new DateTimeOffset(l.CreatedAt, TimeSpan.Zero).ToUnixTimeMilliseconds(),
                 Items = l.Items.Select(i => new ShoppingListItemResponse
                 {
@@ -364,13 +384,40 @@ public class FinanceController(IFinanceService financeService) : AuthorizedContr
         if (!TryGetUserId(out var userId))
             return Unauthorized();
 
-        var res = await financeService.CreateShoppingListAsync(userId, request.Name, ct);
+        var res = await financeService.CreateShoppingListAsync(userId, request.Name, request.FromBalance, ct);
 
         return res
             .Map(l => new ShoppingListResponse
             {
                 Id = l.Id.Id.ToString(),
                 Name = l.Name,
+                FromBalance = l.IsFromBalance,
+                CreatedAt = new DateTimeOffset(l.CreatedAt, TimeSpan.Zero).ToUnixTimeMilliseconds(),
+                Items = l.Items.Select(i => new ShoppingListItemResponse
+                {
+                    Id = i.Id.Id.ToString(),
+                    Name = i.Name,
+                    Price = i.Price,
+                    Bought = i.Bought
+                }).ToList()
+            })
+            .ToActionResult(HttpContext);
+    }
+
+    [HttpPatch("shopping-lists/{id}")]
+    public async Task<IActionResult> UpdateShoppingList([FromRoute] Guid id, [FromBody] UpdateShoppingListRequest request, CancellationToken ct)
+    {
+        if (!TryGetUserId(out var userId))
+            return Unauthorized();
+
+        var res = await financeService.UpdateShoppingListAsync(userId, id, request.Name, ct);
+
+        return res
+            .Map(l => new ShoppingListResponse
+            {
+                Id = l.Id.Id.ToString(),
+                Name = l.Name,
+                FromBalance = l.IsFromBalance,
                 CreatedAt = new DateTimeOffset(l.CreatedAt, TimeSpan.Zero).ToUnixTimeMilliseconds(),
                 Items = l.Items.Select(i => new ShoppingListItemResponse
                 {
@@ -431,6 +478,25 @@ public class FinanceController(IFinanceService financeService) : AuthorizedContr
             return Unauthorized();
 
         var res = await financeService.UpdateShoppingListItemAsync(userId, listId, itemId, request.Bought, ct);
+
+        return res
+            .Map(i => new ShoppingListItemResponse
+            {
+                Id = i.Id.Id.ToString(),
+                Name = i.Name,
+                Price = i.Price,
+                Bought = i.Bought
+            })
+            .ToActionResult(HttpContext);
+    }
+
+    [HttpPatch("shopping-lists/{listId}/items/{itemId}/details")]
+    public async Task<IActionResult> UpdateShoppingListItemDetails([FromRoute] Guid listId, [FromRoute] Guid itemId, [FromBody] UpdateShoppingListItemDetailsRequest request, CancellationToken ct)
+    {
+        if (!TryGetUserId(out var userId))
+            return Unauthorized();
+
+        var res = await financeService.UpdateShoppingListItemDetailsAsync(userId, listId, itemId, request.Name, request.Price, ct);
 
         return res
             .Map(i => new ShoppingListItemResponse

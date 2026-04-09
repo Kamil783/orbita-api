@@ -14,6 +14,7 @@ public static class ShoppingListExtensions
             CreatorId = list.CreatorId.Id,
             TeamId = list.TeamId.Id,
             Name = list.Name,
+            IsFromBalance = list.IsFromBalance,
             CreatedAt = list.CreatedAt,
             Items = list.Items.Select(i => i.ToEntity()).ToList()
         };
@@ -26,6 +27,7 @@ public static class ShoppingListExtensions
             creatorId: new UserId(entity.CreatorId),
             teamId: new TeamId(entity.TeamId),
             name: entity.Name,
+            isFromBalance: entity.IsFromBalance,
             createdAt: entity.CreatedAt,
             items: entity.Items.Select(i => i.ToDomain()).ToList()
         );

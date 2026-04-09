@@ -35,6 +35,18 @@ public class ShoppingListRepository(OrbitaDbContext db) : IShoppingListRepositor
         return entity.ToDomain();
     }
 
+    public async Task<ShoppingList> UpdateAsync(ShoppingList list, CancellationToken ct = default)
+    {
+        var entity = await db.ShoppingLists
+            .Include(x => x.Items)
+            .FirstOrDefaultAsync(x => x.Id == list.Id.Id, ct);
+        if (entity is null) throw new InvalidOperationException("Shopping list not found.");
+
+        entity.Name = list.Name;
+        await db.SaveChangesAsync(ct);
+        return entity.ToDomain();
+    }
+
     public async Task DeleteAsync(Guid id, CancellationToken ct = default)
     {
         var entity = await db.ShoppingLists.FirstOrDefaultAsync(x => x.Id == id, ct);

@@ -55,6 +55,25 @@ public class SavingsGoal
         };
     }
 
+    public void UpdateDetails(string? name, long? target)
+    {
+        if (name is not null)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                throw new ArgumentException("Name is required.", nameof(name));
+            Name = name;
+        }
+
+        if (target.HasValue)
+        {
+            if (target.Value <= 0)
+                throw new ArgumentOutOfRangeException(nameof(target), "Target must be positive.");
+            if (target.Value < Current)
+                throw new InvalidOperationException("Target cannot be less than current saved amount.");
+            Target = target.Value;
+        }
+    }
+
     public void AddFunds(long amount)
     {
         if (amount <= 0)

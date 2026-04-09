@@ -50,6 +50,31 @@ public class ShoppingListItem
         };
     }
 
+    public long UpdateDetails(string? name, long? price)
+    {
+        if (name is not null)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                throw new ArgumentException("Name is required.", nameof(name));
+            Name = name;
+        }
+
+        var delta = 0L;
+
+        if (price is not null)
+        {
+            if (price < 0)
+                throw new ArgumentOutOfRangeException(nameof(price), "Price must be non-negative.");
+
+            if (Bought)
+                delta = (Price ?? 0L) - price.Value;
+
+            Price = price;
+        }
+
+        return delta;
+    }
+
     public long ChangeBoughtStatus(bool bought)
     {
         var price = Price ?? 0L;
