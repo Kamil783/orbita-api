@@ -4,6 +4,7 @@ using Orbita.Api.Extensions;
 using Orbita.Api.Middleware;
 using Orbita.Application.DependencyInjection;
 using Orbita.Infrastructure.DependencyInjection;
+using Orbita.Infrastructure.Notifications;
 using Orbita.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -42,6 +43,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<NotificationsHub>("/hubs/notifications");
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 
 app.Run();

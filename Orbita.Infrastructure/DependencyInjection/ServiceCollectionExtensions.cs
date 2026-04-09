@@ -16,6 +16,7 @@ using Orbita.Infrastructure.Identity;
 using Orbita.Application.Abstractions.Jobs;
 using Orbita.Infrastructure.Jobs;
 using Orbita.Infrastructure.Logging;
+using Orbita.Infrastructure.Notifications;
 using Orbita.Infrastructure.Persistence;
 using Orbita.Application.Abstractions.Services;
 using Orbita.Infrastructure.Repositories;
@@ -62,7 +63,23 @@ public static class ServiceCollectionExtensions
                 ValidIssuer = jwtOptions.Issuer,
                 ValidAudience = jwtOptions.Audience,
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.Key)),
-                ClockSkew = TimeSpan.FromMinutes(1)
+                ClockSkew = TimeSpan.FromMinutes(1),
+                NameClaimType = System.Security.Claims.ClaimTypes.NameIdentifier
+            };
+
+            options.Events = new JwtBearerEvents
+            {
+                OnMessageReceived = ctx =>
+                {
+                    var accessToken = ctx.Request.Query["access_token"];
+                    var path = ctx.HttpContext.Request.Path;
+                    if (!string.IsNullOrEmpty(accessToken) &&
+                        path.StartsWithSegments("/hubs/notifications"))
+                    {
+                        ctx.Token = accessToken;
+                    }
+                    return Task.CompletedTask;
+                }
             };
         });
 
@@ -84,7 +101,11 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ITeamRepository, TeamRepository>();
         services.AddScoped<IShoppingListRepository, ShoppingListRepository>();
         services.AddScoped<ITeamProvider, TeamProvider>();
+        services.AddScoped<IAppNotificationRepository, AppNotificationRepository>();
+        services.AddScoped<INotificationDispatcher, NotificationDispatcher>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+        services.AddSignalR();
 
         services.AddHttpContextAccessor();
         services.AddSingleton(Channel.CreateBounded<AppLogEntity>(new BoundedChannelOptions(10_000)

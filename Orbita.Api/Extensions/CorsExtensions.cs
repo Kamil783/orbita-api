@@ -12,6 +12,7 @@ public static class CorsExtensions
                         "http://localhost:4200")
                     .AllowAnyHeader()
                     .AllowAnyMethod()
+                    .AllowCredentials()
             );
         });
 
