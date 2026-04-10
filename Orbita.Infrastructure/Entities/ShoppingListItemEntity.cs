@@ -7,6 +7,7 @@ public class ShoppingListItemEntity
     public string Name { get; set; } = default!;
     public long? Price { get; set; }
     public bool Bought { get; set; }
+    public int Order { get; set; }
 
     public ShoppingListEntity List { get; set; } = default!;
 }

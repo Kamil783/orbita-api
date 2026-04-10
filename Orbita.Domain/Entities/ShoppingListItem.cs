@@ -9,13 +9,15 @@ public class ShoppingListItem
     public string Name { get; private set; }
     public long? Price { get; private set; }
     public bool Bought { get; private set; }
+    public int Order { get; private set; }
 
     private ShoppingListItem() { }
 
     public static ShoppingListItem Create(
         ShoppingListId listId,
         string name,
-        long? price)
+        long? price,
+        int order)
     {
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Name is required.", nameof(name));
@@ -29,7 +31,8 @@ public class ShoppingListItem
             ListId = listId,
             Name = name,
             Price = price,
-            Bought = false
+            Bought = false,
+            Order = order
         };
     }
 
@@ -38,7 +41,8 @@ public class ShoppingListItem
         ShoppingListId listId,
         string name,
         long? price,
-        bool bought)
+        bool bought,
+        int order)
     {
         return new ShoppingListItem
         {
@@ -46,7 +50,8 @@ public class ShoppingListItem
             ListId = listId,
             Name = name,
             Price = price,
-            Bought = bought
+            Bought = bought,
+            Order = order
         };
     }
 
@@ -74,6 +79,8 @@ public class ShoppingListItem
 
         return delta;
     }
+
+    public void SetOrder(int order) => Order = order;
 
     public long ChangeBoughtStatus(bool bought)
     {

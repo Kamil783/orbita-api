@@ -477,7 +477,7 @@ public class FinanceService(
         return Result<ShoppingList>.Ok(created);
     }
 
-    public async Task<Result<ShoppingList>> UpdateShoppingListAsync(Guid userId, Guid listId, string? name, CancellationToken ct = default)
+    public async Task<Result<ShoppingList>> UpdateShoppingListAsync(Guid userId, Guid listId, string? name, bool? pinned, CancellationToken ct = default)
     {
         var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
 
@@ -492,6 +492,8 @@ public class FinanceService(
         {
             if (name is not null)
                 list.SetName(name);
+            if (pinned.HasValue)
+                list.SetPinned(pinned.Value);
         }
         catch (Exception ex)
         {
@@ -528,10 +530,13 @@ public class FinanceService(
         if (list.TeamId.Id != teamId)
             return Result<ShoppingListItem>.Forbidden("Access denied.");
 
+        var maxOrder = await shoppingListRepository.GetMaxItemOrderAsync(listId, ct);
+
         var item = ShoppingListItem.Create(
             listId: new ShoppingListId(listId),
             name: name,
-            price: price);
+            price: price,
+            order: maxOrder + 1);
 
         var created = await shoppingListRepository.AddItemAsync(item, ct);
         return Result<ShoppingListItem>.Ok(created);
@@ -594,6 +599,27 @@ public class FinanceService(
             var updated = await shoppingListRepository.UpdateItemAsync(item, token);
             return Result<ShoppingListItem>.Ok(updated);
         }, ct);
+    }
+
+    public async Task<Result> ReorderShoppingListItemsAsync(Guid userId, Guid listId, List<Guid> itemIds, CancellationToken ct = default)
+    {
+        var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
+
+        var list = await shoppingListRepository.GetAsync(listId, ct);
+        if (list is null)
+            return Result.NotFound("Shopping list not found.");
+
+        if (list.TeamId.Id != teamId)
+            return Result.Forbidden("Access denied.");
+
+        var existingIds = list.Items.Select(i => i.Id.Id).ToHashSet();
+        var providedIds = itemIds.ToHashSet();
+
+        if (existingIds.Count != itemIds.Count || !existingIds.SetEquals(providedIds))
+            return Result.Fail("Item IDs do not match the items in the list.", ErrorType.Validation);
+
+        await shoppingListRepository.ReorderItemsAsync(listId, itemIds, ct);
+        return Result.Ok();
     }
 
     public async Task<Result<ShoppingListItem>> UpdateShoppingListItemDetailsAsync(Guid userId, Guid listId, Guid itemId, string? name, long? price, CancellationToken ct = default)

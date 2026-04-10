@@ -25,6 +25,9 @@ public class ShoppingListItemEntityConfiguration : IEntityTypeConfiguration<Shop
         b.Property(x => x.Bought)
             .IsRequired();
 
-        b.HasIndex(x => x.ListId);
+        b.Property(x => x.Order)
+            .IsRequired();
+
+        b.HasIndex(x => new { x.ListId, x.Order });
     }
 }

@@ -366,13 +366,15 @@ public class FinanceController(IFinanceService financeService) : AuthorizedContr
                 Id = l.Id.Id.ToString(),
                 Name = l.Name,
                 FromBalance = l.IsFromBalance,
+                Pinned = l.Pinned,
                 CreatedAt = new DateTimeOffset(l.CreatedAt, TimeSpan.Zero).ToUnixTimeMilliseconds(),
                 Items = l.Items.Select(i => new ShoppingListItemResponse
                 {
                     Id = i.Id.Id.ToString(),
                     Name = i.Name,
                     Price = i.Price,
-                    Bought = i.Bought
+                    Bought = i.Bought,
+                    Order = i.Order
                 }).ToList()
             }).ToList())
             .ToActionResult(HttpContext);
@@ -392,13 +394,15 @@ public class FinanceController(IFinanceService financeService) : AuthorizedContr
                 Id = l.Id.Id.ToString(),
                 Name = l.Name,
                 FromBalance = l.IsFromBalance,
+                Pinned = l.Pinned,
                 CreatedAt = new DateTimeOffset(l.CreatedAt, TimeSpan.Zero).ToUnixTimeMilliseconds(),
                 Items = l.Items.Select(i => new ShoppingListItemResponse
                 {
                     Id = i.Id.Id.ToString(),
                     Name = i.Name,
                     Price = i.Price,
-                    Bought = i.Bought
+                    Bought = i.Bought,
+                    Order = i.Order
                 }).ToList()
             })
             .ToActionResult(HttpContext);
@@ -410,7 +414,7 @@ public class FinanceController(IFinanceService financeService) : AuthorizedContr
         if (!TryGetUserId(out var userId))
             return Unauthorized();
 
-        var res = await financeService.UpdateShoppingListAsync(userId, id, request.Name, ct);
+        var res = await financeService.UpdateShoppingListAsync(userId, id, request.Name, request.Pinned, ct);
 
         return res
             .Map(l => new ShoppingListResponse
@@ -418,13 +422,15 @@ public class FinanceController(IFinanceService financeService) : AuthorizedContr
                 Id = l.Id.Id.ToString(),
                 Name = l.Name,
                 FromBalance = l.IsFromBalance,
+                Pinned = l.Pinned,
                 CreatedAt = new DateTimeOffset(l.CreatedAt, TimeSpan.Zero).ToUnixTimeMilliseconds(),
                 Items = l.Items.Select(i => new ShoppingListItemResponse
                 {
                     Id = i.Id.Id.ToString(),
                     Name = i.Name,
                     Price = i.Price,
-                    Bought = i.Bought
+                    Bought = i.Bought,
+                    Order = i.Order
                 }).ToList()
             })
             .ToActionResult(HttpContext);
@@ -455,7 +461,8 @@ public class FinanceController(IFinanceService financeService) : AuthorizedContr
                 Id = i.Id.Id.ToString(),
                 Name = i.Name,
                 Price = i.Price,
-                Bought = i.Bought
+                Bought = i.Bought,
+                Order = i.Order
             })
             .ToActionResult(HttpContext);
     }
@@ -485,7 +492,8 @@ public class FinanceController(IFinanceService financeService) : AuthorizedContr
                 Id = i.Id.Id.ToString(),
                 Name = i.Name,
                 Price = i.Price,
-                Bought = i.Bought
+                Bought = i.Bought,
+                Order = i.Order
             })
             .ToActionResult(HttpContext);
     }
@@ -504,9 +512,21 @@ public class FinanceController(IFinanceService financeService) : AuthorizedContr
                 Id = i.Id.Id.ToString(),
                 Name = i.Name,
                 Price = i.Price,
-                Bought = i.Bought
+                Bought = i.Bought,
+                Order = i.Order
             })
             .ToActionResult(HttpContext);
+    }
+
+    [HttpPut("shopping-lists/{listId}/items/reorder")]
+    public async Task<IActionResult> ReorderShoppingListItems([FromRoute] Guid listId, [FromBody] ReorderShoppingListItemsRequest request, CancellationToken ct)
+    {
+        if (!TryGetUserId(out var userId))
+            return Unauthorized();
+
+        var res = await financeService.ReorderShoppingListItemsAsync(userId, listId, request.ItemIds, ct);
+
+        return res.ToActionResult(HttpContext);
     }
 
     [HttpGet("chart-data")]

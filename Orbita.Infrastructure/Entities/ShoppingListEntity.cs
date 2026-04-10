@@ -7,6 +7,7 @@ public class ShoppingListEntity
     public Guid TeamId { get; set; }
     public string Name { get; set; } = default!;
     public bool IsFromBalance { get; set; }
+    public bool Pinned { get; set; }
     public DateTime CreatedAt { get; set; }
     public List<ShoppingListItemEntity> Items { get; set; } = new();
 }

@@ -15,6 +15,7 @@ public static class ShoppingListExtensions
             TeamId = list.TeamId.Id,
             Name = list.Name,
             IsFromBalance = list.IsFromBalance,
+            Pinned = list.Pinned,
             CreatedAt = list.CreatedAt,
             Items = list.Items.Select(i => i.ToEntity()).ToList()
         };
@@ -28,6 +29,7 @@ public static class ShoppingListExtensions
             teamId: new TeamId(entity.TeamId),
             name: entity.Name,
             isFromBalance: entity.IsFromBalance,
+            pinned: entity.Pinned,
             createdAt: entity.CreatedAt,
             items: entity.Items.Select(i => i.ToDomain()).ToList()
         );
@@ -41,7 +43,8 @@ public static class ShoppingListExtensions
             ListId = item.ListId.Id,
             Name = item.Name,
             Price = item.Price,
-            Bought = item.Bought
+            Bought = item.Bought,
+            Order = item.Order
         };
     }
 
@@ -52,7 +55,8 @@ public static class ShoppingListExtensions
             listId: new ShoppingListId(entity.ListId),
             name: entity.Name,
             price: entity.Price,
-            bought: entity.Bought
+            bought: entity.Bought,
+            order: entity.Order
         );
     }
 }

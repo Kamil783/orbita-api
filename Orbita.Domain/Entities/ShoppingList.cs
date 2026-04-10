@@ -9,6 +9,7 @@ public class ShoppingList
     public TeamId TeamId { get; private set; }
     public string Name { get; private set; }
     public bool IsFromBalance { get; private set; }
+    public bool Pinned { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public List<ShoppingListItem> Items { get; private set; } = new();
 
@@ -30,6 +31,7 @@ public class ShoppingList
             TeamId = teamId,
             Name = name,
             IsFromBalance = isFromBalance,
+            Pinned = false,
             CreatedAt = DateTime.UtcNow,
             Items = new List<ShoppingListItem>()
         };
@@ -42,12 +44,15 @@ public class ShoppingList
         Name = name;
     }
 
+    public void SetPinned(bool pinned) => Pinned = pinned;
+
     public static ShoppingList Restore(
         ShoppingListId id,
         UserId creatorId,
         TeamId teamId,
         string name,
         bool isFromBalance,
+        bool pinned,
         DateTime createdAt,
         List<ShoppingListItem> items)
     {
@@ -58,6 +63,7 @@ public class ShoppingList
             TeamId = teamId,
             Name = name,
             IsFromBalance = isFromBalance,
+            Pinned = pinned,
             CreatedAt = createdAt,
             Items = items
         };

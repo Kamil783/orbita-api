@@ -26,6 +26,9 @@ public class ShoppingListEntityConfiguration : IEntityTypeConfiguration<Shopping
         b.Property(x => x.IsFromBalance)
             .IsRequired();
 
+        b.Property(x => x.Pinned)
+            .IsRequired();
+
         b.Property(x => x.CreatedAt)
             .IsRequired();
 

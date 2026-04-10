@@ -13,4 +13,6 @@ public interface IShoppingListRepository
     Task<ShoppingListItem?> GetItemAsync(Guid itemId, CancellationToken ct = default);
     Task<ShoppingListItem> UpdateItemAsync(ShoppingListItem item, CancellationToken ct = default);
     Task DeleteItemAsync(Guid itemId, CancellationToken ct = default);
+    Task<int> GetMaxItemOrderAsync(Guid listId, CancellationToken ct = default);
+    Task ReorderItemsAsync(Guid listId, List<Guid> itemIds, CancellationToken ct = default);
 }
