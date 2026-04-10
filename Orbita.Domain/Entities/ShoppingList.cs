@@ -46,6 +46,8 @@ public class ShoppingList
 
     public void SetPinned(bool pinned) => Pinned = pinned;
 
+    public void SetIsFromBalance(bool isFromBalance) => IsFromBalance = isFromBalance;
+
     public static ShoppingList Restore(
         ShoppingListId id,
         UserId creatorId,

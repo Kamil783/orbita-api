@@ -32,7 +32,7 @@ public interface IFinanceService
 
     Task<Result<List<ShoppingList>>> GetShoppingListsAsync(Guid userId, CancellationToken ct = default);
     Task<Result<ShoppingList>> CreateShoppingListAsync(Guid userId, string name, bool fromBalance, CancellationToken ct = default);
-    Task<Result<ShoppingList>> UpdateShoppingListAsync(Guid userId, Guid listId, string? name, bool? pinned, CancellationToken ct = default);
+    Task<Result<ShoppingList>> UpdateShoppingListAsync(Guid userId, Guid listId, string? name, bool? pinned, bool? isFromBalance, CancellationToken ct = default);
     Task<Result> DeleteShoppingListAsync(Guid userId, Guid listId, CancellationToken ct = default);
     Task<Result<ShoppingListItem>> AddShoppingListItemAsync(Guid userId, Guid listId, string name, long? price, CancellationToken ct = default);
     Task<Result> DeleteShoppingListItemAsync(Guid userId, Guid listId, Guid itemId, CancellationToken ct = default);

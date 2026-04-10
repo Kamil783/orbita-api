@@ -8,12 +8,14 @@ namespace Orbita.Infrastructure.Repositories;
 
 public class ShoppingListRepository(OrbitaDbContext db) : IShoppingListRepository
 {
-    public async Task<List<ShoppingList>> GetByTeamAsync(Guid teamId, CancellationToken ct = default)
+    public async Task<List<ShoppingList>> GetForUserAsync(Guid teamId, Guid creatorId, CancellationToken ct = default)
     {
         var entities = await db.ShoppingLists
             .Include(x => x.Items.OrderBy(i => i.Order))
-            .Where(x => x.TeamId == teamId)
-            .ToListAsync(ct);
+            .Where(x => 
+            (x.IsFromBalance && x.TeamId == teamId) ||
+            (!x.IsFromBalance && x.CreatorId == creatorId))
+        .ToListAsync(ct);
 
         return entities.Select(x => x.ToDomain()).ToList();
     }

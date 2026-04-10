@@ -8,10 +8,12 @@ namespace Orbita.Infrastructure.Repositories;
 
 public class FinanceTransactionRepository(OrbitaDbContext db) : IFinanceTransactionRepository
 {
-    public async Task<List<FinanceTransaction>> GetByTeamAsync(Guid teamId, CancellationToken ct = default)
+    public async Task<List<FinanceTransaction>> GetForUserAsync(Guid teamId, Guid creatorId, CancellationToken ct = default)
     {
         var entities = await db.FinanceTransactions
-            .Where(x => x.TeamId == teamId)
+            .Where(x => 
+            (x.IsFromBalance && x.TeamId == teamId) ||
+            (!x.IsFromBalance && x.CreatorId == creatorId))
             .OrderByDescending(x => x.CreatedAt)
             .ToListAsync(ct);
 

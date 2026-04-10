@@ -4,7 +4,7 @@ namespace Orbita.Application.Abstractions.Repositories;
 
 public interface IShoppingListRepository
 {
-    Task<List<ShoppingList>> GetByTeamAsync(Guid teamId, CancellationToken ct = default);
+    Task<List<ShoppingList>> GetForUserAsync(Guid teamId, Guid creatorId, CancellationToken ct = default);
     Task<ShoppingList?> GetAsync(Guid id, CancellationToken ct = default);
     Task<ShoppingList> CreateAsync(ShoppingList list, CancellationToken ct = default);
     Task<ShoppingList> UpdateAsync(ShoppingList list, CancellationToken ct = default);

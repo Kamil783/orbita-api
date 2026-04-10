@@ -4,11 +4,7 @@ using Orbita.Application.Abstractions.Services;
 using Orbita.Application.Models.Results;
 using Orbita.Domain.Entities;
 using Orbita.Domain.ValueObjects;
-using System.Data.Common;
 using System.Globalization;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Transactions;
 
 namespace Orbita.Application.Services;
 
@@ -131,7 +127,7 @@ public class FinanceService(
     public async Task<Result<List<FinanceTransaction>>> GetTransactionsAsync(Guid userId, CancellationToken ct = default)
     {
         var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
-        var transactions = await transactionRepository.GetByTeamAsync(teamId, ct);
+        var transactions = await transactionRepository.GetForUserAsync(teamId, userId, ct);
         return Result<List<FinanceTransaction>>.Ok(transactions);
     }
 
@@ -459,7 +455,7 @@ public class FinanceService(
     public async Task<Result<List<ShoppingList>>> GetShoppingListsAsync(Guid userId, CancellationToken ct = default)
     {
         var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
-        var lists = await shoppingListRepository.GetByTeamAsync(teamId, ct);
+        var lists = await shoppingListRepository.GetForUserAsync(teamId, userId, ct);
         return Result<List<ShoppingList>>.Ok(lists);
     }
 
@@ -477,7 +473,7 @@ public class FinanceService(
         return Result<ShoppingList>.Ok(created);
     }
 
-    public async Task<Result<ShoppingList>> UpdateShoppingListAsync(Guid userId, Guid listId, string? name, bool? pinned, CancellationToken ct = default)
+    public async Task<Result<ShoppingList>> UpdateShoppingListAsync(Guid userId, Guid listId, string? name, bool? pinned, bool? isFromBalance, CancellationToken ct = default)
     {
         var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
 
@@ -494,6 +490,9 @@ public class FinanceService(
                 list.SetName(name);
             if (pinned.HasValue)
                 list.SetPinned(pinned.Value);
+            if(isFromBalance.HasValue)
+                list.SetIsFromBalance(isFromBalance.Value);
+
         }
         catch (Exception ex)
         {
