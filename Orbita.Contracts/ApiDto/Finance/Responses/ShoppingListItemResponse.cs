@@ -6,4 +6,5 @@ public sealed class ShoppingListItemResponse
     public string Name { get; init; } = default!;
     public long? Price { get; init; }
     public bool Bought { get; init; }
+    public int Order { get; init; }
 }

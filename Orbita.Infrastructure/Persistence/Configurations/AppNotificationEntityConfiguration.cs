@@ -13,6 +13,9 @@ public class AppNotificationEntityConfiguration : IEntityTypeConfiguration<AppNo
         b.Property(x => x.Id)
             .ValueGeneratedNever();
 
+        b.Property(x => x.UserId)
+            .IsRequired();
+
         b.Property(x => x.Type)
             .HasConversion<int>()
             .IsRequired();
@@ -31,6 +34,6 @@ public class AppNotificationEntityConfiguration : IEntityTypeConfiguration<AppNo
         b.Property(x => x.Read)
             .IsRequired();
 
-        b.HasIndex(x => x.CreatedAt);
+        b.HasIndex(x => new { x.UserId, x.CreatedAt });
     }
 }

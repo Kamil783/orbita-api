@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Orbita.Infrastructure.Persistence;
@@ -11,9 +12,11 @@ using Orbita.Infrastructure.Persistence;
 namespace Orbita.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(OrbitaDbContext))]
-    partial class OrbitaDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260409122448_AddShoppingListIsFromBalance")]
+    partial class AddShoppingListIsFromBalance
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -675,9 +678,6 @@ namespace Orbita.Infrastructure.Persistence.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
-                    b.Property<bool>("Pinned")
-                        .HasColumnType("boolean");
-
                     b.Property<Guid>("TeamId")
                         .HasColumnType("uuid");
 
@@ -696,9 +696,6 @@ namespace Orbita.Infrastructure.Persistence.Migrations
                     b.Property<bool>("Bought")
                         .HasColumnType("boolean");
 
-                    b.Property<Guid?>("FinanceTransactionId")
-                        .HasColumnType("uuid");
-
                     b.Property<Guid>("ListId")
                         .HasColumnType("uuid");
 
@@ -707,18 +704,12 @@ namespace Orbita.Infrastructure.Persistence.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
-                    b.Property<int>("Order")
-                        .HasColumnType("integer");
-
                     b.Property<long?>("Price")
                         .HasColumnType("bigint");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("FinanceTransactionId")
-                        .IsUnique();
-
-                    b.HasIndex("ListId", "Order");
+                    b.HasIndex("ListId");
 
                     b.ToTable("ShoppingListItems");
                 });
@@ -1092,18 +1083,11 @@ namespace Orbita.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("Orbita.Infrastructure.Entities.ShoppingListItemEntity", b =>
                 {
-                    b.HasOne("Orbita.Infrastructure.Entities.FinanceTransactionEntity", "FinanceTransaction")
-                        .WithOne()
-                        .HasForeignKey("Orbita.Infrastructure.Entities.ShoppingListItemEntity", "FinanceTransactionId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
                     b.HasOne("Orbita.Infrastructure.Entities.ShoppingListEntity", "List")
                         .WithMany("Items")
                         .HasForeignKey("ListId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("FinanceTransaction");
 
                     b.Navigation("List");
                 });

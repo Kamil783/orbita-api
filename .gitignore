@@ -370,3 +370,5 @@ nunit-*.xml
 .env.local
 
 appsettings.Development.json
+
+.claude/

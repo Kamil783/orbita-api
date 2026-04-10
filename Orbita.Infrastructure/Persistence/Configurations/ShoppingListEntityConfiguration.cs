@@ -23,6 +23,12 @@ public class ShoppingListEntityConfiguration : IEntityTypeConfiguration<Shopping
             .HasMaxLength(200)
             .IsRequired();
 
+        b.Property(x => x.IsFromBalance)
+            .IsRequired();
+
+        b.Property(x => x.Pinned)
+            .IsRequired();
+
         b.Property(x => x.CreatedAt)
             .IsRequired();
 

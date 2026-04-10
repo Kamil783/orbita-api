@@ -4,7 +4,7 @@ namespace Orbita.Application.Abstractions.Repositories;
 
 public interface IFinanceTransactionRepository
 {
-    Task<List<FinanceTransaction>> GetByTeamAsync(Guid teamId, CancellationToken ct = default);
+    Task<List<FinanceTransaction>> GetForUserAsync(Guid teamId, Guid creatorId, CancellationToken ct = default);
     Task<FinanceTransaction?> GetAsync(Guid id, CancellationToken ct = default);
     Task<FinanceTransaction> CreateAsync(FinanceTransaction transaction, CancellationToken ct = default);
     Task<FinanceTransaction?> UpdateAsync(FinanceTransaction transaction, CancellationToken ct = default);

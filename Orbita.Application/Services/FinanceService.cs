@@ -4,10 +4,7 @@ using Orbita.Application.Abstractions.Services;
 using Orbita.Application.Models.Results;
 using Orbita.Domain.Entities;
 using Orbita.Domain.ValueObjects;
-using System.Data.Common;
 using System.Globalization;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Transactions;
 
 namespace Orbita.Application.Services;
@@ -131,7 +128,7 @@ public class FinanceService(
     public async Task<Result<List<FinanceTransaction>>> GetTransactionsAsync(Guid userId, CancellationToken ct = default)
     {
         var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
-        var transactions = await transactionRepository.GetByTeamAsync(teamId, ct);
+        var transactions = await transactionRepository.GetForUserAsync(teamId, userId, ct);
         return Result<List<FinanceTransaction>>.Ok(transactions);
     }
 
@@ -288,6 +285,30 @@ public class FinanceService(
         return Result<SavingsGoal>.Ok(created);
     }
 
+    public async Task<Result<SavingsGoal>> UpdateSavingsGoalDetailsAsync(Guid userId, Guid goalId, string? name, long? target, CancellationToken ct = default)
+    {
+        var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
+
+        var goal = await savingsGoalRepository.GetAsync(goalId, ct);
+        if (goal is null)
+            return Result<SavingsGoal>.NotFound("Savings goal not found.");
+
+        if (goal.TeamId.Id != teamId)
+            return Result<SavingsGoal>.Forbidden("Access denied.");
+
+        try
+        {
+            goal.UpdateDetails(name, target);
+        }
+        catch (Exception ex)
+        {
+            return Result<SavingsGoal>.Fail(ex.Message, ErrorType.Validation);
+        }
+
+        var updated = await savingsGoalRepository.UpdateAsync(goal, ct);
+        return Result<SavingsGoal>.Ok(updated);
+    }
+
     public async Task<Result<SavingsGoal>> TopUpSavingsGoalAsync(Guid userId, Guid goalId, long amount, CancellationToken ct = default)
     {
         var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
@@ -435,21 +456,52 @@ public class FinanceService(
     public async Task<Result<List<ShoppingList>>> GetShoppingListsAsync(Guid userId, CancellationToken ct = default)
     {
         var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
-        var lists = await shoppingListRepository.GetByTeamAsync(teamId, ct);
+        var lists = await shoppingListRepository.GetForUserAsync(teamId, userId, ct);
         return Result<List<ShoppingList>>.Ok(lists);
     }
 
-    public async Task<Result<ShoppingList>> CreateShoppingListAsync(Guid userId, string name, CancellationToken ct = default)
+    public async Task<Result<ShoppingList>> CreateShoppingListAsync(Guid userId, string name, bool fromBalance, CancellationToken ct = default)
     {
         var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
 
         var list = ShoppingList.Create(
             creatorId: new UserId(userId),
             teamId: new TeamId(teamId),
-            name: name);
+            name: name,
+            isFromBalance: fromBalance);
 
         var created = await shoppingListRepository.CreateAsync(list, ct);
         return Result<ShoppingList>.Ok(created);
+    }
+
+    public async Task<Result<ShoppingList>> UpdateShoppingListAsync(Guid userId, Guid listId, string? name, bool? pinned, bool? isFromBalance, CancellationToken ct = default)
+    {
+        var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
+
+        var list = await shoppingListRepository.GetAsync(listId, ct);
+        if (list is null)
+            return Result<ShoppingList>.NotFound("Shopping list not found.");
+
+        if (list.TeamId.Id != teamId)
+            return Result<ShoppingList>.Forbidden("Access denied.");
+
+        try
+        {
+            if (name is not null)
+                list.SetName(name);
+            if (pinned.HasValue)
+                list.SetPinned(pinned.Value);
+            if (isFromBalance.HasValue)
+                list.SetIsFromBalance(isFromBalance.Value);
+
+        }
+        catch (Exception ex)
+        {
+            return Result<ShoppingList>.Fail(ex.Message, ErrorType.Validation);
+        }
+
+        var updated = await shoppingListRepository.UpdateAsync(list, ct);
+        return Result<ShoppingList>.Ok(updated);
     }
 
     public async Task<Result> DeleteShoppingListAsync(Guid userId, Guid listId, CancellationToken ct = default)
@@ -478,10 +530,13 @@ public class FinanceService(
         if (list.TeamId.Id != teamId)
             return Result<ShoppingListItem>.Forbidden("Access denied.");
 
+        var maxOrder = await shoppingListRepository.GetMaxItemOrderAsync(listId, ct);
+
         var item = ShoppingListItem.Create(
             listId: new ShoppingListId(listId),
             name: name,
-            price: price);
+            price: price,
+            order: maxOrder + 1);
 
         var created = await shoppingListRepository.AddItemAsync(item, ct);
         return Result<ShoppingListItem>.Ok(created);
@@ -530,6 +585,97 @@ public class FinanceService(
         return await unitOfWork.ExecuteAsync(async token =>
         {
             var delta = item.ChangeBoughtStatus(bought);
+
+            if (bought && item.Price.HasValue)
+            {
+
+                var transaction = await CreateTransactionAsync(
+                    userId: userId,
+                    categoryId: null,
+                    title: item.Name,
+                    amount: -item.Price.Value,
+                    fromBalance: list.IsFromBalance,
+                    createdAt: null,
+                    ct);
+
+                if(transaction.IsSuccess)
+                {
+                    item.LinkFinanceTransaction(new FinanceTransactionId(transaction.Value!.Id.Id));
+                }
+                else
+                {
+                    return Result<ShoppingListItem>.Fail("Failed to create transaction for the bought item.");
+                }
+            }
+            else
+            {
+                if (item.FinanceTransactionId is null)
+                    return Result<ShoppingListItem>.Fail("Failed to delete transaction for the unbought item.");
+
+                var result = await DeleteTransactionAsync(userId, item.FinanceTransactionId.Id, token);
+                item.RemoveFinanceTransaction();
+
+                if (!result.IsSuccess)
+                {
+                    return Result<ShoppingListItem>.Fail("Failed to delete transaction for the unbought item.");
+                }
+            }
+
+            var updated = await shoppingListRepository.UpdateItemAsync(item, token);
+            return Result<ShoppingListItem>.Ok(updated);
+        }, ct);
+    }
+
+    public async Task<Result> ReorderShoppingListItemsAsync(Guid userId, Guid listId, List<Guid> itemIds, CancellationToken ct = default)
+    {
+        var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
+
+        var list = await shoppingListRepository.GetAsync(listId, ct);
+        if (list is null)
+            return Result.NotFound("Shopping list not found.");
+
+        if (list.TeamId.Id != teamId)
+            return Result.Forbidden("Access denied.");
+
+        var existingIds = list.Items.Select(i => i.Id.Id).ToHashSet();
+        var providedIds = itemIds.ToHashSet();
+
+        if (existingIds.Count != itemIds.Count || !existingIds.SetEquals(providedIds))
+            return Result.Fail("Item IDs do not match the items in the list.", ErrorType.Validation);
+
+        await shoppingListRepository.ReorderItemsAsync(listId, itemIds, ct);
+        return Result.Ok();
+    }
+
+    public async Task<Result<ShoppingListItem>> UpdateShoppingListItemDetailsAsync(Guid userId, Guid listId, Guid itemId, string? name, long? price, CancellationToken ct = default)
+    {
+        var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
+
+        var list = await shoppingListRepository.GetAsync(listId, ct);
+        if (list is null)
+            return Result<ShoppingListItem>.NotFound("Shopping list not found.");
+
+        if (list.TeamId.Id != teamId)
+            return Result<ShoppingListItem>.Forbidden("Access denied.");
+
+        var item = await shoppingListRepository.GetItemAsync(itemId, ct);
+        if (item is null)
+            return Result<ShoppingListItem>.NotFound("Shopping list item not found.");
+
+        if (item.ListId.Id != listId)
+            return Result<ShoppingListItem>.NotFound("Shopping list item not found.");
+
+        return await unitOfWork.ExecuteAsync(async token =>
+        {
+            long delta;
+            try
+            {
+                delta = item.UpdateDetails(name, price);
+            }
+            catch (Exception ex)
+            {
+                return Result<ShoppingListItem>.Fail(ex.Message, ErrorType.Validation);
+            }
 
             if (delta != 0)
             {

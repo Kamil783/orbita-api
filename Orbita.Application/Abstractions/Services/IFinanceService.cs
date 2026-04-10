@@ -20,6 +20,7 @@ public interface IFinanceService
 
     Task<Result<List<SavingsGoal>>> GetSavingsGoalsAsync(Guid userId, CancellationToken ct = default);
     Task<Result<SavingsGoal>> CreateSavingsGoalAsync(Guid userId, string name, long target, CancellationToken ct = default);
+    Task<Result<SavingsGoal>> UpdateSavingsGoalDetailsAsync(Guid userId, Guid goalId, string? name, long? target, CancellationToken ct = default);
     Task<Result<SavingsGoal>> TopUpSavingsGoalAsync(Guid userId, Guid goalId, long amount, CancellationToken ct = default);
     Task<Result<SavingsGoal>> WithdrawFromSavingsGoalAsync(Guid userId, Guid goalId, long amount, CancellationToken ct = default); 
     Task<Result> DeleteSavingsGoalAsync(Guid userId, Guid goalId, CancellationToken ct = default);
@@ -30,9 +31,12 @@ public interface IFinanceService
     Task<Result<List<(string Label, decimal Value)>>> GetChartDataAsync(Guid userId, string period, CancellationToken ct = default);
 
     Task<Result<List<ShoppingList>>> GetShoppingListsAsync(Guid userId, CancellationToken ct = default);
-    Task<Result<ShoppingList>> CreateShoppingListAsync(Guid userId, string name, CancellationToken ct = default);
+    Task<Result<ShoppingList>> CreateShoppingListAsync(Guid userId, string name, bool fromBalance, CancellationToken ct = default);
+    Task<Result<ShoppingList>> UpdateShoppingListAsync(Guid userId, Guid listId, string? name, bool? pinned, bool? isFromBalance, CancellationToken ct = default);
     Task<Result> DeleteShoppingListAsync(Guid userId, Guid listId, CancellationToken ct = default);
     Task<Result<ShoppingListItem>> AddShoppingListItemAsync(Guid userId, Guid listId, string name, long? price, CancellationToken ct = default);
     Task<Result> DeleteShoppingListItemAsync(Guid userId, Guid listId, Guid itemId, CancellationToken ct = default);
     Task<Result<ShoppingListItem>> UpdateShoppingListItemAsync(Guid userId, Guid listId, Guid itemId, bool bought, CancellationToken ct = default);
+    Task<Result<ShoppingListItem>> UpdateShoppingListItemDetailsAsync(Guid userId, Guid listId, Guid itemId, string? name, long? price, CancellationToken ct = default);
+    Task<Result> ReorderShoppingListItemsAsync(Guid userId, Guid listId, List<Guid> itemIds, CancellationToken ct = default);
 }

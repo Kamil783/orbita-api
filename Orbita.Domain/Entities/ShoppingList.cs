@@ -8,6 +8,8 @@ public class ShoppingList
     public UserId CreatorId { get; private set; }
     public TeamId TeamId { get; private set; }
     public string Name { get; private set; }
+    public bool IsFromBalance { get; private set; }
+    public bool Pinned { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public List<ShoppingListItem> Items { get; private set; } = new();
 
@@ -16,7 +18,8 @@ public class ShoppingList
     public static ShoppingList Create(
         UserId creatorId,
         TeamId teamId,
-        string name)
+        string name,
+        bool isFromBalance)
     {
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Name is required.", nameof(name));
@@ -27,16 +30,31 @@ public class ShoppingList
             CreatorId = creatorId,
             TeamId = teamId,
             Name = name,
+            IsFromBalance = isFromBalance,
+            Pinned = false,
             CreatedAt = DateTime.UtcNow,
             Items = new List<ShoppingListItem>()
         };
     }
+
+    public void SetName(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Name is required.", nameof(name));
+        Name = name;
+    }
+
+    public void SetPinned(bool pinned) => Pinned = pinned;
+
+    public void SetIsFromBalance(bool isFromBalance) => IsFromBalance = isFromBalance;
 
     public static ShoppingList Restore(
         ShoppingListId id,
         UserId creatorId,
         TeamId teamId,
         string name,
+        bool isFromBalance,
+        bool pinned,
         DateTime createdAt,
         List<ShoppingListItem> items)
     {
@@ -46,6 +64,8 @@ public class ShoppingList
             CreatorId = creatorId,
             TeamId = teamId,
             Name = name,
+            IsFromBalance = isFromBalance,
+            Pinned = pinned,
             CreatedAt = createdAt,
             Items = items
         };
