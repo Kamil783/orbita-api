@@ -6,6 +6,7 @@ public class ShoppingListItem
 {
     public ShoppingListItemId Id { get; private set; }
     public ShoppingListId ListId { get; private set; }
+    public FinanceTransactionId? FinanceTransactionId { get; private set; }
     public string Name { get; private set; }
     public long? Price { get; private set; }
     public bool Bought { get; private set; }
@@ -29,6 +30,7 @@ public class ShoppingListItem
         {
             Id = new ShoppingListItemId(Guid.NewGuid()),
             ListId = listId,
+            FinanceTransactionId = null,
             Name = name,
             Price = price,
             Bought = false,
@@ -39,6 +41,7 @@ public class ShoppingListItem
     public static ShoppingListItem Restore(
         ShoppingListItemId id,
         ShoppingListId listId,
+        FinanceTransactionId? financeTransactionId,
         string name,
         long? price,
         bool bought,
@@ -48,6 +51,7 @@ public class ShoppingListItem
         {
             Id = id,
             ListId = listId,
+            FinanceTransactionId = financeTransactionId,
             Name = name,
             Price = price,
             Bought = bought,
@@ -82,21 +86,16 @@ public class ShoppingListItem
 
     public void SetOrder(int order) => Order = order;
 
-    public long ChangeBoughtStatus(bool bought)
+    public void LinkFinanceTransaction(FinanceTransactionId transactionId) => FinanceTransactionId = transactionId;
+
+    public void RemoveFinanceTransaction() => FinanceTransactionId = null;
+
+    public FinanceTransactionId? ChangeBoughtStatus(bool bought)
     {
-        var price = Price ?? 0L;
-
         if (Bought == bought)
-            return 0;
-
-        var delta = 0L;
-
-        if (!Bought && bought)
-            delta = -price;
-        else if (Bought && !bought)
-            delta = price;
+            return null;
 
         Bought = bought;
-        return delta;
+        return FinanceTransactionId;
     }
 }

@@ -5,6 +5,7 @@ using Orbita.Application.Models.Results;
 using Orbita.Domain.Entities;
 using Orbita.Domain.ValueObjects;
 using System.Globalization;
+using System.Transactions;
 
 namespace Orbita.Application.Services;
 
@@ -490,7 +491,7 @@ public class FinanceService(
                 list.SetName(name);
             if (pinned.HasValue)
                 list.SetPinned(pinned.Value);
-            if(isFromBalance.HasValue)
+            if (isFromBalance.HasValue)
                 list.SetIsFromBalance(isFromBalance.Value);
 
         }
@@ -585,14 +586,39 @@ public class FinanceService(
         {
             var delta = item.ChangeBoughtStatus(bought);
 
-            if (delta != 0)
+            if (bought && item.Price.HasValue)
             {
-                var balance = await balanceRepository.GetAsync(teamId, token);
-                if (balance is null)
-                    return Result<ShoppingListItem>.Conflict("Balance not found.");
 
-                balance.Adjust(delta);
-                await balanceRepository.UpdateAsync(balance, token);
+                var transaction = await CreateTransactionAsync(
+                    userId: userId,
+                    categoryId: null,
+                    title: item.Name,
+                    amount: -item.Price.Value,
+                    fromBalance: list.IsFromBalance,
+                    createdAt: null,
+                    ct);
+
+                if(transaction.IsSuccess)
+                {
+                    item.LinkFinanceTransaction(new FinanceTransactionId(transaction.Value!.Id.Id));
+                }
+                else
+                {
+                    return Result<ShoppingListItem>.Fail("Failed to create transaction for the bought item.");
+                }
+            }
+            else
+            {
+                if (item.FinanceTransactionId is null)
+                    return Result<ShoppingListItem>.Fail("Failed to delete transaction for the unbought item.");
+
+                var result = await DeleteTransactionAsync(userId, item.FinanceTransactionId.Id, token);
+                item.RemoveFinanceTransaction();
+
+                if (!result.IsSuccess)
+                {
+                    return Result<ShoppingListItem>.Fail("Failed to delete transaction for the unbought item.");
+                }
             }
 
             var updated = await shoppingListRepository.UpdateItemAsync(item, token);

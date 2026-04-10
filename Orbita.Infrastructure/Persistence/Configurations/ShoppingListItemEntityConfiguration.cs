@@ -16,6 +16,9 @@ public class ShoppingListItemEntityConfiguration : IEntityTypeConfiguration<Shop
         b.Property(x => x.ListId)
             .IsRequired();
 
+        b.Property(x => x.FinanceTransactionId)
+            .IsRequired(false);
+
         b.Property(x => x.Name)
             .HasMaxLength(200)
             .IsRequired();
@@ -27,6 +30,11 @@ public class ShoppingListItemEntityConfiguration : IEntityTypeConfiguration<Shop
 
         b.Property(x => x.Order)
             .IsRequired();
+
+        b.HasOne(x => x.FinanceTransaction)
+            .WithOne()
+            .HasForeignKey<ShoppingListItemEntity>(x => x.FinanceTransactionId)
+            .OnDelete(DeleteBehavior.SetNull);
 
         b.HasIndex(x => new { x.ListId, x.Order });
     }

@@ -41,6 +41,7 @@ public static class ShoppingListExtensions
         {
             Id = item.Id.Id,
             ListId = item.ListId.Id,
+            FinanceTransactionId = item.FinanceTransactionId?.Id,
             Name = item.Name,
             Price = item.Price,
             Bought = item.Bought,
@@ -53,6 +54,7 @@ public static class ShoppingListExtensions
         return ShoppingListItem.Restore(
             id: new ShoppingListItemId(entity.Id),
             listId: new ShoppingListId(entity.ListId),
+            financeTransactionId: entity.FinanceTransactionId.HasValue ? new FinanceTransactionId(entity.FinanceTransactionId.Value) : null,
             name: entity.Name,
             price: entity.Price,
             bought: entity.Bought,

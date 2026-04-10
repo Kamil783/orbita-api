@@ -414,7 +414,7 @@ public class FinanceController(IFinanceService financeService) : AuthorizedContr
         if (!TryGetUserId(out var userId))
             return Unauthorized();
 
-        var res = await financeService.UpdateShoppingListAsync(userId, id, request.Name, request.Pinned, ct);
+        var res = await financeService.UpdateShoppingListAsync(userId, id, request.Name, request.Pinned, request.FromBalance, ct);
 
         return res
             .Map(l => new ShoppingListResponse

@@ -83,6 +83,7 @@ public class ShoppingListRepository(OrbitaDbContext db) : IShoppingListRepositor
         entity.Price = item.Price;
         entity.Bought = item.Bought;
         entity.Order = item.Order;
+        entity.FinanceTransactionId = item.FinanceTransactionId?.Id;
         await db.SaveChangesAsync(ct);
         return entity.ToDomain();
     }
