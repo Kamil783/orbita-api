@@ -12,4 +12,6 @@ public interface IBacklogTaskService
     Task<Result<TodoItem>> MoveToWeekAsync(Guid userId, Guid backlogTaskId, Guid targetColumnId, CancellationToken ct = default);
     Task<Result> RemoveFromWeekAsync(Guid userId, Guid backlogTaskId, CancellationToken ct = default);
     Task<Result> SetDoneAsync(Guid userId, Guid backlogTaskId, bool done, CancellationToken ct = default);
+    Task<Result<TimeEntry>> AddTimeEntryAsync(Guid userId, Guid backlogTaskId, int minutes, string? description, CancellationToken ct = default);
+    Task<Result> DeleteTimeEntryAsync(Guid userId, Guid backlogTaskId, Guid entryId, CancellationToken ct = default);
 }

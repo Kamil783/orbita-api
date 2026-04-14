@@ -2,6 +2,7 @@ using Orbita.Domain.Entities;
 using Orbita.Domain.ValueObjects;
 using Orbita.Infrastructure.Entities;
 using Orbita.Infrastructure.Entities.Mapping;
+using TimeEntry = Orbita.Domain.Entities.TimeEntry;
 
 namespace Orbita.Infrastructure.Extensions;
 
@@ -48,7 +49,8 @@ public static class BacklogTaskExtensions
              dueDate: entity.DueDate,
              estimateMinutes: entity.EstimateMinutes,
              progressPct: entity.ProgressPct,
-             assignees: entity.Assignees.Select(a => new UserId(a.UserId))
+             assignees: entity.Assignees.Select(a => new UserId(a.UserId)),
+             timeEntries: entity.TimeEntries.Select(t => t.ToDomain())
          );
     }
 }

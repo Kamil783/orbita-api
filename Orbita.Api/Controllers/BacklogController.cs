@@ -102,4 +102,28 @@ public class BacklogController(IBacklogTaskService service, IWeekService weekSer
 
         return res.ToActionResult(HttpContext);
     }
+
+    [HttpPost("{id}/time-log")]
+    public async Task<IActionResult> AddTimeEntry([FromRoute] Guid id, [FromBody] AddTimeEntryRequest request, CancellationToken ct)
+    {
+        if (!TryGetUserId(out var userId))
+            return Unauthorized();
+
+        var res = await service.AddTimeEntryAsync(userId, id, request.Minutes, request.Description, ct);
+
+        return res
+            .Map(BacklogTaskExtensions.ToTimeEntryResponse)
+            .ToActionResult(HttpContext);
+    }
+
+    [HttpDelete("{id}/time-log/{entryId}")]
+    public async Task<IActionResult> DeleteTimeEntry([FromRoute] Guid id, [FromRoute] Guid entryId, CancellationToken ct)
+    {
+        if (!TryGetUserId(out var userId))
+            return Unauthorized();
+
+        var res = await service.DeleteTimeEntryAsync(userId, id, entryId, ct);
+
+        return res.ToActionResult(HttpContext);
+    }
 }

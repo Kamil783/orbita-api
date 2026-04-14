@@ -24,6 +24,7 @@ public class BacklogTaskRepository(OrbitaDbContext db) : IBacklogTaskRepository
     {
         var entity = await db.BacklogTasks
             .Include(x => x.Assignees)
+            .Include(x => x.TimeEntries)
             .FirstOrDefaultAsync(x => x.Id == id, ct);
 
         if (entity is null)
@@ -41,6 +42,7 @@ public class BacklogTaskRepository(OrbitaDbContext db) : IBacklogTaskRepository
     {
         var entity = await db.BacklogTasks
             .Include(x => x.Assignees)
+            .Include(x => x.TimeEntries)
             .FirstOrDefaultAsync(x => x.Id == id, ct);
 
         return entity?.ToDomain();
@@ -50,6 +52,20 @@ public class BacklogTaskRepository(OrbitaDbContext db) : IBacklogTaskRepository
     {
         var entities = await db.BacklogTasks
             .Include(x => x.Assignees)
+            .Include(x => x.TimeEntries)
+            .ToListAsync(ct);
+
+        return entities
+            .Select(x => x.ToDomain())
+            .ToList();
+    }
+
+    public async Task<IReadOnlyCollection<BacklogTask>> GetAllActiveAsync(CancellationToken ct = default)
+    {
+        var entities = await db.BacklogTasks
+            .Include(x => x.Assignees)
+            .Include(x => x.TimeEntries)
+            .Where(x => !x.IsCompleted)
             .ToListAsync(ct);
 
         return entities
@@ -61,6 +77,7 @@ public class BacklogTaskRepository(OrbitaDbContext db) : IBacklogTaskRepository
     {
         var entities = await db.BacklogTasks
             .Include(x => x.Assignees)
+            .Include(x => x.TimeEntries)
             .Where(x => x.TeamId == teamId)
             .ToListAsync(ct);
 
@@ -73,6 +90,7 @@ public class BacklogTaskRepository(OrbitaDbContext db) : IBacklogTaskRepository
     {
         var entity = await db.BacklogTasks
             .Include(x => x.Assignees)
+            .Include(x => x.TimeEntries)
             .FirstOrDefaultAsync(x => x.Id == task.Id.Id, ct);
 
         if (entity is null)
@@ -85,6 +103,27 @@ public class BacklogTaskRepository(OrbitaDbContext db) : IBacklogTaskRepository
         await db.SaveChangesAsync(ct);
 
         return entity.ToDomain();
+    }
+
+    public async Task<Domain.Entities.TimeEntry> AddTimeEntryAsync(Domain.Entities.TimeEntry entry, CancellationToken ct = default)
+    {
+        var entity = entry.ToEntity();
+        await db.TimeEntries.AddAsync(entity, ct);
+        await db.SaveChangesAsync(ct);
+        return entity.ToDomain();
+    }
+
+    public async Task<bool> DeleteTimeEntryAsync(Guid entryId, Guid backlogTaskId, CancellationToken ct = default)
+    {
+        var entity = await db.TimeEntries
+            .FirstOrDefaultAsync(x => x.Id == entryId && x.BacklogTaskId == backlogTaskId, ct);
+
+        if (entity is null)
+            return false;
+
+        db.TimeEntries.Remove(entity);
+        await db.SaveChangesAsync(ct);
+        return true;
     }
 
     private static void MapToExistingEntity(BacklogTask source, BacklogTaskEntity target)
