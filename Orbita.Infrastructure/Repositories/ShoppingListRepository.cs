@@ -12,9 +12,7 @@ public class ShoppingListRepository(OrbitaDbContext db) : IShoppingListRepositor
     {
         var entities = await db.ShoppingLists
             .Include(x => x.Items.OrderBy(i => i.Order))
-            .Where(x => 
-            (x.IsFromBalance && x.TeamId == teamId) ||
-            (!x.IsFromBalance && x.CreatorId == creatorId))
+            .Where(x => x.TeamId == teamId)
         .ToListAsync(ct);
 
         return entities.Select(x => x.ToDomain()).ToList();

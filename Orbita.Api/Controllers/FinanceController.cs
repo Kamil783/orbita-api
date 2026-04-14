@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Orbita.Api.Extensions;
 using Orbita.Application.Abstractions.Services;
+using Orbita.Application.Helpers;
 using Orbita.Application.Models.Results;
 using Orbita.Contracts.ApiDto.Finance.Requests;
 using Orbita.Contracts.ApiDto.Finance.Responses;
@@ -365,7 +366,7 @@ public class FinanceController(IFinanceService financeService) : AuthorizedContr
             {
                 Id = l.Id.Id.ToString(),
                 Name = l.Name,
-                FromBalance = l.IsFromBalance,
+                ListType = ShoppingListHelper.ResolveListType(l, userId),
                 Pinned = l.Pinned,
                 CreatedAt = new DateTimeOffset(l.CreatedAt, TimeSpan.Zero).ToUnixTimeMilliseconds(),
                 Items = l.Items.Select(i => new ShoppingListItemResponse
@@ -393,7 +394,7 @@ public class FinanceController(IFinanceService financeService) : AuthorizedContr
             {
                 Id = l.Id.Id.ToString(),
                 Name = l.Name,
-                FromBalance = l.IsFromBalance,
+                ListType = ShoppingListHelper.ResolveListType(l, userId),
                 Pinned = l.Pinned,
                 CreatedAt = new DateTimeOffset(l.CreatedAt, TimeSpan.Zero).ToUnixTimeMilliseconds(),
                 Items = l.Items.Select(i => new ShoppingListItemResponse
@@ -421,7 +422,7 @@ public class FinanceController(IFinanceService financeService) : AuthorizedContr
             {
                 Id = l.Id.Id.ToString(),
                 Name = l.Name,
-                FromBalance = l.IsFromBalance,
+                ListType = ShoppingListHelper.ResolveListType(l, userId),
                 Pinned = l.Pinned,
                 CreatedAt = new DateTimeOffset(l.CreatedAt, TimeSpan.Zero).ToUnixTimeMilliseconds(),
                 Items = l.Items.Select(i => new ShoppingListItemResponse

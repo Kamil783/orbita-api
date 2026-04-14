@@ -60,6 +60,19 @@ public class BacklogTaskRepository(OrbitaDbContext db) : IBacklogTaskRepository
             .ToList();
     }
 
+    public async Task<IReadOnlyCollection<BacklogTask>> GetAllActiveAsync(CancellationToken ct = default)
+    {
+        var entities = await db.BacklogTasks
+            .Include(x => x.Assignees)
+            .Include(x => x.TimeEntries)
+            .Where(x => !x.IsCompleted)
+            .ToListAsync(ct);
+
+        return entities
+            .Select(x => x.ToDomain())
+            .ToList();
+    }
+
     public async Task<IReadOnlyCollection<BacklogTask>> GetByTeamAsync(Guid teamId, CancellationToken ct = default)
     {
         var entities = await db.BacklogTasks
