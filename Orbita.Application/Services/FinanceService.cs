@@ -201,6 +201,8 @@ public class FinanceService(
 
             transaction.SetCategoryId(new FinanceCategoryId(categoryId.Value));
         }
+        else
+            transaction.SetNullCategory();
 
         if (title is not null)
             transaction.SetTitle(title);
