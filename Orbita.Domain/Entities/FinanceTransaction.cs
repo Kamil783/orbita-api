@@ -45,6 +45,11 @@ public class FinanceTransaction
         CategoryId = categoryId;
     }
 
+    public void SetNullCategory()
+    {
+        CategoryId = null;
+    }
+
     public void SetTitle(string title)
     {
         if (string.IsNullOrWhiteSpace(title))
