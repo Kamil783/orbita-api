@@ -22,6 +22,10 @@ public class BacklogTask
     private readonly List<UserId> _assignees = [];
     public IReadOnlyCollection<UserId> Assignees => _assignees.AsReadOnly();
 
+    private readonly List<TimeEntry> _timeEntries = [];
+    public IReadOnlyCollection<TimeEntry> TimeEntries => _timeEntries.AsReadOnly();
+    public int LoggedMinutes => _timeEntries.Sum(e => e.Minutes);
+
     public bool TrackProgress => ProgressPct is not null;
 
     private BacklogTask(
@@ -37,7 +41,8 @@ public class BacklogTask
         DateTime? dueDate,
         int? estimateMinutes,
         int? progressPct,
-        IEnumerable<UserId> assignees)
+        IEnumerable<UserId> assignees,
+        IEnumerable<TimeEntry>? timeEntries = null)
     {
         Id = id;
         Title = title;
@@ -52,6 +57,7 @@ public class BacklogTask
         EstimateMinutes = estimateMinutes;
         ProgressPct = progressPct;
         _assignees = [.. assignees];
+        _timeEntries = timeEntries is not null ? [.. timeEntries] : [];
     }
 
     public static BacklogTask Restore(
@@ -67,7 +73,8 @@ public class BacklogTask
         DateTime? dueDate,
         int? estimateMinutes,
         int? progressPct,
-        IEnumerable<UserId> assignees)
+        IEnumerable<UserId> assignees,
+        IEnumerable<TimeEntry>? timeEntries = null)
     {
         return new BacklogTask(
             id,
@@ -82,7 +89,8 @@ public class BacklogTask
             dueDate,
             estimateMinutes,
             progressPct,
-            assignees);
+            assignees,
+            timeEntries);
     }
 
     public static BacklogTask Create(

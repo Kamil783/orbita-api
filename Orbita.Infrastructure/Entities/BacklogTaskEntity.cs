@@ -23,4 +23,5 @@ public class BacklogTaskEntity
 
     public ICollection<BacklogTaskAssigneeEntity> Assignees { get; set; } = [];
     public ICollection<BacklogTaskWeekEntity> BacklogTaskWeeks { get; set; } = [];
+    public ICollection<TimeEntryEntity> TimeEntries { get; set; } = [];
 }

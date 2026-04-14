@@ -207,4 +207,41 @@ public class BacklogTaskService(
 
         return Result.Ok();
     }
+
+    public async Task<Result<TimeEntry>> AddTimeEntryAsync(Guid userId, Guid backlogTaskId, int minutes, string? description, CancellationToken ct = default)
+    {
+        var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
+        var backlogTask = await backlogRepository.GetAsync(backlogTaskId, ct);
+        if (backlogTask is null)
+            return Result<TimeEntry>.NotFound("Backlog task not found.");
+
+        if (backlogTask.TeamId.Id != teamId)
+            return Result<TimeEntry>.Forbidden("Access denied.");
+
+        var entry = TimeEntry.Create(
+            backlogTaskId: new BacklogTaskId(backlogTaskId),
+            userId: new UserId(userId),
+            minutes: minutes,
+            description: description);
+
+        var created = await backlogRepository.AddTimeEntryAsync(entry, ct);
+        return Result<TimeEntry>.Ok(created);
+    }
+
+    public async Task<Result> DeleteTimeEntryAsync(Guid userId, Guid backlogTaskId, Guid entryId, CancellationToken ct = default)
+    {
+        var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
+        var backlogTask = await backlogRepository.GetAsync(backlogTaskId, ct);
+        if (backlogTask is null)
+            return Result.NotFound("Backlog task not found.");
+
+        if (backlogTask.TeamId.Id != teamId)
+            return Result.Forbidden("Access denied.");
+
+        var deleted = await backlogRepository.DeleteTimeEntryAsync(entryId, backlogTaskId, ct);
+        if (!deleted)
+            return Result.NotFound("Time entry not found.");
+
+        return Result.Ok();
+    }
 }

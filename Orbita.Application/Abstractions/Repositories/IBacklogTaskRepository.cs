@@ -10,4 +10,6 @@ public interface IBacklogTaskRepository
     Task<BacklogTask> CreateAsync(BacklogTask task, CancellationToken ct);
     Task<BacklogTask?> UpdateAsync(BacklogTask task, CancellationToken ct);
     Task<BacklogTask?> DeleteAsync(Guid id, CancellationToken ct);
+    Task<TimeEntry> AddTimeEntryAsync(TimeEntry entry, CancellationToken ct);
+    Task<bool> DeleteTimeEntryAsync(Guid entryId, Guid backlogTaskId, CancellationToken ct);
 }

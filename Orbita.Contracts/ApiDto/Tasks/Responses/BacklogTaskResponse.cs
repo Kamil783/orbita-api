@@ -15,4 +15,6 @@ public sealed class BacklogTaskResponse
     public int? ProgressPct { get; init; }
     public string[]? AssigneeIds { get; init; }
     public string[]? WeekLabels { get; init; }
+    public int LoggedMinutes { get; init; }
+    public List<TimeEntryResponse> TimeEntries { get; init; } = new();
 }

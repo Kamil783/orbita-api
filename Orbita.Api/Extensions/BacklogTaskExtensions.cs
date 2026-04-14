@@ -4,6 +4,7 @@ using Orbita.Contracts.ApiDto.Tasks.Requests;
 using Orbita.Contracts.ApiDto.Tasks.Responses;
 using Orbita.Domain.Entities;
 using Orbita.Domain.Enums;
+using TimeEntry = Orbita.Domain.Entities.TimeEntry;
 
 namespace Orbita.Api.Extensions;
 
@@ -53,9 +54,20 @@ public static class BacklogTaskExtensions
             InWeek = task.InWeek,
             ProgressPct = task.ProgressPct,
             AssigneeIds = task.Assignees.Select(x => x.Id.ToString()).ToArray(),
-            WeekLabels = weekLabels
+            WeekLabels = weekLabels,
+            LoggedMinutes = task.LoggedMinutes,
+            TimeEntries = task.TimeEntries.Select(ToTimeEntryResponse).ToList()
         };
     }
+
+    public static TimeEntryResponse ToTimeEntryResponse(TimeEntry e) => new()
+    {
+        Id = e.Id.Id.ToString(),
+        UserId = e.UserId.Id.ToString(),
+        Minutes = e.Minutes,
+        Description = e.Description,
+        CreatedAt = new DateTimeOffset(e.CreatedAt, TimeSpan.Zero).ToUnixTimeMilliseconds()
+    };
 
     private static string MapPriority(TodoItemPriority priority) => priority switch
     {
