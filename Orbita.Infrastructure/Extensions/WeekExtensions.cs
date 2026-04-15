@@ -12,7 +12,7 @@ public static class WeekExtensions
         return new WeekEntity
         {
             Id = week.Id.Id,
-            CreatorId = week.CreatorId.Id,
+            CreatorId = week.CreatorId?.Id,
             TeamId = week.TeamId.Id,
             StartDate = week.StartDate,
             EndDate = week.EndDate,
@@ -32,7 +32,7 @@ public static class WeekExtensions
     {
         return Week.Restore(
             id: new WeekId(entity.Id),
-            creatorId: new UserId(entity.CreatorId),
+            creatorId: entity.CreatorId is not null ? new UserId(entity.CreatorId.Value) : null,
             teamId: new TeamId(entity.TeamId),
             startDate: entity.StartDate,
             endDate: entity.EndDate,

@@ -22,6 +22,9 @@ public class BacklogTask
     private readonly List<UserId> _assignees = [];
     public IReadOnlyCollection<UserId> Assignees => _assignees.AsReadOnly();
 
+    //private readonly List<WeekId> _weeks = new List<WeekId>();
+    //public IReadOnlyCollection<WeekId> Weeks => _weeks.AsReadOnly();
+
     private readonly List<TimeEntry> _timeEntries = [];
     public IReadOnlyCollection<TimeEntry> TimeEntries => _timeEntries.AsReadOnly();
     public int LoggedMinutes => _timeEntries.Sum(e => e.Minutes);

@@ -8,6 +8,7 @@ public interface IBacklogTaskRepository
     Task<IReadOnlyCollection<BacklogTask>> GetAllAsync(CancellationToken ct);
     Task<IReadOnlyCollection<BacklogTask>> GetAllActiveAsync(CancellationToken ct);
     Task<IReadOnlyCollection<BacklogTask>> GetByTeamAsync(Guid teamId, CancellationToken ct);
+    Task<IReadOnlyCollection<BacklogTask>> GetActiveByTeamAsync(Guid teamId, CancellationToken ct);
     Task<BacklogTask> CreateAsync(BacklogTask task, CancellationToken ct);
     Task<BacklogTask?> UpdateAsync(BacklogTask task, CancellationToken ct);
     Task<BacklogTask?> DeleteAsync(Guid id, CancellationToken ct);

@@ -117,6 +117,7 @@ public static class ServiceCollectionExtensions
         services.AddHostedService<LogBackgroundService>();
 
         services.AddScoped<IDailyJob, MonthRolloverJob>();
+        services.AddScoped<IDailyJob, WeekRolloverJob>();
         services.AddHostedService<DailyTaskRunnerService>();
 
         return services;

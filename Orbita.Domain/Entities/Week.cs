@@ -5,7 +5,7 @@ namespace Orbita.Domain.Entities;
 public class Week
 {
     public WeekId Id { get; private set; }
-    public UserId CreatorId { get; private set; }
+    public UserId? CreatorId { get; private set; }
     public TeamId TeamId { get; private set; }
     public DateTime StartDate { get; private set; }
     public DateTime EndDate { get; private set; }
@@ -18,7 +18,7 @@ public class Week
     private Week() { }
 
     public static Week Create(
-        UserId creatorId,
+        UserId? creatorId,
         TeamId teamId,
         DateTime startDate,
         DateTime endDate)
@@ -40,7 +40,7 @@ public class Week
 
     public static Week Restore(
         WeekId id,
-        UserId creatorId,
+        UserId? creatorId,
         TeamId teamId,
         DateTime startDate,
         DateTime endDate,

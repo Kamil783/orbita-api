@@ -14,7 +14,7 @@ public class WeekEntityConfiguration : IEntityTypeConfiguration<WeekEntity>
             .ValueGeneratedNever();
 
         b.Property(x => x.CreatorId)
-            .IsRequired();
+            .IsRequired(false);
 
         b.Property(x => x.TeamId)
             .IsRequired();

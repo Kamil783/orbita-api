@@ -18,6 +18,8 @@ public class WeekService(
         var currentWeek = await weekRepository.GetCurrentAsync(teamId, ct);
         if (currentWeek is not null)
         {
+            if (currentWeek.StartDate.Date == startDate.Date && currentWeek.EndDate.Date == endDate.Date)
+                return Result<Week>.Conflict("Week already exist.");
             currentWeek.Archive();
             await weekRepository.UpdateAsync(currentWeek, ct);
         }
@@ -29,6 +31,10 @@ public class WeekService(
             endDate: endDate);
 
         var inWeekTasks = await backlogTaskRepository.GetByTeamAsync(teamId, ct);
+        foreach (var task in inWeekTasks.Where(t => t.InWeek && t.IsCompleted))
+        {
+            newWeek.AddTask(task.Id);
+        }
         foreach (var task in inWeekTasks.Where(t => t.InWeek && !t.IsCompleted))
         {
             newWeek.AddTask(task.Id);
