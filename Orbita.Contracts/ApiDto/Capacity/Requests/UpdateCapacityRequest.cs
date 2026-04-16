@@ -2,6 +2,6 @@ namespace Orbita.Contracts.ApiDto.Capacity.Requests;
 
 public sealed class UpdateCapacityRequest
 {
-    public required double WeekdayHours { get; set; }
-    public required double WeekendHours { get; set; }
+    public required int WeekdayHours { get; set; }
+    public required int WeekendHours { get; set; }
 }
