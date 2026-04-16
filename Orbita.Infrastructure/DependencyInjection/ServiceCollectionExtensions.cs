@@ -98,6 +98,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IFinanceTransactionRepository, FinanceTransactionRepository>();
         services.AddScoped<ISavingsGoalRepository, SavingsGoalRepository>();
         services.AddScoped<ISpendingLimitRepository, SpendingLimitRepository>();
+        services.AddScoped<ITeamCapacityRepository, TeamCapacityRepository>();
         services.AddScoped<ITeamRepository, TeamRepository>();
         services.AddScoped<IShoppingListRepository, ShoppingListRepository>();
         services.AddScoped<ITeamProvider, TeamProvider>();

@@ -17,6 +17,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IFinanceService, FinanceService>();
         services.AddTransient<IAdminService, AdminService>();
         services.AddTransient<ITeamService, TeamService>();
+        services.AddTransient<ICapacityService, CapacityService>();
         return services;
     }
 }
