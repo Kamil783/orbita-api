@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Orbita.Infrastructure.Persistence;
@@ -11,9 +12,11 @@ using Orbita.Infrastructure.Persistence;
 namespace Orbita.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(OrbitaDbContext))]
-    partial class OrbitaDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260415094158_UpdateWeek")]
+    partial class UpdateWeek
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -254,11 +257,6 @@ namespace Orbita.Infrastructure.Persistence.Migrations
                     b.Property<bool>("InWeek")
                         .HasColumnType("boolean");
 
-                    b.Property<bool>("IsArchived")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false);
-
                     b.Property<bool>("IsCompleted")
                         .HasColumnType("boolean");
 
@@ -279,8 +277,6 @@ namespace Orbita.Infrastructure.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("DueDate");
-
-                    b.HasIndex("IsArchived");
 
                     b.HasIndex("TeamId");
 
@@ -744,22 +740,6 @@ namespace Orbita.Infrastructure.Persistence.Migrations
                     b.HasKey("TeamId");
 
                     b.ToTable("SpendingLimits");
-                });
-
-            modelBuilder.Entity("Orbita.Infrastructure.Entities.TeamCapacityEntity", b =>
-                {
-                    b.Property<Guid>("TeamId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("WeekdayHours")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("WeekendHours")
-                        .HasColumnType("integer");
-
-                    b.HasKey("TeamId");
-
-                    b.ToTable("TeamCapacities");
                 });
 
             modelBuilder.Entity("Orbita.Infrastructure.Entities.TeamEntity", b =>

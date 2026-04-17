@@ -29,6 +29,16 @@ public class TodoItemRepository(OrbitaDbContext db) : ITodoItemRepository
         return entity?.ToDomain();
     }
 
+    public async Task<List<TodoItem>> GetByBacklogIdBatchAsync(IEnumerable<Guid> backlogId, CancellationToken ct = default)
+    {
+        var entity = await db.TodoItems
+            .Include(x => x.Assignees)
+            .Where(x => x.BacklogId.HasValue && backlogId.Contains(x.BacklogId.Value))
+            .ToListAsync(ct);
+
+        return entity.Select(e => e.ToDomain()).ToList();
+    }
+
     public async Task<TodoItem> CreateAsync(TodoItem item, CancellationToken ct = default)
     {
         var entity = item.ToEntity();
@@ -61,9 +71,49 @@ public class TodoItemRepository(OrbitaDbContext db) : ITodoItemRepository
     {
         var entity = await db.TodoItems.FirstOrDefaultAsync(x => x.Id == id, ct);
 
-        if (entity is not null)
+        if (entity is null)
+            return;
+
+        var columnId = entity.ColumnId;
+        var deletedOrder = entity.SortOrder;
+
+        db.TodoItems.Remove(entity);
+        await db.SaveChangesAsync(ct);
+
+        // Shift down all items that came after the deleted one in the same column
+        await db.TodoItems
+            .Where(x => x.ColumnId == columnId && x.SortOrder > deletedOrder)
+            .ExecuteUpdateAsync(s => s.SetProperty(x => x.SortOrder, x => x.SortOrder - 1), ct);
+    }
+
+    public async Task DeleteBatchAsync(IEnumerable<Guid> ids, CancellationToken ct = default)
+    {
+        var idList = ids.ToList();
+        if (idList.Count == 0)
+            return;
+
+        // Collect affected columns before deleting
+        var affectedColumnIds = await db.TodoItems
+            .Where(x => idList.Contains(x.Id))
+            .Select(x => x.ColumnId)
+            .Distinct()
+            .ToListAsync(ct);
+
+        await db.TodoItems
+            .Where(x => idList.Contains(x.Id))
+            .ExecuteDeleteAsync(ct);
+
+        // Re-pack sort orders (0, 1, 2, …) for each affected column
+        foreach (var columnId in affectedColumnIds)
         {
-            db.TodoItems.Remove(entity);
+            var remaining = await db.TodoItems
+                .Where(x => x.ColumnId == columnId)
+                .OrderBy(x => x.SortOrder)
+                .ToListAsync(ct);
+
+            for (var i = 0; i < remaining.Count; i++)
+                remaining[i].SortOrder = i;
+
             await db.SaveChangesAsync(ct);
         }
     }
@@ -137,13 +187,25 @@ public class TodoItemRepository(OrbitaDbContext db) : ITodoItemRepository
         if (entity is null)
             return;
 
+        var sourceColumnId = entity.ColumnId;
+        var sourceOrder = entity.SortOrder;
+
         var maxSort = await GetMaxSortOrderAsync(targetColumnId, ct);
 
         entity.ColumnId = targetColumnId;
-        entity.SortOrder = maxSort + 1;
+        // If moving within the same column, the card will be last — account for the gap left behind
+        entity.SortOrder = sourceColumnId == targetColumnId ? maxSort : maxSort + 1;
         entity.UpdatedAtUtc = DateTime.UtcNow;
 
         await db.SaveChangesAsync(ct);
+
+        // Compact the source column if the card moved to a different column
+        if (sourceColumnId != targetColumnId)
+        {
+            await db.TodoItems
+                .Where(x => x.ColumnId == sourceColumnId && x.SortOrder > sourceOrder)
+                .ExecuteUpdateAsync(s => s.SetProperty(x => x.SortOrder, x => x.SortOrder - 1), ct);
+        }
     }
 
     private static void MapToExistingEntity(TodoItem source, TodoItemEntity target)

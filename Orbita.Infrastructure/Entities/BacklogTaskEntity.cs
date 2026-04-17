@@ -16,6 +16,7 @@ public class BacklogTaskEntity
 
     public bool InWeek { get; set; }
     public bool IsCompleted { get; set; }
+    public bool IsArchived { get; set; }
 
     public DateTime? DueDate { get; set; }
     public int? EstimateMinutes { get; set; }

@@ -14,6 +14,7 @@ public class BacklogTask
     public DateTime CreatedAt { get; private set; }
     public bool InWeek { get; private set; }
     public bool IsCompleted { get; private set; }
+    public bool IsArchived { get; private set; }
 
     public DateTime? DueDate { get; private set; }
     public int? EstimateMinutes { get; private set; }
@@ -21,6 +22,9 @@ public class BacklogTask
 
     private readonly List<UserId> _assignees = [];
     public IReadOnlyCollection<UserId> Assignees => _assignees.AsReadOnly();
+
+    //private readonly List<WeekId> _weeks = new List<WeekId>();
+    //public IReadOnlyCollection<WeekId> Weeks => _weeks.AsReadOnly();
 
     private readonly List<TimeEntry> _timeEntries = [];
     public IReadOnlyCollection<TimeEntry> TimeEntries => _timeEntries.AsReadOnly();
@@ -38,6 +42,7 @@ public class BacklogTask
         DateTime createdAt,
         bool inWeek,
         bool isCompleted,
+        bool isArchived,
         DateTime? dueDate,
         int? estimateMinutes,
         int? progressPct,
@@ -53,6 +58,7 @@ public class BacklogTask
         CreatedAt = createdAt;
         InWeek = inWeek;
         IsCompleted = isCompleted;
+        IsArchived = isArchived;
         DueDate = NormalizeToUtc(dueDate);
         EstimateMinutes = estimateMinutes;
         ProgressPct = progressPct;
@@ -70,6 +76,7 @@ public class BacklogTask
         DateTime createdAt,
         bool inWeek,
         bool isCompleted,
+        bool isArchived,
         DateTime? dueDate,
         int? estimateMinutes,
         int? progressPct,
@@ -86,6 +93,7 @@ public class BacklogTask
             createdAt,
             inWeek,
             isCompleted,
+            isArchived,
             dueDate,
             estimateMinutes,
             progressPct,
@@ -118,6 +126,7 @@ public class BacklogTask
             creatorId,
             teamId,
             DateTime.UtcNow,
+            false,
             false,
             false,
             dueDate,
@@ -173,6 +182,11 @@ public class BacklogTask
     public void SetCompleted(bool completed)
     {
         IsCompleted = completed;
+    }
+
+    public void SetArchived(bool archived)
+    {
+        IsArchived = archived;
     }
 
     public void SetTitle(string title)
