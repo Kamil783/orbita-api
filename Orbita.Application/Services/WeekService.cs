@@ -9,6 +9,7 @@ namespace Orbita.Application.Services;
 public class WeekService(
     IWeekRepository weekRepository,
     IBacklogTaskRepository backlogTaskRepository,
+    ITodoItemRepository todoItemRepository,
     ITeamProvider teamProvider) : IWeekService
 {
     public async Task<Result<Week>> CreateNewWeekAsync(Guid userId, DateTime startDate, DateTime endDate, CancellationToken ct = default)
@@ -31,10 +32,14 @@ public class WeekService(
             endDate: endDate);
 
         var inWeekTasks = await backlogTaskRepository.GetByTeamAsync(teamId, ct);
-        foreach (var task in inWeekTasks.Where(t => t.InWeek && t.IsCompleted))
-        {
-            newWeek.AddTask(task.Id);
-        }
+        var tasksToArchive = inWeekTasks.Where(t => t.InWeek && t.IsCompleted).ToList();
+        var tasksToArchiveIds = tasksToArchive.Select(t => t.Id.Id).ToList();
+
+        // Delete the Kanban cards for completed tasks, then archive the tasks themselves
+        var todoItemsToDelete = await todoItemRepository.GetByBacklogIdBatchAsync(tasksToArchiveIds, ct);
+        await todoItemRepository.DeleteBatchAsync(todoItemsToDelete.Select(i => i.Id.Id), ct);
+        await backlogTaskRepository.ArchiveBatchAsync(tasksToArchiveIds, ct);
+
         foreach (var task in inWeekTasks.Where(t => t.InWeek && !t.IsCompleted))
         {
             newWeek.AddTask(task.Id);
@@ -58,7 +63,7 @@ public class WeekService(
             foreach (var taskId in week.TaskIds)
             {
                 var task = await backlogTaskRepository.GetAsync(taskId.Id, ct);
-                if (task is not null)
+                if (task is not null && task.IsArchived)
                     tasks.Add(task);
             }
             result.Add((week, tasks));

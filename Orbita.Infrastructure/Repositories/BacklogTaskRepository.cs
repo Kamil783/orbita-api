@@ -38,6 +38,24 @@ public class BacklogTaskRepository(OrbitaDbContext db) : IBacklogTaskRepository
         return entity.ToDomain();
     }
 
+    public async Task DeleteBatchAsync(IEnumerable<Guid> id, CancellationToken ct = default)
+    {
+        await db.BacklogTasks
+            .Where(x => id.Contains(x.Id))
+            .ExecuteDeleteAsync(ct);
+    }
+
+    public async Task ArchiveBatchAsync(IEnumerable<Guid> ids, CancellationToken ct = default)
+    {
+        var idList = ids.ToList();
+        await db.BacklogTasks
+            .Where(x => idList.Contains(x.Id))
+            .ExecuteUpdateAsync(s => s
+                .SetProperty(x => x.IsArchived, true)
+                .SetProperty(x => x.InWeek, false),
+                ct);
+    }
+
     public async Task<BacklogTask?> GetAsync(Guid id, CancellationToken ct = default)
     {
         var entity = await db.BacklogTasks
@@ -65,7 +83,7 @@ public class BacklogTaskRepository(OrbitaDbContext db) : IBacklogTaskRepository
         var entities = await db.BacklogTasks
             .Include(x => x.Assignees)
             .Include(x => x.TimeEntries)
-            .Where(x => !x.IsCompleted)
+            .Where(x => !x.IsCompleted && !x.IsArchived)
             .ToListAsync(ct);
 
         return entities
@@ -78,7 +96,7 @@ public class BacklogTaskRepository(OrbitaDbContext db) : IBacklogTaskRepository
         var entities = await db.BacklogTasks
             .Include(x => x.Assignees)
             .Include(x => x.TimeEntries)
-            .Where(x => x.TeamId == teamId)
+            .Where(x => x.TeamId == teamId && !x.IsArchived)
             .ToListAsync(ct);
 
         return entities
@@ -91,7 +109,7 @@ public class BacklogTaskRepository(OrbitaDbContext db) : IBacklogTaskRepository
         var entities = await db.BacklogTasks
             .Include(x => x.Assignees)
             .Include(x => x.TimeEntries)
-            .Where(x => x.TeamId == teamId && !x.IsCompleted)
+            .Where(x => x.TeamId == teamId && !x.IsCompleted && !x.IsArchived)
             .ToListAsync(ct);
 
         return entities
@@ -147,6 +165,7 @@ public class BacklogTaskRepository(OrbitaDbContext db) : IBacklogTaskRepository
         target.TeamId = source.TeamId.Id;
         target.InWeek = source.InWeek;
         target.IsCompleted = source.IsCompleted;
+        target.IsArchived = source.IsArchived;
         target.DueDate = source.DueDate;
         target.EstimateMinutes = source.EstimateMinutes;
         target.ProgressPct = source.ProgressPct;

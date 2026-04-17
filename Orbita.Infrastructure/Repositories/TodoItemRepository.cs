@@ -29,6 +29,16 @@ public class TodoItemRepository(OrbitaDbContext db) : ITodoItemRepository
         return entity?.ToDomain();
     }
 
+    public async Task<List<TodoItem>> GetByBacklogIdBatchAsync(IEnumerable<Guid> backlogId, CancellationToken ct = default)
+    {
+        var entity = await db.TodoItems
+            .Include(x => x.Assignees)
+            .Where(x => x.BacklogId.HasValue && backlogId.Contains(x.BacklogId.Value))
+            .ToListAsync(ct);
+
+        return entity.Select(e => e.ToDomain()).ToList();
+    }
+
     public async Task<TodoItem> CreateAsync(TodoItem item, CancellationToken ct = default)
     {
         var entity = item.ToEntity();
@@ -66,6 +76,13 @@ public class TodoItemRepository(OrbitaDbContext db) : ITodoItemRepository
             db.TodoItems.Remove(entity);
             await db.SaveChangesAsync(ct);
         }
+    }
+
+    public async Task DeleteBatchAsync(IEnumerable<Guid> id, CancellationToken ct = default)
+    {
+        await db.TodoItems
+            .Where(x => id.Contains(x.Id))
+            .ExecuteDeleteAsync(ct);
     }
 
     public async Task<int> GetMaxSortOrderAsync(Guid columnId, CancellationToken ct = default)

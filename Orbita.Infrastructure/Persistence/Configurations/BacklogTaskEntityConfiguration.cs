@@ -40,6 +40,10 @@ public class BacklogTaskEntityConfiguration : IEntityTypeConfiguration<BacklogTa
         b.Property(x => x.IsCompleted)
             .IsRequired();
 
+        b.Property(x => x.IsArchived)
+            .IsRequired()
+            .HasDefaultValue(false);
+
         b.Property(x => x.DueDate)
             .IsRequired(false);
 
@@ -48,6 +52,7 @@ public class BacklogTaskEntityConfiguration : IEntityTypeConfiguration<BacklogTa
 
         b.HasIndex(x => x.TeamId);
         b.HasIndex(x => new { x.IsCompleted, x.InWeek });
+        b.HasIndex(x => x.IsArchived);
         b.HasIndex(x => x.DueDate);
     }
 }
