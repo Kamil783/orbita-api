@@ -181,6 +181,13 @@ public class BacklogTaskService(
             backlogTask.SetInWeek(false);
             await backlogRepository.UpdateAsync(backlogTask, ct);
 
+            var currentWeek = await weekRepository.GetCurrentAsync(teamId, ct);
+            if (currentWeek is not null)
+            {
+                currentWeek.RemoveTask(backlogTask.Id);
+                await weekRepository.UpdateAsync(currentWeek, ct);
+            }
+
             await unitOfWork.CommitAsync(ct);
 
             return Result.Ok();
