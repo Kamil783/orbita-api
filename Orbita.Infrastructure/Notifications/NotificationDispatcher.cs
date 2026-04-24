@@ -10,6 +10,7 @@ namespace Orbita.Infrastructure.Notifications;
 
 public class NotificationDispatcher(
     IAppNotificationRepository repository,
+    ITeamRepository teamRepository,
     IHubContext<NotificationsHub> hubContext) : INotificationDispatcher
 {
     public async Task<AppNotificationResponse> SendAsync(
@@ -33,6 +34,50 @@ public class NotificationDispatcher(
         }
 
         return dto;
+    }
+
+    public async Task<IReadOnlyList<AppNotificationResponse>> SendToTeamAsync(
+        Guid teamId,
+        NotificationType type,
+        string title,
+        string message,
+        Guid? excludeUserId = null,
+        bool pushOverHub = true,
+        CancellationToken ct = default)
+    {
+        var team = await teamRepository.GetAsync(teamId, ct);
+        if (team is null)
+            return Array.Empty<AppNotificationResponse>();
+
+        var recipients = team.TeamMembers
+            .Select(m => m.UserId.Id)
+            .Where(id => excludeUserId is null || id != excludeUserId.Value)
+            .Distinct()
+            .ToList();
+
+        if (recipients.Count == 0)
+            return Array.Empty<AppNotificationResponse>();
+
+        var results = new List<AppNotificationResponse>(recipients.Count);
+
+        foreach (var userId in recipients)
+        {
+            var notification = AppNotification.Create(new UserId(userId), type, title, message);
+            await repository.AddAsync(notification, ct);
+            results.Add(ToResponse(notification));
+        }
+
+        if (pushOverHub)
+        {
+            for (var i = 0; i < recipients.Count; i++)
+            {
+                await hubContext.Clients
+                    .Group(recipients[i].ToString())
+                    .SendAsync("ReceiveNotification", results[i], ct);
+            }
+        }
+
+        return results;
     }
 
     public static AppNotificationResponse ToResponse(AppNotification n) => new()

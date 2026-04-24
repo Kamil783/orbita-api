@@ -22,6 +22,7 @@ public class OrbitaDbContext(DbContextOptions<OrbitaDbContext> options) : Identi
     public DbSet<FinanceTransactionEntity> FinanceTransactions => Set<FinanceTransactionEntity>();
     public DbSet<SavingsGoalEntity> SavingsGoals => Set<SavingsGoalEntity>();
     public DbSet<SpendingLimitEntity> SpendingLimits => Set<SpendingLimitEntity>();
+    public DbSet<RecurringPaymentEntity> RecurringPayments => Set<RecurringPaymentEntity>();
     public DbSet<TeamCapacityEntity> TeamCapacities => Set<TeamCapacityEntity>();
     public DbSet<TimeEntryEntity> TimeEntries => Set<TimeEntryEntity>();
     public DbSet<TeamEntity> Teams => Set<TeamEntity>();

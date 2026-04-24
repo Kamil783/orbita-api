@@ -39,4 +39,9 @@ public interface IFinanceService
     Task<Result<ShoppingListItem>> UpdateShoppingListItemAsync(Guid userId, Guid listId, Guid itemId, bool bought, CancellationToken ct = default);
     Task<Result<ShoppingListItem>> UpdateShoppingListItemDetailsAsync(Guid userId, Guid listId, Guid itemId, string? name, long? price, CancellationToken ct = default);
     Task<Result> ReorderShoppingListItemsAsync(Guid userId, Guid listId, List<Guid> itemIds, CancellationToken ct = default);
+
+    Task<Result<List<RecurringPayment>>> GetRecurringPaymentsAsync(Guid userId, CancellationToken ct = default);
+    Task<Result<RecurringPayment>> CreateRecurringPaymentAsync(Guid userId, string title, long amount, int dayOfMonth, Guid? categoryId, CancellationToken ct = default);
+    Task<Result<RecurringPayment>> UpdateRecurringPaymentAsync(Guid userId, Guid paymentId, string? title, long? amount, int? dayOfMonth, Guid? categoryId, bool clearCategory, CancellationToken ct = default);
+    Task<Result> DeleteRecurringPaymentAsync(Guid userId, Guid paymentId, CancellationToken ct = default);
 }
