@@ -546,4 +546,71 @@ public class FinanceController(IFinanceService financeService) : AuthorizedContr
             }).ToList())
             .ToActionResult(HttpContext);
     }
+
+    [HttpGet("recurring-payments")]
+    public async Task<IActionResult> GetRecurringPayments(CancellationToken ct)
+    {
+        if (!TryGetUserId(out var userId))
+            return Unauthorized();
+
+        var res = await financeService.GetRecurringPaymentsAsync(userId, ct);
+
+        return res
+            .Map(payments => payments.Select(ToRecurringPaymentResponse).ToList())
+            .ToActionResult(HttpContext);
+    }
+
+    [HttpPost("recurring-payments")]
+    public async Task<IActionResult> CreateRecurringPayment(
+        [FromBody] CreateRecurringPaymentRequest request, CancellationToken ct)
+    {
+        if (!TryGetUserId(out var userId))
+            return Unauthorized();
+
+        var res = await financeService.CreateRecurringPaymentAsync(
+            userId, request.Title, request.Amount, request.DayOfMonth, request.CategoryId, ct);
+
+        return res
+            .Map(ToRecurringPaymentResponse)
+            .ToActionResult(HttpContext);
+    }
+
+    [HttpPatch("recurring-payments/{id:guid}")]
+    public async Task<IActionResult> UpdateRecurringPayment(
+        Guid id, [FromBody] UpdateRecurringPaymentRequest request, CancellationToken ct)
+    {
+        if (!TryGetUserId(out var userId))
+            return Unauthorized();
+
+        var res = await financeService.UpdateRecurringPaymentAsync(
+            userId, id, request.Title, request.Amount, request.DayOfMonth,
+            request.CategoryId, request.ClearCategory, ct);
+
+        return res
+            .Map(ToRecurringPaymentResponse)
+            .ToActionResult(HttpContext);
+    }
+
+    [HttpDelete("recurring-payments/{id:guid}")]
+    public async Task<IActionResult> DeleteRecurringPayment(Guid id, CancellationToken ct)
+    {
+        if (!TryGetUserId(out var userId))
+            return Unauthorized();
+
+        var res = await financeService.DeleteRecurringPaymentAsync(userId, id, ct);
+
+        return res.ToActionResult(HttpContext);
+    }
+
+    private static RecurringPaymentResponse ToRecurringPaymentResponse(Domain.Entities.RecurringPayment p) =>
+        new()
+        {
+            Id = p.Id.Id.ToString(),
+            Title = p.Title,
+            Amount = p.Amount,
+            DayOfMonth = p.DayOfMonth,
+            CategoryId = p.CategoryId?.Id.ToString(),
+            CreatedAt = new DateTimeOffset(p.CreatedAt, TimeSpan.Zero).ToUnixTimeMilliseconds(),
+            UpdatedAt = new DateTimeOffset(p.UpdatedAt, TimeSpan.Zero).ToUnixTimeMilliseconds()
+        };
 }

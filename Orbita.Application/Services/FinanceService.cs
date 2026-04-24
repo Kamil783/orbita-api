@@ -16,6 +16,7 @@ public class FinanceService(
     ISavingsGoalRepository savingsGoalRepository,
     ISpendingLimitRepository spendingLimitRepository,
     IShoppingListRepository shoppingListRepository,
+    IRecurringPaymentRepository recurringPaymentRepository,
     ITeamProvider teamProvider,
     IUnitOfWork unitOfWork) : IFinanceService
 {
@@ -800,5 +801,78 @@ public class FinanceService(
         var currentImpact = isFromBalance ? currentAmount : 0L;
 
         return currentImpact - previousImpact;
+    }
+
+    public async Task<Result<List<RecurringPayment>>> GetRecurringPaymentsAsync(Guid userId, CancellationToken ct = default)
+    {
+        var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
+        var payments = await recurringPaymentRepository.GetByTeamAsync(teamId, ct);
+        return Result<List<RecurringPayment>>.Ok(payments);
+    }
+
+    public async Task<Result<RecurringPayment>> CreateRecurringPaymentAsync(
+        Guid userId, string title, long amount, int dayOfMonth, Guid? categoryId, CancellationToken ct = default)
+    {
+        var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
+
+        FinanceCategoryId? finCategoryId = null;
+        if (categoryId.HasValue)
+        {
+            var category = await categoryRepository.GetAsync(categoryId.Value, ct);
+            if (category is null || category.TeamId.Id != teamId)
+                return Result<RecurringPayment>.NotFound("Category not found.");
+            finCategoryId = category.Id;
+        }
+
+        var payment = RecurringPayment.Create(
+            creatorId: new UserId(userId),
+            teamId: new TeamId(teamId),
+            title: title,
+            amount: amount,
+            dayOfMonth: dayOfMonth,
+            categoryId: finCategoryId);
+
+        var created = await recurringPaymentRepository.CreateAsync(payment, ct);
+        return Result<RecurringPayment>.Ok(created);
+    }
+
+    public async Task<Result<RecurringPayment>> UpdateRecurringPaymentAsync(
+        Guid userId, Guid paymentId, string? title, long? amount, int? dayOfMonth,
+        Guid? categoryId, bool clearCategory, CancellationToken ct = default)
+    {
+        var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
+        var payment = await recurringPaymentRepository.GetAsync(paymentId, ct);
+        if (payment is null)
+            return Result<RecurringPayment>.NotFound("Recurring payment not found.");
+
+        if (payment.TeamId.Id != teamId)
+            return Result<RecurringPayment>.Forbidden("Access denied.");
+
+        FinanceCategoryId? finCategoryId = null;
+        if (!clearCategory && categoryId.HasValue)
+        {
+            var category = await categoryRepository.GetAsync(categoryId.Value, ct);
+            if (category is null || category.TeamId.Id != teamId)
+                return Result<RecurringPayment>.NotFound("Category not found.");
+            finCategoryId = category.Id;
+        }
+
+        payment.Update(title, amount, dayOfMonth, finCategoryId, clearCategory);
+        var updated = await recurringPaymentRepository.UpdateAsync(payment, ct);
+        return Result<RecurringPayment>.Ok(updated);
+    }
+
+    public async Task<Result> DeleteRecurringPaymentAsync(Guid userId, Guid paymentId, CancellationToken ct = default)
+    {
+        var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
+        var payment = await recurringPaymentRepository.GetAsync(paymentId, ct);
+        if (payment is null)
+            return Result.NotFound("Recurring payment not found.");
+
+        if (payment.TeamId.Id != teamId)
+            return Result.Forbidden("Access denied.");
+
+        await recurringPaymentRepository.DeleteAsync(paymentId, ct);
+        return Result.Ok();
     }
 }
