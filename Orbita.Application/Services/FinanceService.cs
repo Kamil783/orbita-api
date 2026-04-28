@@ -3,6 +3,7 @@ using Orbita.Application.Abstractions.Repositories;
 using Orbita.Application.Abstractions.Services;
 using Orbita.Application.Models.Results;
 using Orbita.Domain.Entities;
+using Orbita.Domain.Enums;
 using Orbita.Domain.ValueObjects;
 using System.Globalization;
 using System.Transactions;
@@ -17,6 +18,8 @@ public class FinanceService(
     ISpendingLimitRepository spendingLimitRepository,
     IShoppingListRepository shoppingListRepository,
     IRecurringPaymentRepository recurringPaymentRepository,
+    IPlannedPurchaseRepository plannedPurchaseRepository,
+    ITeamRepository teamRepository,
     ITeamProvider teamProvider,
     IUnitOfWork unitOfWork) : IFinanceService
 {
@@ -874,5 +877,157 @@ public class FinanceService(
 
         await recurringPaymentRepository.DeleteAsync(paymentId, ct);
         return Result.Ok();
+    }
+
+    public async Task<Result<List<PlannedPurchase>>> GetPlannedPurchasesAsync(
+        Guid userId,
+        DateOnly? from,
+        DateOnly? to,
+        PlannedPurchaseStatus? status,
+        Guid? assigneeId,
+        Guid? categoryId,
+        CancellationToken ct = default)
+    {
+        var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
+        var items = await plannedPurchaseRepository.GetByTeamAsync(
+            teamId, from, to, status, assigneeId, categoryId, ct);
+        return Result<List<PlannedPurchase>>.Ok(items);
+    }
+
+    public async Task<Result<PlannedPurchase>> CreatePlannedPurchaseAsync(
+        Guid userId,
+        string title,
+        DateOnly date,
+        long amount,
+        Guid? assigneeId,
+        Guid? categoryId,
+        string? note,
+        CancellationToken ct = default)
+    {
+        var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
+
+        UserId? assignee = null;
+        if (assigneeId.HasValue)
+        {
+            if (!await IsTeamMemberAsync(teamId, assigneeId.Value, ct))
+                return Result<PlannedPurchase>.Fail("Assignee is not a team member.", ErrorType.Validation);
+            assignee = new UserId(assigneeId.Value);
+        }
+
+        FinanceCategoryId? finCategoryId = null;
+        if (categoryId.HasValue)
+        {
+            var category = await categoryRepository.GetAsync(categoryId.Value, ct);
+            if (category is null || category.TeamId.Id != teamId)
+                return Result<PlannedPurchase>.NotFound("Category not found.");
+            finCategoryId = category.Id;
+        }
+
+        PlannedPurchase purchase;
+        try
+        {
+            purchase = PlannedPurchase.Create(
+                ownerId: new UserId(userId),
+                teamId: new TeamId(teamId),
+                title: title,
+                date: date,
+                amount: amount,
+                assigneeId: assignee,
+                categoryId: finCategoryId,
+                note: note);
+        }
+        catch (Exception ex)
+        {
+            return Result<PlannedPurchase>.Fail(ex.Message, ErrorType.Validation);
+        }
+
+        var created = await plannedPurchaseRepository.CreateAsync(purchase, ct);
+        return Result<PlannedPurchase>.Ok(created);
+    }
+
+    public async Task<Result<PlannedPurchase>> UpdatePlannedPurchaseAsync(
+        Guid userId,
+        Guid purchaseId,
+        string? title,
+        DateOnly? date,
+        long? amount,
+        Guid? assigneeId,
+        bool clearAssignee,
+        Guid? categoryId,
+        bool clearCategory,
+        string? note,
+        bool clearNote,
+        PlannedPurchaseStatus? status,
+        CancellationToken ct = default)
+    {
+        var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
+
+        var purchase = await plannedPurchaseRepository.GetAsync(purchaseId, ct);
+        if (purchase is null)
+            return Result<PlannedPurchase>.NotFound("Planned purchase not found.");
+
+        if (purchase.TeamId.Id != teamId)
+            return Result<PlannedPurchase>.Forbidden("Access denied.");
+
+        UserId? assignee = null;
+        if (!clearAssignee && assigneeId.HasValue)
+        {
+            if (!await IsTeamMemberAsync(teamId, assigneeId.Value, ct))
+                return Result<PlannedPurchase>.Fail("Assignee is not a team member.", ErrorType.Validation);
+            assignee = new UserId(assigneeId.Value);
+        }
+
+        FinanceCategoryId? finCategoryId = null;
+        if (!clearCategory && categoryId.HasValue)
+        {
+            var category = await categoryRepository.GetAsync(categoryId.Value, ct);
+            if (category is null || category.TeamId.Id != teamId)
+                return Result<PlannedPurchase>.NotFound("Category not found.");
+            finCategoryId = category.Id;
+        }
+
+        try
+        {
+            purchase.Update(
+                title: title,
+                date: date,
+                amount: amount,
+                assigneeId: assignee,
+                clearAssignee: clearAssignee,
+                categoryId: finCategoryId,
+                clearCategory: clearCategory,
+                note: note,
+                clearNote: clearNote,
+                status: status);
+        }
+        catch (Exception ex)
+        {
+            return Result<PlannedPurchase>.Fail(ex.Message, ErrorType.Validation);
+        }
+
+        var updated = await plannedPurchaseRepository.UpdateAsync(purchase, ct);
+        return Result<PlannedPurchase>.Ok(updated);
+    }
+
+    public async Task<Result> DeletePlannedPurchaseAsync(Guid userId, Guid purchaseId, CancellationToken ct = default)
+    {
+        var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
+
+        var purchase = await plannedPurchaseRepository.GetAsync(purchaseId, ct);
+        if (purchase is null)
+            return Result.NotFound("Planned purchase not found.");
+
+        if (purchase.TeamId.Id != teamId)
+            return Result.Forbidden("Access denied.");
+
+        await plannedPurchaseRepository.DeleteAsync(purchaseId, ct);
+        return Result.Ok();
+    }
+
+    private async Task<bool> IsTeamMemberAsync(Guid teamId, Guid userId, CancellationToken ct)
+    {
+        var team = await teamRepository.GetAsync(teamId, ct);
+        if (team is null) return false;
+        return team.TeamMembers.Any(m => m.UserId.Id == userId);
     }
 }
