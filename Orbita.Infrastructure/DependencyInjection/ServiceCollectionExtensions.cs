@@ -100,6 +100,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ISpendingLimitRepository, SpendingLimitRepository>();
         services.AddScoped<ITeamCapacityRepository, TeamCapacityRepository>();
         services.AddScoped<IRecurringPaymentRepository, RecurringPaymentRepository>();
+        services.AddScoped<IPlannedPurchaseRepository, PlannedPurchaseRepository>();
         services.AddScoped<ITeamRepository, TeamRepository>();
         services.AddScoped<IShoppingListRepository, ShoppingListRepository>();
         services.AddScoped<ITeamProvider, TeamProvider>();

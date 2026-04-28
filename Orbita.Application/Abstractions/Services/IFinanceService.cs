@@ -1,5 +1,6 @@
 using Orbita.Application.Models.Results;
 using Orbita.Domain.Entities;
+using Orbita.Domain.Enums;
 
 namespace Orbita.Application.Abstractions.Services;
 
@@ -44,4 +45,40 @@ public interface IFinanceService
     Task<Result<RecurringPayment>> CreateRecurringPaymentAsync(Guid userId, string title, long amount, int dayOfMonth, Guid? categoryId, CancellationToken ct = default);
     Task<Result<RecurringPayment>> UpdateRecurringPaymentAsync(Guid userId, Guid paymentId, string? title, long? amount, int? dayOfMonth, Guid? categoryId, bool clearCategory, CancellationToken ct = default);
     Task<Result> DeleteRecurringPaymentAsync(Guid userId, Guid paymentId, CancellationToken ct = default);
+
+    Task<Result<List<PlannedPurchase>>> GetPlannedPurchasesAsync(
+        Guid userId,
+        DateOnly? from,
+        DateOnly? to,
+        PlannedPurchaseStatus? status,
+        Guid? assigneeId,
+        Guid? categoryId,
+        CancellationToken ct = default);
+
+    Task<Result<PlannedPurchase>> CreatePlannedPurchaseAsync(
+        Guid userId,
+        string title,
+        DateOnly date,
+        long amount,
+        Guid? assigneeId,
+        Guid? categoryId,
+        string? note,
+        CancellationToken ct = default);
+
+    Task<Result<PlannedPurchase>> UpdatePlannedPurchaseAsync(
+        Guid userId,
+        Guid purchaseId,
+        string? title,
+        DateOnly? date,
+        long? amount,
+        Guid? assigneeId,
+        bool clearAssignee,
+        Guid? categoryId,
+        bool clearCategory,
+        string? note,
+        bool clearNote,
+        PlannedPurchaseStatus? status,
+        CancellationToken ct = default);
+
+    Task<Result> DeletePlannedPurchaseAsync(Guid userId, Guid purchaseId, CancellationToken ct = default);
 }

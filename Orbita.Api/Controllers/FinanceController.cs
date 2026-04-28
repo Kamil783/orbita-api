@@ -602,6 +602,162 @@ public class FinanceController(IFinanceService financeService) : AuthorizedContr
         return res.ToActionResult(HttpContext);
     }
 
+    [HttpGet("planned-purchases")]
+    public async Task<IActionResult> GetPlannedPurchases(
+        [FromQuery] string? from,
+        [FromQuery] string? to,
+        [FromQuery] string? status,
+        [FromQuery] Guid? assigneeId,
+        [FromQuery] Guid? categoryId,
+        CancellationToken ct)
+    {
+        if (!TryGetUserId(out var userId))
+            return Unauthorized();
+
+        DateOnly? fromDate = null;
+        if (!string.IsNullOrWhiteSpace(from))
+        {
+            if (!DateOnly.TryParse(from, out var parsed))
+                return BadRequest("Invalid 'from' date.");
+            fromDate = parsed;
+        }
+
+        DateOnly? toDate = null;
+        if (!string.IsNullOrWhiteSpace(to))
+        {
+            if (!DateOnly.TryParse(to, out var parsed))
+                return BadRequest("Invalid 'to' date.");
+            toDate = parsed;
+        }
+
+        Domain.Enums.PlannedPurchaseStatus? statusFilter = null;
+        if (!string.IsNullOrWhiteSpace(status))
+        {
+            if (!TryParsePlannedPurchaseStatus(status, out var parsed))
+                return BadRequest("Invalid status.");
+            statusFilter = parsed;
+        }
+
+        var res = await financeService.GetPlannedPurchasesAsync(
+            userId, fromDate, toDate, statusFilter, assigneeId, categoryId, ct);
+
+        return res
+            .Map(items => items.Select(ToPlannedPurchaseResponse).ToList())
+            .ToActionResult(HttpContext);
+    }
+
+    [HttpPost("planned-purchases")]
+    public async Task<IActionResult> CreatePlannedPurchase(
+        [FromBody] CreatePlannedPurchaseRequest request, CancellationToken ct)
+    {
+        if (!TryGetUserId(out var userId))
+            return Unauthorized();
+
+        if (!DateOnly.TryParse(request.Date, out var date))
+            return BadRequest("Invalid date.");
+
+        var res = await financeService.CreatePlannedPurchaseAsync(
+            userId,
+            request.Title,
+            date,
+            request.Amount,
+            request.AssigneeId,
+            request.CategoryId,
+            request.Note,
+            ct);
+
+        return res
+            .Map(ToPlannedPurchaseResponse)
+            .ToActionResult(HttpContext);
+    }
+
+    [HttpPatch("planned-purchases/{id:guid}")]
+    public async Task<IActionResult> UpdatePlannedPurchase(
+        Guid id, [FromBody] UpdatePlannedPurchaseRequest request, CancellationToken ct)
+    {
+        if (!TryGetUserId(out var userId))
+            return Unauthorized();
+
+        DateOnly? date = null;
+        if (request.Date is not null)
+        {
+            if (!DateOnly.TryParse(request.Date, out var parsed))
+                return BadRequest("Invalid date.");
+            date = parsed;
+        }
+
+        Domain.Enums.PlannedPurchaseStatus? status = null;
+        if (request.Status is not null)
+        {
+            if (!TryParsePlannedPurchaseStatus(request.Status, out var parsed))
+                return BadRequest("Invalid status.");
+            status = parsed;
+        }
+
+        var res = await financeService.UpdatePlannedPurchaseAsync(
+            userId,
+            id,
+            request.Title,
+            date,
+            request.Amount,
+            request.AssigneeId,
+            request.ClearAssignee,
+            request.CategoryId,
+            request.ClearCategory,
+            request.Note,
+            request.ClearNote,
+            status,
+            ct);
+
+        return res
+            .Map(ToPlannedPurchaseResponse)
+            .ToActionResult(HttpContext);
+    }
+
+    [HttpDelete("planned-purchases/{id:guid}")]
+    public async Task<IActionResult> DeletePlannedPurchase(Guid id, CancellationToken ct)
+    {
+        if (!TryGetUserId(out var userId))
+            return Unauthorized();
+
+        var res = await financeService.DeletePlannedPurchaseAsync(userId, id, ct);
+        return res.ToActionResult(HttpContext);
+    }
+
+    private static bool TryParsePlannedPurchaseStatus(string raw, out Domain.Enums.PlannedPurchaseStatus status)
+    {
+        switch (raw.Trim().ToLowerInvariant())
+        {
+            case "planned": status = Domain.Enums.PlannedPurchaseStatus.Planned; return true;
+            case "bought": status = Domain.Enums.PlannedPurchaseStatus.Bought; return true;
+            case "cancelled": status = Domain.Enums.PlannedPurchaseStatus.Cancelled; return true;
+            default: status = default; return false;
+        }
+    }
+
+    private static string PlannedPurchaseStatusToString(Domain.Enums.PlannedPurchaseStatus s) => s switch
+    {
+        Domain.Enums.PlannedPurchaseStatus.Planned => "planned",
+        Domain.Enums.PlannedPurchaseStatus.Bought => "bought",
+        Domain.Enums.PlannedPurchaseStatus.Cancelled => "cancelled",
+        _ => "planned"
+    };
+
+    private static PlannedPurchaseResponse ToPlannedPurchaseResponse(Domain.Entities.PlannedPurchase p) =>
+        new()
+        {
+            Id = p.Id.Id.ToString(),
+            Title = p.Title,
+            Date = p.Date.ToString("yyyy-MM-dd"),
+            Amount = p.Amount,
+            AssigneeId = p.AssigneeId?.Id.ToString(),
+            CategoryId = p.CategoryId?.Id.ToString(),
+            Note = p.Note,
+            Status = PlannedPurchaseStatusToString(p.Status),
+            CreatedAt = new DateTimeOffset(p.CreatedAt, TimeSpan.Zero).ToUnixTimeMilliseconds(),
+            UpdatedAt = new DateTimeOffset(p.UpdatedAt, TimeSpan.Zero).ToUnixTimeMilliseconds()
+        };
+
     private static RecurringPaymentResponse ToRecurringPaymentResponse(Domain.Entities.RecurringPayment p) =>
         new()
         {
