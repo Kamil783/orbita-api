@@ -16,38 +16,12 @@ public class WeekService(
     {
         var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
 
-        var currentWeek = await weekRepository.GetCurrentAsync(teamId, ct);
-        if (currentWeek is not null)
-        {
-            if (currentWeek.StartDate.Date == startDate.Date && currentWeek.EndDate.Date == endDate.Date)
-                return Result<Week>.Conflict("Week already exist.");
-            currentWeek.Archive();
-            await weekRepository.UpdateAsync(currentWeek, ct);
-        }
-
-        var newWeek = Week.Create(
-            creatorId: new UserId(userId),
-            teamId: new TeamId(teamId),
+        return await CreateNewWeekForTeamAsync(
+            teamId: teamId,
+            creatorId: userId,
             startDate: startDate,
-            endDate: endDate);
-
-        var inWeekTasks = await backlogTaskRepository.GetByTeamAsync(teamId, ct);
-        var tasksToArchive = inWeekTasks.Where(t => t.InWeek && t.IsCompleted).ToList();
-        var tasksToArchiveIds = tasksToArchive.Select(t => t.Id.Id).ToList();
-
-        // Delete the Kanban cards for completed tasks, then archive the tasks themselves
-        var todoItemsToDelete = await todoItemRepository.GetByBacklogIdBatchAsync(tasksToArchiveIds, ct);
-        await todoItemRepository.DeleteBatchAsync(todoItemsToDelete.Select(i => i.Id.Id), ct);
-        await backlogTaskRepository.ArchiveBatchAsync(tasksToArchiveIds, ct);
-
-        foreach (var task in inWeekTasks.Where(t => t.InWeek && !t.IsCompleted))
-        {
-            newWeek.AddTask(task.Id);
-        }
-
-        var created = await weekRepository.CreateAsync(newWeek, ct);
-
-        return Result<Week>.Ok(created);
+            endDate: endDate,
+            ct: ct);
     }
 
     public async Task<Result<List<(Week Week, List<BacklogTask> Tasks)>>> GetArchivesAsync(Guid userId, CancellationToken ct = default)
@@ -81,5 +55,61 @@ public class WeekService(
     {
         var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
         return await weekRepository.GetCurrentAsync(teamId, ct);
+    }
+
+    public async Task<Result<Week>> CreateNewWeekForTeamAsync(
+        Guid teamId,
+        Guid? creatorId,
+        DateTime startDate,
+        DateTime endDate,
+        CancellationToken ct = default)
+    {
+        var currentWeek = await weekRepository.GetCurrentAsync(teamId, ct);
+
+        if (currentWeek is not null)
+        {
+            if (currentWeek.StartDate.Date == startDate.Date &&
+                currentWeek.EndDate.Date == endDate.Date)
+            {
+                return Result<Week>.Conflict("Week already exist.");
+            }
+
+            currentWeek.Archive();
+            await weekRepository.UpdateAsync(currentWeek, ct);
+        }
+
+        var newWeek = Week.Create(
+            creatorId: creatorId is null ? null : new UserId(creatorId.Value),
+            teamId: new TeamId(teamId),
+            startDate: startDate,
+            endDate: endDate);
+
+        var inWeekTasks = await backlogTaskRepository.GetByTeamAsync(teamId, ct);
+
+        var tasksToArchive = inWeekTasks
+            .Where(t => t.InWeek && t.IsCompleted)
+            .ToList();
+
+        var tasksToArchiveIds = tasksToArchive
+            .Select(t => t.Id.Id)
+            .ToList();
+
+        var todoItemsToDelete = await todoItemRepository
+            .GetByBacklogIdBatchAsync(tasksToArchiveIds, ct);
+
+        await todoItemRepository.DeleteBatchAsync(
+            todoItemsToDelete.Select(i => i.Id.Id),
+            ct);
+
+        await backlogTaskRepository.ArchiveBatchAsync(tasksToArchiveIds, ct);
+
+        foreach (var task in inWeekTasks.Where(t => t.InWeek && !t.IsCompleted))
+        {
+            newWeek.AddTask(task.Id);
+        }
+
+        var created = await weekRepository.CreateAsync(newWeek, ct);
+
+        return Result<Week>.Ok(created);
     }
 }

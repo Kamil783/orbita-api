@@ -1,60 +1,65 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Orbita.Application.Abstractions;
 using Orbita.Application.Abstractions.Jobs;
 using Orbita.Application.Abstractions.Repositories;
-using Orbita.Domain.Entities;
+using Orbita.Application.Abstractions.Services;
 
 namespace Orbita.Infrastructure.Jobs;
 
 public class WeekRolloverJob(
-    IBacklogTaskRepository backlogTaskRepository,
     ITeamRepository teamRepository,
     IWeekRepository weekRepository,
+    IWeekService weekService,
     IUnitOfWork unitOfWork,
-    ILogger<MonthRolloverJob> logger) : IDailyJob
+    ILogger<WeekRolloverJob> logger) : IDailyJob
 {
     public string Name => "WeekRollover";
 
     public async Task ExecuteAsync(CancellationToken ct)
     {
         var teams = await teamRepository.GetAllAsync(ct);
+
         var now = DateTime.UtcNow;
         var currentWeekStart = GetStartOfWeek(now, DayOfWeek.Monday);
         var currentWeekEnd = currentWeekStart.AddDays(6);
 
         foreach (var team in teams)
         {
-            var week = await weekRepository.GetCurrentAsync(team.Id.Id, ct);
-            var shouldCreateNewWeek = false;
-
-            if (week is null)
+            try
             {
-                shouldCreateNewWeek = true;
-            }
-            else if (week.StartDate < currentWeekStart)
-            {
-                week.Archive();
-                await weekRepository.UpdateAsync(week, ct);
-                shouldCreateNewWeek = true;
-            }
+                var week = await weekRepository.GetCurrentAsync(team.Id.Id, ct);
 
-            if (shouldCreateNewWeek)
-            {
-                var newWeek = Week.Create(
-                    teamId: team.Id,
-                    creatorId: null,
-                    startDate: currentWeekStart,
-                    endDate: currentWeekEnd
-                );            
+                var shouldCreateNewWeek =
+                    week is null ||
+                    week.StartDate.Date < currentWeekStart.Date;
 
-                var backlogTasks = await backlogTaskRepository.GetActiveByTeamAsync(team.Id.Id, ct);
+                if (!shouldCreateNewWeek)
+                    continue;
 
-                foreach (var backlogTask in backlogTasks)
+                var result = await unitOfWork.ExecuteAsync(
+                    token => weekService.CreateNewWeekForTeamAsync(
+                        team.Id.Id,
+                        creatorId: null,
+                        startDate: currentWeekStart,
+                        endDate: currentWeekEnd,
+                        token),
+                    ct);
+
+                if (!result.IsSuccess)
                 {
-                    newWeek.AddTask(backlogTask.Id);
+                    logger.LogWarning(
+                        "Failed to rollover week for team {TeamId}: {Error} ({Type})",
+                        team.Id.Id,
+                        result.Error?.Message,
+                        result.Error?.Type);
                 }
-
-                await weekRepository.CreateAsync(newWeek, ct);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(
+                    ex,
+                    "Week rollover threw for team {TeamId}; continuing with remaining teams.",
+                    team.Id.Id);
             }
         }
     }
