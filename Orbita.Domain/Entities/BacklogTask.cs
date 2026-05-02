@@ -20,6 +20,12 @@ public class BacklogTask
     public int? EstimateMinutes { get; private set; }
     public int? ProgressPct { get; private set; }
 
+    /// <summary>
+    /// Когда был отправлен Alert о просрочке. null — ещё не отправлялся.
+    /// Сбрасывается при изменении DueDate, чтобы повторно уведомить, если задача снова станет просроченной.
+    /// </summary>
+    public DateTime? OverdueNotifiedAt { get; private set; }
+
     private readonly List<UserId> _assignees = [];
     public IReadOnlyCollection<UserId> Assignees => _assignees.AsReadOnly();
 
@@ -46,6 +52,7 @@ public class BacklogTask
         DateTime? dueDate,
         int? estimateMinutes,
         int? progressPct,
+        DateTime? overdueNotifiedAt,
         IEnumerable<UserId> assignees,
         IEnumerable<TimeEntry>? timeEntries = null)
     {
@@ -62,6 +69,7 @@ public class BacklogTask
         DueDate = NormalizeToUtc(dueDate);
         EstimateMinutes = estimateMinutes;
         ProgressPct = progressPct;
+        OverdueNotifiedAt = NormalizeToUtc(overdueNotifiedAt);
         _assignees = [.. assignees];
         _timeEntries = timeEntries is not null ? [.. timeEntries] : [];
     }
@@ -80,6 +88,7 @@ public class BacklogTask
         DateTime? dueDate,
         int? estimateMinutes,
         int? progressPct,
+        DateTime? overdueNotifiedAt,
         IEnumerable<UserId> assignees,
         IEnumerable<TimeEntry>? timeEntries = null)
     {
@@ -97,6 +106,7 @@ public class BacklogTask
             dueDate,
             estimateMinutes,
             progressPct,
+            overdueNotifiedAt,
             assignees,
             timeEntries);
     }
@@ -132,12 +142,24 @@ public class BacklogTask
             dueDate,
             estimateMinutes,
             progressPct,
+            overdueNotifiedAt: null,
             assignees);
     }
 
     public void SetDueDate(DateTime? dueDate)
     {
-        DueDate = NormalizeToUtc(dueDate);
+        var newValue = NormalizeToUtc(dueDate);
+        if (DueDate != newValue)
+        {
+            // Сдвиг дедлайна — даём шанс повторно уведомить, если задача снова станет просроченной.
+            OverdueNotifiedAt = null;
+        }
+        DueDate = newValue;
+    }
+
+    public void MarkOverdueNotified(DateTime utcNow)
+    {
+        OverdueNotifiedAt = DateTime.SpecifyKind(utcNow, DateTimeKind.Utc);
     }
 
     public void SetEstimateMinutes(int? estimateMinutes)

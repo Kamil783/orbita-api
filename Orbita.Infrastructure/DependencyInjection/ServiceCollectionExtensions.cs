@@ -121,6 +121,7 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped<IDailyJob, MonthRolloverJob>();
         services.AddScoped<IDailyJob, WeekRolloverJob>();
+        services.AddScoped<IDailyJob, OverdueTaskNotificationJob>();
         services.AddHostedService<DailyTaskRunnerService>();
 
         return services;

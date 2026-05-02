@@ -25,6 +25,7 @@ public static class BacklogTaskExtensions
             DueDate = backlogTask.DueDate,
             EstimateMinutes = backlogTask.EstimateMinutes,
             ProgressPct = backlogTask.ProgressPct,
+            OverdueNotifiedAt = backlogTask.OverdueNotifiedAt,
             Assignees = backlogTask.Assignees
                 .Select(a => new BacklogTaskAssigneeEntity
                 {
@@ -51,6 +52,7 @@ public static class BacklogTaskExtensions
              dueDate: entity.DueDate,
              estimateMinutes: entity.EstimateMinutes,
              progressPct: entity.ProgressPct,
+             overdueNotifiedAt: entity.OverdueNotifiedAt,
              assignees: entity.Assignees.Select(a => new UserId(a.UserId)),
              timeEntries: entity.TimeEntries.Select(t => t.ToDomain())
          );

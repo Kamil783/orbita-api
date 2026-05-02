@@ -21,6 +21,7 @@ public class BacklogTaskEntity
     public DateTime? DueDate { get; set; }
     public int? EstimateMinutes { get; set; }
     public int? ProgressPct { get; set; }
+    public DateTime? OverdueNotifiedAt { get; set; }
 
     public ICollection<BacklogTaskAssigneeEntity> Assignees { get; set; } = [];
     public ICollection<BacklogTaskWeekEntity> BacklogTaskWeeks { get; set; } = [];
