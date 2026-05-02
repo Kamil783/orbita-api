@@ -117,6 +117,24 @@ public class BacklogTaskRepository(OrbitaDbContext db) : IBacklogTaskRepository
             .ToList();
     }
 
+    public async Task<IReadOnlyCollection<BacklogTask>> GetOverdueUnnotifiedAsync(DateTime utcNow, CancellationToken ct = default)
+    {
+        var entities = await db.BacklogTasks
+            .Include(x => x.Assignees)
+            .Include(x => x.TimeEntries)
+            .Where(x =>
+                !x.IsCompleted &&
+                !x.IsArchived &&
+                x.DueDate.HasValue &&
+                x.DueDate.Value < utcNow &&
+                x.OverdueNotifiedAt == null)
+            .ToListAsync(ct);
+
+        return entities
+            .Select(x => x.ToDomain())
+            .ToList();
+    }
+
     public async Task<BacklogTask?> UpdateAsync(BacklogTask task, CancellationToken ct = default)
     {
         var entity = await db.BacklogTasks
@@ -169,6 +187,7 @@ public class BacklogTaskRepository(OrbitaDbContext db) : IBacklogTaskRepository
         target.DueDate = source.DueDate;
         target.EstimateMinutes = source.EstimateMinutes;
         target.ProgressPct = source.ProgressPct;
+        target.OverdueNotifiedAt = source.OverdueNotifiedAt;
 
         target.Assignees.Clear();
 

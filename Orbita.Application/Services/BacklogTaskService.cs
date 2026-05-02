@@ -15,6 +15,7 @@ public class BacklogTaskService(
     IColumnRepository columnRepository,
     IWeekRepository weekRepository,
     ITeamProvider teamProvider,
+    INotificationDispatcher notificationDispatcher,
     IUnitOfWork unitOfWork) : IBacklogTaskService
 {
     public async Task<Result<List<BacklogTask>>> GetAsync(Guid userId, CancellationToken ct = default)
@@ -43,6 +44,14 @@ public class BacklogTaskService(
             assignees: command.AssigneeIds.Select(x => new UserId(x)));
 
         var result = await backlogRepository.CreateAsync(task, ct);
+
+        // Уведомляем всех назначенных, кроме самого инициатора.
+        var newAssignees = command.AssigneeIds
+            .Where(id => id != currentUserId)
+            .Distinct()
+            .ToList();
+
+        await NotifyAssignedAsync(newAssignees, result, ct);
 
         return Result<BacklogTask>.Ok(result);
     }
@@ -80,8 +89,19 @@ public class BacklogTaskService(
         if (command.ProgressPct.HasValue)
             backlogTask.SetProgressPct(command.ProgressPct);
 
+        // Запоминаем старых ассайни до изменения, чтобы посчитать дельту для уведомлений.
+        var previousAssignees = backlogTask.Assignees.Select(a => a.Id).ToHashSet();
+
+        List<Guid> newlyAssigned = [];
         if (command.AssigneeIds is not null)
-            backlogTask.SetAssignees(command.AssigneeIds.Select(x => new UserId(x)));
+        {
+            var nextAssignees = command.AssigneeIds.Distinct().ToList();
+            backlogTask.SetAssignees(nextAssignees.Select(x => new UserId(x)));
+
+            newlyAssigned = nextAssignees
+                .Where(id => !previousAssignees.Contains(id) && id != userId)
+                .ToList();
+        }
 
         await unitOfWork.BeginTransactionAsync(ct);
         try
@@ -96,6 +116,8 @@ public class BacklogTaskService(
 
             var updated = await backlogRepository.UpdateAsync(backlogTask, ct);
 
+            await NotifyAssignedAsync(newlyAssigned, updated!, ct);
+
             await unitOfWork.CommitAsync(ct);
 
             return Result<BacklogTask>.Ok(updated!);
@@ -104,6 +126,27 @@ public class BacklogTaskService(
         {
             await unitOfWork.RollbackAsync(ct);
             throw;
+        }
+    }
+
+    private async Task NotifyAssignedAsync(IReadOnlyCollection<Guid> recipients, BacklogTask task, CancellationToken ct)
+    {
+        if (recipients.Count == 0)
+            return;
+
+        var message = task.DueDate.HasValue
+            ? $"Вам назначена задача «{task.Title}» (срок: {task.DueDate.Value:dd.MM.yyyy})."
+            : $"Вам назначена задача «{task.Title}».";
+
+        foreach (var userId in recipients)
+        {
+            await notificationDispatcher.SendAsync(
+                userId,
+                NotificationType.Task,
+                title: "Новая задача",
+                message: message,
+                pushOverHub: true,
+                ct);
         }
     }
 

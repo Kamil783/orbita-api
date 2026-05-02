@@ -50,6 +50,9 @@ public class BacklogTaskEntityConfiguration : IEntityTypeConfiguration<BacklogTa
         b.Property(x => x.EstimateMinutes)
             .IsRequired(false);
 
+        b.Property(x => x.OverdueNotifiedAt)
+            .IsRequired(false);
+
         b.HasIndex(x => x.TeamId);
         b.HasIndex(x => new { x.IsCompleted, x.InWeek });
         b.HasIndex(x => x.IsArchived);

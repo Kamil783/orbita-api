@@ -21,6 +21,7 @@ public class FinanceService(
     IPlannedPurchaseRepository plannedPurchaseRepository,
     ITeamRepository teamRepository,
     ITeamProvider teamProvider,
+    INotificationDispatcher notificationDispatcher,
     IUnitOfWork unitOfWork) : IFinanceService
 {
     public async Task<Result<FinanceBalance>> GetBalanceAsync(Guid userId, CancellationToken ct = default)
@@ -177,6 +178,18 @@ public class FinanceService(
 
             balance.Adjust(amount);
             await balanceRepository.UpdateAsync(balance, ct);
+
+            // Командное уведомление: операция с общего баланса. Инициатор не уведомляется.
+            var sign = amount < 0 ? "−" : "+";
+            var rubles = Math.Abs(amount) / 100m;
+            await notificationDispatcher.SendToTeamAsync(
+                teamId: teamId,
+                type: NotificationType.Finance,
+                title: "Операция с общего баланса",
+                message: $"{title}: {sign}{rubles:0.00} ₽",
+                excludeUserId: userId,
+                pushOverHub: true,
+                ct: ct);
         }
 
         return Result<FinanceTransaction>.Ok(created);
