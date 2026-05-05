@@ -59,4 +59,20 @@ public class AppNotificationRepository(OrbitaDbContext db) : IAppNotificationRep
             .Where(x => x.UserId == userId && !x.Read)
             .ExecuteUpdateAsync(s => s.SetProperty(x => x.Read, true), ct);
     }
+
+    public async Task<bool> DeleteAsync(AppNotificationId id, Guid userId, CancellationToken ct = default)
+    {
+        var deleted = await db.AppNotifications
+            .Where(x => x.Id == id.Id && x.UserId == userId)
+            .ExecuteDeleteAsync(ct);
+
+        return deleted > 0;
+    }
+
+    public async Task DeleteAllForUserAsync(Guid userId, CancellationToken ct = default)
+    {
+        await db.AppNotifications
+            .Where(x => x.UserId == userId)
+            .ExecuteDeleteAsync(ct);
+    }
 }
