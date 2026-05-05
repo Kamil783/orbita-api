@@ -180,13 +180,26 @@ public class FinanceService(
             await balanceRepository.UpdateAsync(balance, ct);
 
             // Командное уведомление: операция с общего баланса. Инициатор не уведомляется.
+            var direction = amount < 0 ? "Списание" : "Поступление";
             var sign = amount < 0 ? "−" : "+";
             var rubles = Math.Abs(amount) / 100m;
+
+            string? categoryName = null;
+            if (financeCategoryId is not null)
+            {
+                var cat = await categoryRepository.GetAsync(financeCategoryId.Id, ct);
+                categoryName = cat?.Name;
+            }
+
+            var message = categoryName is null
+                ? $"{direction}: «{title}», {sign}{rubles:0.00} ₽."
+                : $"{direction}: «{title}», {sign}{rubles:0.00} ₽, категория: {categoryName}.";
+
             await notificationDispatcher.SendToTeamAsync(
                 teamId: teamId,
                 type: NotificationType.Finance,
                 title: "Операция с общего баланса",
-                message: $"{title}: {sign}{rubles:0.00} ₽",
+                message: message,
                 excludeUserId: userId,
                 pushOverHub: true,
                 ct: ct);

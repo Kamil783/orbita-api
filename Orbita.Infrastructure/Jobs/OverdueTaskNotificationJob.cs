@@ -22,6 +22,19 @@ public class OverdueTaskNotificationJob(
 {
     public string Name => "OverdueTaskNotification";
 
+    private static string DaysWord(int days)
+    {
+        var mod100 = days % 100;
+        if (mod100 is >= 11 and <= 14) return "дней";
+        var mod10 = days % 10;
+        return mod10 switch
+        {
+            1 => "день",
+            2 or 3 or 4 => "дня",
+            _ => "дней"
+        };
+    }
+
     public async Task ExecuteAsync(CancellationToken ct)
     {
         var now = DateTime.UtcNow;
@@ -35,8 +48,11 @@ public class OverdueTaskNotificationJob(
 
                 var assignees = task.Assignees.Select(a => a.Id).Distinct().ToList();
 
-                var dueText = task.DueDate!.Value.ToString("dd.MM.yyyy");
-                var message = $"Задача «{task.Title}» просрочена (срок был {dueText}).";
+                var due = task.DueDate!.Value;
+                var dueText = due.ToString("dd.MM.yyyy");
+                var daysOverdue = Math.Max(1, (int)Math.Floor((now.Date - due.Date).TotalDays));
+                var daysWord = DaysWord(daysOverdue);
+                var message = $"Задача «{task.Title}» просрочена. Срок был {dueText}, прошло {daysOverdue} {daysWord}.";
 
                 foreach (var userId in assignees)
                 {

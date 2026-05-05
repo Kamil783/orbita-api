@@ -134,9 +134,13 @@ public class BacklogTaskService(
         if (recipients.Count == 0)
             return;
 
-        var message = task.DueDate.HasValue
-            ? $"Вам назначена задача «{task.Title}» (срок: {task.DueDate.Value:dd.MM.yyyy})."
-            : $"Вам назначена задача «{task.Title}».";
+        var parts = new List<string> { $"Приоритет: {PriorityToRu(task.Priority)}" };
+        if (task.DueDate.HasValue)
+            parts.Add($"срок: {task.DueDate.Value:dd.MM.yyyy}");
+        if (task.EstimateMinutes.HasValue && task.EstimateMinutes.Value > 0)
+            parts.Add($"оценка: {FormatEstimate(task.EstimateMinutes.Value)}");
+
+        var message = $"Вам назначена задача «{task.Title}». {string.Join(", ", parts)}.";
 
         foreach (var userId in recipients)
         {
@@ -148,6 +152,22 @@ public class BacklogTaskService(
                 pushOverHub: true,
                 ct);
         }
+    }
+
+    private static string PriorityToRu(TodoItemPriority priority) => priority switch
+    {
+        TodoItemPriority.Low => "низкий",
+        TodoItemPriority.Medium => "средний",
+        TodoItemPriority.High => "высокий",
+        _ => priority.ToString().ToLowerInvariant()
+    };
+
+    private static string FormatEstimate(int minutes)
+    {
+        if (minutes < 60) return $"{minutes} мин";
+        var hours = minutes / 60;
+        var rest = minutes % 60;
+        return rest == 0 ? $"{hours} ч" : $"{hours} ч {rest} мин";
     }
 
     public async Task<Result<TodoItem>> MoveToWeekAsync(Guid userId, Guid backlogTaskId, Guid targetColumnId, CancellationToken ct = default)
