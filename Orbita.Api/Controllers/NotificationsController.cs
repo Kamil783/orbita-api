@@ -65,4 +65,27 @@ public class NotificationsController(
         await repository.MarkAllAsReadAsync(userId, ct);
         return NoContent();
     }
+
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
+    {
+        if (!TryGetUserId(out var userId))
+            return Unauthorized();
+
+        var ok = await repository.DeleteAsync(new AppNotificationId(id), userId, ct);
+        if (!ok)
+            return NotFound();
+
+        return NoContent();
+    }
+
+    [HttpDelete]
+    public async Task<IActionResult> DeleteAll(CancellationToken ct)
+    {
+        if (!TryGetUserId(out var userId))
+            return Unauthorized();
+
+        await repository.DeleteAllForUserAsync(userId, ct);
+        return NoContent();
+    }
 }
