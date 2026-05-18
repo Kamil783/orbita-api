@@ -11,9 +11,7 @@ public class FinanceTransactionRepository(OrbitaDbContext db) : IFinanceTransact
     public async Task<List<FinanceTransaction>> GetForUserAsync(Guid teamId, Guid creatorId, CancellationToken ct = default)
     {
         var entities = await db.FinanceTransactions
-            .Where(x => 
-            (x.IsFromBalance && x.TeamId == teamId) ||
-            (!x.IsFromBalance && x.CreatorId == creatorId))
+            .Where(x => x.TeamId == teamId)
             .OrderByDescending(x => x.CreatedAt)
             .ToListAsync(ct);
 

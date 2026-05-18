@@ -137,7 +137,7 @@ public class FinanceController(IFinanceService financeService) : AuthorizedContr
                 Date = t.CreatedAt.ToString("yyyy-MM-dd"),
                 Amount = t.Amount,
                 Timestamp = new DateTimeOffset(t.CreatedAt, TimeSpan.Zero).ToUnixTimeMilliseconds(),
-                FromBalance = t.IsFromBalance
+                TransactionType = FinanceTransactionHelper.ResolveTransactionType(t, userId)
             }).ToList())
             .ToActionResult(HttpContext);
     }
@@ -167,7 +167,7 @@ public class FinanceController(IFinanceService financeService) : AuthorizedContr
                 Date = t.CreatedAt.ToString("yyyy-MM-dd"),
                 Amount = t.Amount,
                 Timestamp = new DateTimeOffset(t.CreatedAt, TimeSpan.Zero).ToUnixTimeMilliseconds(),
-                FromBalance = t.IsFromBalance
+                TransactionType = FinanceTransactionHelper.ResolveTransactionType(t, userId)
             })
             .ToActionResult(HttpContext);
     }
@@ -197,7 +197,7 @@ public class FinanceController(IFinanceService financeService) : AuthorizedContr
                 Date = t.CreatedAt.ToString("yyyy-MM-dd"),
                 Amount = t.Amount,
                 Timestamp = new DateTimeOffset(t.CreatedAt, TimeSpan.Zero).ToUnixTimeMilliseconds(),
-                FromBalance = t.IsFromBalance
+                TransactionType = FinanceTransactionHelper.ResolveTransactionType(t, userId)
             })
             .ToActionResult(HttpContext);
     }

@@ -4,11 +4,15 @@ using Orbita.Application.Abstractions.Services;
 using Orbita.Application.Helpers;
 using Orbita.Application.Models.Results;
 using Orbita.Contracts.ApiDto.Tasks.Requests;
+using Orbita.Contracts.ApiDto.Tasks.Responses;
 
 namespace Orbita.Api.Controllers;
 
 [Route("api/[controller]")]
-public class TasksController(ITodoItemService service, IWeekService weekService) : AuthorizedControllerBase
+public class TasksController(
+    ITodoItemService service,
+    IWeekService weekService,
+    IRecurringTaskService recurringTaskService) : AuthorizedControllerBase
 {
     [HttpGet("weekly")]
     public async Task<IActionResult> GetWeeklyTasks(CancellationToken ct)
@@ -70,4 +74,76 @@ public class TasksController(ITodoItemService service, IWeekService weekService)
 
         return res.ToActionResult(HttpContext);
     }
+
+    [HttpGet("recurring")]
+    public async Task<IActionResult> GetRecurringTasks(CancellationToken ct)
+    {
+        if (!TryGetUserId(out var userId))
+            return Unauthorized();
+
+        var res = await recurringTaskService.GetAsync(userId, ct);
+
+        return res
+            .Map(tasks => tasks.Select(ToRecurringTaskResponse).ToList())
+            .ToActionResult(HttpContext);
+    }
+
+    [HttpPost("recurring")]
+    public async Task<IActionResult> CreateRecurringTask(
+        [FromBody] CreateRecurringTaskRequest request, CancellationToken ct)
+    {
+        if (!TryGetUserId(out var userId))
+            return Unauthorized();
+
+        var res = await recurringTaskService.CreateAsync(
+            userId, request.Title, request.Description, request.DayOfMonth, ct);
+
+        return res
+            .Map(ToRecurringTaskResponse)
+            .ToActionResult(HttpContext);
+    }
+
+    [HttpPatch("recurring/{id:guid}")]
+    public async Task<IActionResult> UpdateRecurringTask(
+        Guid id, [FromBody] UpdateRecurringTaskRequest request, CancellationToken ct)
+    {
+        if (!TryGetUserId(out var userId))
+            return Unauthorized();
+
+        var res = await recurringTaskService.UpdateAsync(
+            userId,
+            id,
+            request.Title,
+            request.Description,
+            request.ClearDescription,
+            request.DayOfMonth,
+            request.IsCompleted,
+            ct);
+
+        return res
+            .Map(ToRecurringTaskResponse)
+            .ToActionResult(HttpContext);
+    }
+
+    [HttpDelete("recurring/{id:guid}")]
+    public async Task<IActionResult> DeleteRecurringTask(Guid id, CancellationToken ct)
+    {
+        if (!TryGetUserId(out var userId))
+            return Unauthorized();
+
+        var res = await recurringTaskService.DeleteAsync(userId, id, ct);
+        return res.ToActionResult(HttpContext);
+    }
+
+    private static RecurringTaskResponse ToRecurringTaskResponse(Domain.Entities.RecurringTask t) =>
+        new()
+        {
+            Id = t.Id.Id.ToString(),
+            Title = t.Title,
+            Description = t.Description,
+            DayOfMonth = t.DayOfMonth,
+            IsCompleted = t.IsCompleted,
+            CreatedAt = new DateTimeOffset(t.CreatedAt, TimeSpan.Zero).ToUnixTimeMilliseconds(),
+            UpdatedAt = new DateTimeOffset(t.UpdatedAt, TimeSpan.Zero).ToUnixTimeMilliseconds()
+        };
 }
