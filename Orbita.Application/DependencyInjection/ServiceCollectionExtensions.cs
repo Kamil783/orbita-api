@@ -18,6 +18,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IAdminService, AdminService>();
         services.AddTransient<ITeamService, TeamService>();
         services.AddTransient<ICapacityService, CapacityService>();
+        services.AddTransient<IRecurringTaskService, RecurringTaskService>();
         return services;
     }
 }

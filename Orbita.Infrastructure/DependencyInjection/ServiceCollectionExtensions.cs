@@ -101,6 +101,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ITeamCapacityRepository, TeamCapacityRepository>();
         services.AddScoped<IRecurringPaymentRepository, RecurringPaymentRepository>();
         services.AddScoped<IPlannedPurchaseRepository, PlannedPurchaseRepository>();
+        services.AddScoped<IRecurringTaskRepository, RecurringTaskRepository>();
         services.AddScoped<ITeamRepository, TeamRepository>();
         services.AddScoped<IShoppingListRepository, ShoppingListRepository>();
         services.AddScoped<ITeamProvider, TeamProvider>();
@@ -122,6 +123,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IDailyJob, MonthRolloverJob>();
         services.AddScoped<IDailyJob, WeekRolloverJob>();
         services.AddScoped<IDailyJob, OverdueTaskNotificationJob>();
+        services.AddScoped<IDailyJob, RecurringTaskMonthlyResetJob>();
         services.AddHostedService<DailyTaskRunnerService>();
 
         return services;
