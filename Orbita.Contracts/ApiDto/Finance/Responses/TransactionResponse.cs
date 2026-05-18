@@ -8,5 +8,6 @@ public sealed class TransactionResponse
     public string Date { get; init; } = default!;
     public long Amount { get; init; }
     public long Timestamp { get; init; }
-    public bool FromBalance { get; init; }
+    /// <summary>"personal" | "shared" | "team". Вычисляется относительно текущего пользователя.</summary>
+    public string TransactionType { get; init; } = default!;
 }

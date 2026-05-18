@@ -22,3 +22,23 @@ public static class ShoppingListTypes
     public const string Shared = "shared";
     public const string Team = "team";
 }
+
+public static class FinanceTransactionHelper
+{
+    public static string ResolveTransactionType(FinanceTransaction transaction, Guid currentUserId)
+    {
+        if (transaction.IsFromBalance)
+            return TransactionTypes.Shared;
+
+        return transaction.CreatorId == new UserId(currentUserId)
+            ? TransactionTypes.Personal
+            : TransactionTypes.Team;
+    }
+}
+
+public static class TransactionTypes
+{
+    public const string Personal = "personal";
+    public const string Shared = "shared";
+    public const string Team = "team";
+}
