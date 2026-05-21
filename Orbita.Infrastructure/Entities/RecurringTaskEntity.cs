@@ -10,6 +10,7 @@ public class RecurringTaskEntity
     public int DayOfMonth { get; set; }
     public bool IsCompleted { get; set; }
     public DateTime? LastResetAt { get; set; }
+    public DateTime? LastOverdueNotifiedAt { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 }

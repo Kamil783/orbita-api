@@ -44,6 +44,7 @@ public class RecurringTaskRepository(OrbitaDbContext db) : IRecurringTaskReposit
         entity.DayOfMonth = task.DayOfMonth;
         entity.IsCompleted = task.IsCompleted;
         entity.LastResetAt = task.LastResetAt;
+        entity.LastOverdueNotifiedAt = task.LastOverdueNotifiedAt;
         entity.UpdatedAt = task.UpdatedAt;
 
         await db.SaveChangesAsync(ct);
@@ -68,7 +69,25 @@ public class RecurringTaskRepository(OrbitaDbContext db) : IRecurringTaskReposit
             .ExecuteUpdateAsync(s => s
                 .SetProperty(x => x.IsCompleted, false)
                 .SetProperty(x => x.LastResetAt, utcNow)
+                .SetProperty(x => x.LastOverdueNotifiedAt, (DateTime?)null)
                 .SetProperty(x => x.UpdatedAt, utcNow),
                 ct);
+    }
+
+    public async Task<List<RecurringTask>> GetOverdueNotNotifiedTodayAsync(DateTime utcNow, CancellationToken ct = default)
+    {
+        var startOfToday = new DateTime(utcNow.Year, utcNow.Month, utcNow.Day, 0, 0, 0, DateTimeKind.Utc);
+
+        // SQL-фильтр: только активные кандидаты (не выполнено + ещё не уведомляли сегодня).
+        // Точную проверку «overdue с учётом клампа DayOfMonth до days-in-month» дополним в C#.
+        var candidates = await db.RecurringTasks
+            .Where(x => !x.IsCompleted &&
+                        (x.LastOverdueNotifiedAt == null || x.LastOverdueNotifiedAt < startOfToday))
+            .ToListAsync(ct);
+
+        return candidates
+            .Select(x => x.ToDomain())
+            .Where(x => x.IsOverdueOn(utcNow))
+            .ToList();
     }
 }

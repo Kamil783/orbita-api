@@ -25,6 +25,7 @@ public class RecurringTaskEntityConfiguration : IEntityTypeConfiguration<Recurri
         b.Property(x => x.DayOfMonth).IsRequired();
         b.Property(x => x.IsCompleted).IsRequired().HasDefaultValue(false);
         b.Property(x => x.LastResetAt).IsRequired(false);
+        b.Property(x => x.LastOverdueNotifiedAt).IsRequired(false);
         b.Property(x => x.CreatedAt).IsRequired();
         b.Property(x => x.UpdatedAt).IsRequired();
 

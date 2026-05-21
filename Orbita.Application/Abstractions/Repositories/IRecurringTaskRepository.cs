@@ -14,4 +14,10 @@ public interface IRecurringTaskRepository
     /// (или null). Возвращает количество затронутых записей.
     /// </summary>
     Task<int> ResetCompletedForCycleAsync(DateTime cycleStart, DateTime utcNow, CancellationToken ct = default);
+
+    /// <summary>
+    /// Возвращает просроченные (с учётом клампа DayOfMonth до days-in-month и !IsCompleted)
+    /// задачи, по которым сегодня ещё не отправляли уведомление.
+    /// </summary>
+    Task<List<RecurringTask>> GetOverdueNotNotifiedTodayAsync(DateTime utcNow, CancellationToken ct = default);
 }
