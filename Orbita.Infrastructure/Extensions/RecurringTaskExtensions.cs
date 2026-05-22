@@ -18,6 +18,7 @@ public static class RecurringTaskExtensions
             DayOfMonth = task.DayOfMonth,
             IsCompleted = task.IsCompleted,
             LastResetAt = task.LastResetAt,
+            LastOverdueNotifiedAt = task.LastOverdueNotifiedAt,
             CreatedAt = task.CreatedAt,
             UpdatedAt = task.UpdatedAt
         };
@@ -34,6 +35,7 @@ public static class RecurringTaskExtensions
             dayOfMonth: e.DayOfMonth,
             isCompleted: e.IsCompleted,
             lastResetAt: e.LastResetAt,
+            lastOverdueNotifiedAt: e.LastOverdueNotifiedAt,
             createdAt: e.CreatedAt,
             updatedAt: e.UpdatedAt);
     }

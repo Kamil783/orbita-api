@@ -12,6 +12,8 @@ public class RecurringTask
     public int DayOfMonth { get; private set; }
     public bool IsCompleted { get; private set; }
     public DateTime? LastResetAt { get; private set; }
+    /// <summary>Когда было отправлено последнее уведомление о просрочке. Используется, чтобы слать не чаще одного раза в сутки.</summary>
+    public DateTime? LastOverdueNotifiedAt { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public DateTime UpdatedAt { get; private set; }
 
@@ -38,6 +40,7 @@ public class RecurringTask
             DayOfMonth = dayOfMonth,
             IsCompleted = false,
             LastResetAt = null,
+            LastOverdueNotifiedAt = null,
             CreatedAt = now,
             UpdatedAt = now
         };
@@ -52,6 +55,7 @@ public class RecurringTask
         int dayOfMonth,
         bool isCompleted,
         DateTime? lastResetAt,
+        DateTime? lastOverdueNotifiedAt,
         DateTime createdAt,
         DateTime updatedAt)
     {
@@ -65,6 +69,7 @@ public class RecurringTask
             DayOfMonth = dayOfMonth,
             IsCompleted = isCompleted,
             LastResetAt = lastResetAt,
+            LastOverdueNotifiedAt = lastOverdueNotifiedAt,
             CreatedAt = createdAt,
             UpdatedAt = updatedAt
         };
@@ -104,7 +109,25 @@ public class RecurringTask
     {
         IsCompleted = false;
         LastResetAt = DateTime.SpecifyKind(utcNow, DateTimeKind.Utc);
+        LastOverdueNotifiedAt = null;
     }
+
+    public void MarkOverdueNotified(DateTime utcNow)
+    {
+        LastOverdueNotifiedAt = DateTime.SpecifyKind(utcNow, DateTimeKind.Utc);
+    }
+
+    /// <summary>День месяца, в который задача считается «просроченной, если ещё не выполнена».
+    /// Если <see cref="DayOfMonth"/> больше количества дней в месяце <paramref name="reference"/> —
+    /// клампим до последнего дня (например, 31 в феврале → 28/29).</summary>
+    public int EffectiveDueDay(DateTime reference)
+    {
+        var daysInMonth = DateTime.DaysInMonth(reference.Year, reference.Month);
+        return Math.Min(DayOfMonth, daysInMonth);
+    }
+
+    public bool IsOverdueOn(DateTime utcNow) =>
+        !IsCompleted && utcNow.Day > EffectiveDueDay(utcNow);
 
     private static void ValidateTitle(string title)
     {
