@@ -29,7 +29,11 @@ public class PlannedPurchaseEntityConfiguration : IEntityTypeConfiguration<Plann
         b.Property(x => x.Amount)
             .IsRequired();
 
-        b.Property(x => x.AssigneeId)
+        b.Property(x => x.AssigneeKind)
+            .HasConversion<int?>()
+            .IsRequired(false);
+
+        b.Property(x => x.AssigneeUserId)
             .IsRequired(false);
 
         b.Property(x => x.CategoryId)
@@ -51,6 +55,7 @@ public class PlannedPurchaseEntityConfiguration : IEntityTypeConfiguration<Plann
 
         b.HasIndex(x => x.TeamId);
         b.HasIndex(x => new { x.TeamId, x.Date });
-        b.HasIndex(x => x.AssigneeId);
+        b.HasIndex(x => x.AssigneeUserId);
+        b.HasIndex(x => x.AssigneeKind);
     }
 }

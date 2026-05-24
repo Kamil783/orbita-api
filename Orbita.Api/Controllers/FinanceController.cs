@@ -607,7 +607,8 @@ public class FinanceController(IFinanceService financeService) : AuthorizedContr
         [FromQuery] string? from,
         [FromQuery] string? to,
         [FromQuery] string? status,
-        [FromQuery] Guid? assigneeId,
+        [FromQuery] string? assigneeKind,
+        [FromQuery] Guid? assigneeUserId,
         [FromQuery] Guid? categoryId,
         CancellationToken ct)
     {
@@ -638,8 +639,16 @@ public class FinanceController(IFinanceService financeService) : AuthorizedContr
             statusFilter = parsed;
         }
 
+        Domain.Enums.PlannedPurchaseAssigneeKind? kindFilter = null;
+        if (!string.IsNullOrWhiteSpace(assigneeKind))
+        {
+            if (!TryParseAssigneeKind(assigneeKind, out var parsed))
+                return BadRequest("Invalid assigneeKind.");
+            kindFilter = parsed;
+        }
+
         var res = await financeService.GetPlannedPurchasesAsync(
-            userId, fromDate, toDate, statusFilter, assigneeId, categoryId, ct);
+            userId, fromDate, toDate, statusFilter, kindFilter, assigneeUserId, categoryId, ct);
 
         return res
             .Map(items => items.Select(ToPlannedPurchaseResponse).ToList())
@@ -656,12 +665,21 @@ public class FinanceController(IFinanceService financeService) : AuthorizedContr
         if (!DateOnly.TryParse(request.Date, out var date))
             return BadRequest("Invalid date.");
 
+        Domain.Enums.PlannedPurchaseAssigneeKind? kind = null;
+        if (request.AssigneeKind is not null)
+        {
+            if (!TryParseAssigneeKind(request.AssigneeKind, out var parsed))
+                return BadRequest("Invalid assigneeKind.");
+            kind = parsed;
+        }
+
         var res = await financeService.CreatePlannedPurchaseAsync(
             userId,
             request.Title,
             date,
             request.Amount,
-            request.AssigneeId,
+            kind,
+            request.AssigneeUserId,
             request.CategoryId,
             request.Note,
             ct);
@@ -694,18 +712,24 @@ public class FinanceController(IFinanceService financeService) : AuthorizedContr
             status = parsed;
         }
 
+        Domain.Enums.PlannedPurchaseAssigneeKind? kind = null;
+        if (request.AssigneeKind is not null)
+        {
+            if (!TryParseAssigneeKind(request.AssigneeKind, out var parsed))
+                return BadRequest("Invalid assigneeKind.");
+            kind = parsed;
+        }
+
         var res = await financeService.UpdatePlannedPurchaseAsync(
             userId,
             id,
             request.Title,
             date,
             request.Amount,
-            request.AssigneeId,
-            request.ClearAssignee,
+            kind,
+            request.AssigneeUserId,
             request.CategoryId,
-            request.ClearCategory,
             request.Note,
-            request.ClearNote,
             status,
             ct);
 
@@ -743,6 +767,23 @@ public class FinanceController(IFinanceService financeService) : AuthorizedContr
         _ => "planned"
     };
 
+    private static bool TryParseAssigneeKind(string raw, out Domain.Enums.PlannedPurchaseAssigneeKind kind)
+    {
+        switch (raw.Trim().ToLowerInvariant())
+        {
+            case "user": kind = Domain.Enums.PlannedPurchaseAssigneeKind.User; return true;
+            case "team": kind = Domain.Enums.PlannedPurchaseAssigneeKind.Team; return true;
+            default: kind = default; return false;
+        }
+    }
+
+    private static string? AssigneeKindToString(Domain.Enums.PlannedPurchaseAssigneeKind? k) => k switch
+    {
+        Domain.Enums.PlannedPurchaseAssigneeKind.User => "user",
+        Domain.Enums.PlannedPurchaseAssigneeKind.Team => "team",
+        _ => null
+    };
+
     private static PlannedPurchaseResponse ToPlannedPurchaseResponse(Domain.Entities.PlannedPurchase p) =>
         new()
         {
@@ -750,7 +791,8 @@ public class FinanceController(IFinanceService financeService) : AuthorizedContr
             Title = p.Title,
             Date = p.Date.ToString("yyyy-MM-dd"),
             Amount = p.Amount,
-            AssigneeId = p.AssigneeId?.Id.ToString(),
+            AssigneeKind = AssigneeKindToString(p.AssigneeKind),
+            AssigneeUserId = p.AssigneeUserId?.Id.ToString(),
             CategoryId = p.CategoryId?.Id.ToString(),
             Note = p.Note,
             Status = PlannedPurchaseStatusToString(p.Status),

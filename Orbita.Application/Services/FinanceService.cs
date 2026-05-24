@@ -910,13 +910,14 @@ public class FinanceService(
         DateOnly? from,
         DateOnly? to,
         PlannedPurchaseStatus? status,
-        Guid? assigneeId,
+        PlannedPurchaseAssigneeKind? assigneeKind,
+        Guid? assigneeUserId,
         Guid? categoryId,
         CancellationToken ct = default)
     {
         var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
         var items = await plannedPurchaseRepository.GetByTeamAsync(
-            teamId, from, to, status, assigneeId, categoryId, ct);
+            teamId, from, to, status, assigneeKind, assigneeUserId, categoryId, ct);
         return Result<List<PlannedPurchase>>.Ok(items);
     }
 
@@ -925,20 +926,17 @@ public class FinanceService(
         string title,
         DateOnly date,
         long amount,
-        Guid? assigneeId,
+        PlannedPurchaseAssigneeKind? assigneeKind,
+        Guid? assigneeUserId,
         Guid? categoryId,
         string? note,
         CancellationToken ct = default)
     {
         var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
 
-        UserId? assignee = null;
-        if (assigneeId.HasValue)
-        {
-            if (!await IsTeamMemberAsync(teamId, assigneeId.Value, ct))
-                return Result<PlannedPurchase>.Fail("Assignee is not a team member.", ErrorType.Validation);
-            assignee = new UserId(assigneeId.Value);
-        }
+        var assigneeResolution = await ResolveAssigneeAsync(teamId, assigneeKind, assigneeUserId, ct);
+        if (!assigneeResolution.IsSuccess)
+            return Result<PlannedPurchase>.Fail(assigneeResolution.Error!.Message, assigneeResolution.Error.Type);
 
         FinanceCategoryId? finCategoryId = null;
         if (categoryId.HasValue)
@@ -958,7 +956,8 @@ public class FinanceService(
                 title: title,
                 date: date,
                 amount: amount,
-                assigneeId: assignee,
+                assigneeKind: assigneeKind,
+                assigneeUserId: assigneeResolution.Value,
                 categoryId: finCategoryId,
                 note: note);
         }
@@ -977,12 +976,10 @@ public class FinanceService(
         string? title,
         DateOnly? date,
         long? amount,
-        Guid? assigneeId,
-        bool clearAssignee,
+        PlannedPurchaseAssigneeKind? assigneeKind,
+        Guid? assigneeUserId,
         Guid? categoryId,
-        bool clearCategory,
         string? note,
-        bool clearNote,
         PlannedPurchaseStatus? status,
         CancellationToken ct = default)
     {
@@ -995,16 +992,12 @@ public class FinanceService(
         if (purchase.TeamId.Id != teamId)
             return Result<PlannedPurchase>.Forbidden("Access denied.");
 
-        UserId? assignee = null;
-        if (!clearAssignee && assigneeId.HasValue)
-        {
-            if (!await IsTeamMemberAsync(teamId, assigneeId.Value, ct))
-                return Result<PlannedPurchase>.Fail("Assignee is not a team member.", ErrorType.Validation);
-            assignee = new UserId(assigneeId.Value);
-        }
+        var assigneeResolution = await ResolveAssigneeAsync(teamId, assigneeKind, assigneeUserId, ct);
+        if (!assigneeResolution.IsSuccess)
+            return Result<PlannedPurchase>.Fail(assigneeResolution.Error!.Message, assigneeResolution.Error.Type);
 
         FinanceCategoryId? finCategoryId = null;
-        if (!clearCategory && categoryId.HasValue)
+        if (categoryId.HasValue)
         {
             var category = await categoryRepository.GetAsync(categoryId.Value, ct);
             if (category is null || category.TeamId.Id != teamId)
@@ -1018,12 +1011,10 @@ public class FinanceService(
                 title: title,
                 date: date,
                 amount: amount,
-                assigneeId: assignee,
-                clearAssignee: clearAssignee,
+                assigneeKind: assigneeKind,
+                assigneeUserId: assigneeResolution.Value,
                 categoryId: finCategoryId,
-                clearCategory: clearCategory,
                 note: note,
-                clearNote: clearNote,
                 status: status);
         }
         catch (Exception ex)
@@ -1033,6 +1024,34 @@ public class FinanceService(
 
         var updated = await plannedPurchaseRepository.UpdateAsync(purchase, ct);
         return Result<PlannedPurchase>.Ok(updated);
+    }
+
+    /// <summary>
+    /// Валидирует пару (kind, userId) и возвращает разрешённый <see cref="UserId"/>
+    /// для записи в домен. Для kind=Team или null возвращает null.
+    /// </summary>
+    private async Task<Result<UserId?>> ResolveAssigneeAsync(
+        Guid teamId,
+        PlannedPurchaseAssigneeKind? kind,
+        Guid? userId,
+        CancellationToken ct)
+    {
+        switch (kind)
+        {
+            case null:
+            case PlannedPurchaseAssigneeKind.Team:
+                return Result<UserId?>.Ok(null);
+
+            case PlannedPurchaseAssigneeKind.User:
+                if (!userId.HasValue)
+                    return Result<UserId?>.Fail("AssigneeUserId is required when AssigneeKind = User.", ErrorType.Validation);
+                if (!await IsTeamMemberAsync(teamId, userId.Value, ct))
+                    return Result<UserId?>.Fail("Assignee is not a team member.", ErrorType.Validation);
+                return Result<UserId?>.Ok(new UserId(userId.Value));
+
+            default:
+                return Result<UserId?>.Fail("Unknown AssigneeKind.", ErrorType.Validation);
+        }
     }
 
     public async Task<Result> DeletePlannedPurchaseAsync(Guid userId, Guid purchaseId, CancellationToken ct = default)
