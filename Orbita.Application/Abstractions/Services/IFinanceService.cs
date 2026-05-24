@@ -51,7 +51,8 @@ public interface IFinanceService
         DateOnly? from,
         DateOnly? to,
         PlannedPurchaseStatus? status,
-        Guid? assigneeId,
+        PlannedPurchaseAssigneeKind? assigneeKind,
+        Guid? assigneeUserId,
         Guid? categoryId,
         CancellationToken ct = default);
 
@@ -60,7 +61,8 @@ public interface IFinanceService
         string title,
         DateOnly date,
         long amount,
-        Guid? assigneeId,
+        PlannedPurchaseAssigneeKind? assigneeKind,
+        Guid? assigneeUserId,
         Guid? categoryId,
         string? note,
         CancellationToken ct = default);
@@ -71,12 +73,10 @@ public interface IFinanceService
         string? title,
         DateOnly? date,
         long? amount,
-        Guid? assigneeId,
-        bool clearAssignee,
+        PlannedPurchaseAssigneeKind? assigneeKind,
+        Guid? assigneeUserId,
         Guid? categoryId,
-        bool clearCategory,
         string? note,
-        bool clearNote,
         PlannedPurchaseStatus? status,
         CancellationToken ct = default);
 

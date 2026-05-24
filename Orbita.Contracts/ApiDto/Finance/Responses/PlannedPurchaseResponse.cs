@@ -7,7 +7,12 @@ public sealed class PlannedPurchaseResponse
     /// <summary>ISO date "YYYY-MM-DD".</summary>
     public string Date { get; init; } = default!;
     public long Amount { get; init; }
-    public string? AssigneeId { get; init; }
+
+    /// <summary>"user" | "team" | null.</summary>
+    public string? AssigneeKind { get; init; }
+    /// <summary>Заполнен только при AssigneeKind == "user".</summary>
+    public string? AssigneeUserId { get; init; }
+
     public string? CategoryId { get; init; }
     public string? Note { get; init; }
     /// <summary>"planned" | "bought" | "cancelled".</summary>

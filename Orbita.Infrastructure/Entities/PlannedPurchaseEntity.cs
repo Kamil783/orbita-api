@@ -10,7 +10,8 @@ public class PlannedPurchaseEntity
     public string Title { get; set; } = default!;
     public DateOnly Date { get; set; }
     public long Amount { get; set; }
-    public Guid? AssigneeId { get; set; }
+    public PlannedPurchaseAssigneeKind? AssigneeKind { get; set; }
+    public Guid? AssigneeUserId { get; set; }
     public Guid? CategoryId { get; set; }
     public string? Note { get; set; }
     public PlannedPurchaseStatus Status { get; set; }

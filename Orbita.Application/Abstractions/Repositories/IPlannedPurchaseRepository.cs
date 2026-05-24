@@ -10,7 +10,8 @@ public interface IPlannedPurchaseRepository
         DateOnly? from,
         DateOnly? to,
         PlannedPurchaseStatus? status,
-        Guid? assigneeId,
+        PlannedPurchaseAssigneeKind? assigneeKind,
+        Guid? assigneeUserId,
         Guid? categoryId,
         CancellationToken ct = default);
 

@@ -14,7 +14,8 @@ public class PlannedPurchaseRepository(OrbitaDbContext db) : IPlannedPurchaseRep
         DateOnly? from,
         DateOnly? to,
         PlannedPurchaseStatus? status,
-        Guid? assigneeId,
+        PlannedPurchaseAssigneeKind? assigneeKind,
+        Guid? assigneeUserId,
         Guid? categoryId,
         CancellationToken ct = default)
     {
@@ -30,8 +31,11 @@ public class PlannedPurchaseRepository(OrbitaDbContext db) : IPlannedPurchaseRep
         if (status.HasValue)
             query = query.Where(x => x.Status == status.Value);
 
-        if (assigneeId.HasValue)
-            query = query.Where(x => x.AssigneeId == assigneeId.Value);
+        if (assigneeKind.HasValue)
+            query = query.Where(x => x.AssigneeKind == assigneeKind.Value);
+
+        if (assigneeUserId.HasValue)
+            query = query.Where(x => x.AssigneeUserId == assigneeUserId.Value);
 
         if (categoryId.HasValue)
             query = query.Where(x => x.CategoryId == categoryId.Value);
@@ -67,7 +71,8 @@ public class PlannedPurchaseRepository(OrbitaDbContext db) : IPlannedPurchaseRep
         entity.Title = purchase.Title;
         entity.Date = purchase.Date;
         entity.Amount = purchase.Amount;
-        entity.AssigneeId = purchase.AssigneeId?.Id;
+        entity.AssigneeKind = purchase.AssigneeKind;
+        entity.AssigneeUserId = purchase.AssigneeUserId?.Id;
         entity.CategoryId = purchase.CategoryId?.Id;
         entity.Note = purchase.Note;
         entity.Status = purchase.Status;

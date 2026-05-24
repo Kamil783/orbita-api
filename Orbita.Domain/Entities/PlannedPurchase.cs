@@ -11,7 +11,12 @@ public class PlannedPurchase
     public string Title { get; private set; }
     public DateOnly Date { get; private set; }
     public long Amount { get; private set; }
-    public UserId? AssigneeId { get; private set; }
+
+    /// <summary>Тип исполнителя. null — не назначен.</summary>
+    public PlannedPurchaseAssigneeKind? AssigneeKind { get; private set; }
+    /// <summary>Конкретный пользователь-исполнитель. Имеет смысл только при <see cref="AssigneeKind"/> = User.</summary>
+    public UserId? AssigneeUserId { get; private set; }
+
     public FinanceCategoryId? CategoryId { get; private set; }
     public string? Note { get; private set; }
     public PlannedPurchaseStatus Status { get; private set; }
@@ -26,12 +31,14 @@ public class PlannedPurchase
         string title,
         DateOnly date,
         long amount,
-        UserId? assigneeId,
+        PlannedPurchaseAssigneeKind? assigneeKind,
+        UserId? assigneeUserId,
         FinanceCategoryId? categoryId,
         string? note)
     {
         ValidateTitle(title);
         ValidateAmount(amount);
+        ValidateAssignee(assigneeKind, assigneeUserId);
 
         var now = DateTime.UtcNow;
         return new PlannedPurchase
@@ -42,7 +49,8 @@ public class PlannedPurchase
             Title = title.Trim(),
             Date = date,
             Amount = amount,
-            AssigneeId = assigneeId,
+            AssigneeKind = assigneeKind,
+            AssigneeUserId = assigneeKind == PlannedPurchaseAssigneeKind.User ? assigneeUserId : null,
             CategoryId = categoryId,
             Note = NormalizeNote(note),
             Status = PlannedPurchaseStatus.Planned,
@@ -58,7 +66,8 @@ public class PlannedPurchase
         string title,
         DateOnly date,
         long amount,
-        UserId? assigneeId,
+        PlannedPurchaseAssigneeKind? assigneeKind,
+        UserId? assigneeUserId,
         FinanceCategoryId? categoryId,
         string? note,
         PlannedPurchaseStatus status,
@@ -73,7 +82,8 @@ public class PlannedPurchase
             Title = title,
             Date = date,
             Amount = amount,
-            AssigneeId = assigneeId,
+            AssigneeKind = assigneeKind,
+            AssigneeUserId = assigneeUserId,
             CategoryId = categoryId,
             Note = note,
             Status = status,
@@ -82,16 +92,21 @@ public class PlannedPurchase
         };
     }
 
+    /// <summary>
+    /// PATCH с двойной семантикой:
+    ///   * Не-nullable поля (<paramref name="title"/>, <paramref name="date"/>, <paramref name="amount"/>,
+    ///     <paramref name="status"/>): null = не трогать.
+    ///   * Nullable поля (assignee, <paramref name="categoryId"/>, <paramref name="note"/>):
+    ///     значение из вызова всегда записывается — null означает «снять».
+    /// </summary>
     public void Update(
         string? title,
         DateOnly? date,
         long? amount,
-        UserId? assigneeId,
-        bool clearAssignee,
+        PlannedPurchaseAssigneeKind? assigneeKind,
+        UserId? assigneeUserId,
         FinanceCategoryId? categoryId,
-        bool clearCategory,
         string? note,
-        bool clearNote,
         PlannedPurchaseStatus? status)
     {
         if (title is not null)
@@ -109,20 +124,12 @@ public class PlannedPurchase
             Amount = amount.Value;
         }
 
-        if (clearAssignee)
-            AssigneeId = null;
-        else if (assigneeId is not null)
-            AssigneeId = assigneeId;
+        ValidateAssignee(assigneeKind, assigneeUserId);
+        AssigneeKind = assigneeKind;
+        AssigneeUserId = assigneeKind == PlannedPurchaseAssigneeKind.User ? assigneeUserId : null;
 
-        if (clearCategory)
-            CategoryId = null;
-        else if (categoryId is not null)
-            CategoryId = categoryId;
-
-        if (clearNote)
-            Note = null;
-        else if (note is not null)
-            Note = NormalizeNote(note);
+        CategoryId = categoryId;
+        Note = NormalizeNote(note);
 
         if (status.HasValue)
             Status = status.Value;
@@ -142,6 +149,12 @@ public class PlannedPurchase
     {
         if (amount <= 0)
             throw new ArgumentOutOfRangeException(nameof(amount), "Amount must be positive.");
+    }
+
+    private static void ValidateAssignee(PlannedPurchaseAssigneeKind? kind, UserId? userId)
+    {
+        if (kind == PlannedPurchaseAssigneeKind.User && userId is null)
+            throw new ArgumentException("AssigneeUserId is required when AssigneeKind = User.", nameof(userId));
     }
 
     private static string? NormalizeNote(string? note)
