@@ -6,7 +6,10 @@ public sealed class PlannedPurchaseResponse
     public string Title { get; init; } = default!;
     /// <summary>ISO date "YYYY-MM-DD".</summary>
     public string Date { get; init; } = default!;
+    /// <summary>"expense" | "income".</summary>
+    public string Direction { get; init; } = default!;
     public long Amount { get; init; }
+    public long? ActualAmount { get; init; }
 
     /// <summary>"user" | "team" | null.</summary>
     public string? AssigneeKind { get; init; }

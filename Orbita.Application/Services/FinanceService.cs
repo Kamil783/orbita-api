@@ -910,6 +910,7 @@ public class FinanceService(
         DateOnly? from,
         DateOnly? to,
         PlannedPurchaseStatus? status,
+        PlannedPurchaseDirection? direction,
         PlannedPurchaseAssigneeKind? assigneeKind,
         Guid? assigneeUserId,
         Guid? categoryId,
@@ -917,7 +918,7 @@ public class FinanceService(
     {
         var teamId = await teamProvider.GetTeamIdAsync(userId, ct);
         var items = await plannedPurchaseRepository.GetByTeamAsync(
-            teamId, from, to, status, assigneeKind, assigneeUserId, categoryId, ct);
+            teamId, from, to, status, direction, assigneeKind, assigneeUserId, categoryId, ct);
         return Result<List<PlannedPurchase>>.Ok(items);
     }
 
@@ -925,7 +926,9 @@ public class FinanceService(
         Guid userId,
         string title,
         DateOnly date,
+        PlannedPurchaseDirection direction,
         long amount,
+        long? actualAmount,
         PlannedPurchaseAssigneeKind? assigneeKind,
         Guid? assigneeUserId,
         Guid? categoryId,
@@ -955,7 +958,9 @@ public class FinanceService(
                 teamId: new TeamId(teamId),
                 title: title,
                 date: date,
+                direction: direction,
                 amount: amount,
+                actualAmount: actualAmount,
                 assigneeKind: assigneeKind,
                 assigneeUserId: assigneeResolution.Value,
                 categoryId: finCategoryId,
@@ -975,7 +980,9 @@ public class FinanceService(
         Guid purchaseId,
         string? title,
         DateOnly? date,
+        PlannedPurchaseDirection? direction,
         long? amount,
+        long? actualAmount,
         PlannedPurchaseAssigneeKind? assigneeKind,
         Guid? assigneeUserId,
         Guid? categoryId,
@@ -1010,7 +1017,9 @@ public class FinanceService(
             purchase.Update(
                 title: title,
                 date: date,
+                direction: direction,
                 amount: amount,
+                actualAmount: actualAmount,
                 assigneeKind: assigneeKind,
                 assigneeUserId: assigneeResolution.Value,
                 categoryId: finCategoryId,
