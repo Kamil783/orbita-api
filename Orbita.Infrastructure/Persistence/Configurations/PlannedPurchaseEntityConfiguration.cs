@@ -26,8 +26,16 @@ public class PlannedPurchaseEntityConfiguration : IEntityTypeConfiguration<Plann
         b.Property(x => x.Date)
             .IsRequired();
 
+        b.Property(x => x.Direction)
+            .HasConversion<int>()
+            .IsRequired()
+            .HasDefaultValue(Orbita.Domain.Enums.PlannedPurchaseDirection.Expense);
+
         b.Property(x => x.Amount)
             .IsRequired();
+
+        b.Property(x => x.ActualAmount)
+            .IsRequired(false);
 
         b.Property(x => x.AssigneeKind)
             .HasConversion<int?>()
@@ -57,5 +65,6 @@ public class PlannedPurchaseEntityConfiguration : IEntityTypeConfiguration<Plann
         b.HasIndex(x => new { x.TeamId, x.Date });
         b.HasIndex(x => x.AssigneeUserId);
         b.HasIndex(x => x.AssigneeKind);
+        b.HasIndex(x => new { x.TeamId, x.Direction });
     }
 }

@@ -10,7 +10,15 @@ public class PlannedPurchase
     public TeamId TeamId { get; private set; }
     public string Title { get; private set; }
     public DateOnly Date { get; private set; }
+
+    /// <summary>Тип операции: расход или поступление.</summary>
+    public PlannedPurchaseDirection Direction { get; private set; }
+
+    /// <summary>Планируемая сумма (в копейках), всегда положительная. Знак определяется <see cref="Direction"/>.</summary>
     public long Amount { get; private set; }
+
+    /// <summary>Фактическая сумма (в копейках), если уже известна. Всегда положительная, если задана.</summary>
+    public long? ActualAmount { get; private set; }
 
     /// <summary>Тип исполнителя. null — не назначен.</summary>
     public PlannedPurchaseAssigneeKind? AssigneeKind { get; private set; }
@@ -30,7 +38,9 @@ public class PlannedPurchase
         TeamId teamId,
         string title,
         DateOnly date,
+        PlannedPurchaseDirection direction,
         long amount,
+        long? actualAmount,
         PlannedPurchaseAssigneeKind? assigneeKind,
         UserId? assigneeUserId,
         FinanceCategoryId? categoryId,
@@ -38,6 +48,7 @@ public class PlannedPurchase
     {
         ValidateTitle(title);
         ValidateAmount(amount);
+        if (actualAmount.HasValue) ValidateActualAmount(actualAmount.Value);
         ValidateAssignee(assigneeKind, assigneeUserId);
 
         var now = DateTime.UtcNow;
@@ -48,7 +59,9 @@ public class PlannedPurchase
             TeamId = teamId,
             Title = title.Trim(),
             Date = date,
+            Direction = direction,
             Amount = amount,
+            ActualAmount = actualAmount,
             AssigneeKind = assigneeKind,
             AssigneeUserId = assigneeKind == PlannedPurchaseAssigneeKind.User ? assigneeUserId : null,
             CategoryId = categoryId,
@@ -65,7 +78,9 @@ public class PlannedPurchase
         TeamId teamId,
         string title,
         DateOnly date,
+        PlannedPurchaseDirection direction,
         long amount,
+        long? actualAmount,
         PlannedPurchaseAssigneeKind? assigneeKind,
         UserId? assigneeUserId,
         FinanceCategoryId? categoryId,
@@ -81,7 +96,9 @@ public class PlannedPurchase
             TeamId = teamId,
             Title = title,
             Date = date,
+            Direction = direction,
             Amount = amount,
+            ActualAmount = actualAmount,
             AssigneeKind = assigneeKind,
             AssigneeUserId = assigneeUserId,
             CategoryId = categoryId,
@@ -93,16 +110,18 @@ public class PlannedPurchase
     }
 
     /// <summary>
-    /// PATCH с двойной семантикой:
-    ///   * Не-nullable поля (<paramref name="title"/>, <paramref name="date"/>, <paramref name="amount"/>,
-    ///     <paramref name="status"/>): null = не трогать.
-    ///   * Nullable поля (assignee, <paramref name="categoryId"/>, <paramref name="note"/>):
-    ///     значение из вызова всегда записывается — null означает «снять».
+    /// PATCH-семантика:
+    ///   * Не-nullable поля (<paramref name="title"/>, <paramref name="date"/>, <paramref name="direction"/>,
+    ///     <paramref name="amount"/>, <paramref name="status"/>): null = не трогать.
+    ///   * Nullable поля (<paramref name="actualAmount"/>, assignee, <paramref name="categoryId"/>,
+    ///     <paramref name="note"/>): значение из вызова всегда записывается — null означает «снять».
     /// </summary>
     public void Update(
         string? title,
         DateOnly? date,
+        PlannedPurchaseDirection? direction,
         long? amount,
+        long? actualAmount,
         PlannedPurchaseAssigneeKind? assigneeKind,
         UserId? assigneeUserId,
         FinanceCategoryId? categoryId,
@@ -118,11 +137,18 @@ public class PlannedPurchase
         if (date.HasValue)
             Date = date.Value;
 
+        if (direction.HasValue)
+            Direction = direction.Value;
+
         if (amount.HasValue)
         {
             ValidateAmount(amount.Value);
             Amount = amount.Value;
         }
+
+        if (actualAmount.HasValue)
+            ValidateActualAmount(actualAmount.Value);
+        ActualAmount = actualAmount;
 
         ValidateAssignee(assigneeKind, assigneeUserId);
         AssigneeKind = assigneeKind;
@@ -149,6 +175,12 @@ public class PlannedPurchase
     {
         if (amount <= 0)
             throw new ArgumentOutOfRangeException(nameof(amount), "Amount must be positive.");
+    }
+
+    private static void ValidateActualAmount(long actualAmount)
+    {
+        if (actualAmount <= 0)
+            throw new ArgumentOutOfRangeException(nameof(actualAmount), "ActualAmount must be positive.");
     }
 
     private static void ValidateAssignee(PlannedPurchaseAssigneeKind? kind, UserId? userId)

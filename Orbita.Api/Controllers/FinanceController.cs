@@ -607,6 +607,7 @@ public class FinanceController(IFinanceService financeService) : AuthorizedContr
         [FromQuery] string? from,
         [FromQuery] string? to,
         [FromQuery] string? status,
+        [FromQuery] string? direction,
         [FromQuery] string? assigneeKind,
         [FromQuery] Guid? assigneeUserId,
         [FromQuery] Guid? categoryId,
@@ -639,6 +640,14 @@ public class FinanceController(IFinanceService financeService) : AuthorizedContr
             statusFilter = parsed;
         }
 
+        Domain.Enums.PlannedPurchaseDirection? directionFilter = null;
+        if (!string.IsNullOrWhiteSpace(direction))
+        {
+            if (!TryParseDirection(direction, out var parsed))
+                return BadRequest("Invalid direction.");
+            directionFilter = parsed;
+        }
+
         Domain.Enums.PlannedPurchaseAssigneeKind? kindFilter = null;
         if (!string.IsNullOrWhiteSpace(assigneeKind))
         {
@@ -648,7 +657,7 @@ public class FinanceController(IFinanceService financeService) : AuthorizedContr
         }
 
         var res = await financeService.GetPlannedPurchasesAsync(
-            userId, fromDate, toDate, statusFilter, kindFilter, assigneeUserId, categoryId, ct);
+            userId, fromDate, toDate, statusFilter, directionFilter, kindFilter, assigneeUserId, categoryId, ct);
 
         return res
             .Map(items => items.Select(ToPlannedPurchaseResponse).ToList())
@@ -665,6 +674,14 @@ public class FinanceController(IFinanceService financeService) : AuthorizedContr
         if (!DateOnly.TryParse(request.Date, out var date))
             return BadRequest("Invalid date.");
 
+        var direction = Domain.Enums.PlannedPurchaseDirection.Expense;
+        if (request.Direction is not null)
+        {
+            if (!TryParseDirection(request.Direction, out var parsed))
+                return BadRequest("Invalid direction.");
+            direction = parsed;
+        }
+
         Domain.Enums.PlannedPurchaseAssigneeKind? kind = null;
         if (request.AssigneeKind is not null)
         {
@@ -677,7 +694,9 @@ public class FinanceController(IFinanceService financeService) : AuthorizedContr
             userId,
             request.Title,
             date,
+            direction,
             request.Amount,
+            request.ActualAmount,
             kind,
             request.AssigneeUserId,
             request.CategoryId,
@@ -712,6 +731,14 @@ public class FinanceController(IFinanceService financeService) : AuthorizedContr
             status = parsed;
         }
 
+        Domain.Enums.PlannedPurchaseDirection? direction = null;
+        if (request.Direction is not null)
+        {
+            if (!TryParseDirection(request.Direction, out var parsed))
+                return BadRequest("Invalid direction.");
+            direction = parsed;
+        }
+
         Domain.Enums.PlannedPurchaseAssigneeKind? kind = null;
         if (request.AssigneeKind is not null)
         {
@@ -725,7 +752,9 @@ public class FinanceController(IFinanceService financeService) : AuthorizedContr
             id,
             request.Title,
             date,
+            direction,
             request.Amount,
+            request.ActualAmount,
             kind,
             request.AssigneeUserId,
             request.CategoryId,
@@ -767,6 +796,23 @@ public class FinanceController(IFinanceService financeService) : AuthorizedContr
         _ => "planned"
     };
 
+    private static bool TryParseDirection(string raw, out Domain.Enums.PlannedPurchaseDirection direction)
+    {
+        switch (raw.Trim().ToLowerInvariant())
+        {
+            case "expense": direction = Domain.Enums.PlannedPurchaseDirection.Expense; return true;
+            case "income": direction = Domain.Enums.PlannedPurchaseDirection.Income; return true;
+            default: direction = default; return false;
+        }
+    }
+
+    private static string DirectionToString(Domain.Enums.PlannedPurchaseDirection d) => d switch
+    {
+        Domain.Enums.PlannedPurchaseDirection.Expense => "expense",
+        Domain.Enums.PlannedPurchaseDirection.Income => "income",
+        _ => "expense"
+    };
+
     private static bool TryParseAssigneeKind(string raw, out Domain.Enums.PlannedPurchaseAssigneeKind kind)
     {
         switch (raw.Trim().ToLowerInvariant())
@@ -790,7 +836,9 @@ public class FinanceController(IFinanceService financeService) : AuthorizedContr
             Id = p.Id.Id.ToString(),
             Title = p.Title,
             Date = p.Date.ToString("yyyy-MM-dd"),
+            Direction = DirectionToString(p.Direction),
             Amount = p.Amount,
+            ActualAmount = p.ActualAmount,
             AssigneeKind = AssigneeKindToString(p.AssigneeKind),
             AssigneeUserId = p.AssigneeUserId?.Id.ToString(),
             CategoryId = p.CategoryId?.Id.ToString(),

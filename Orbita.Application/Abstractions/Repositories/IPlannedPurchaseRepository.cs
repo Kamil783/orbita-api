@@ -10,6 +10,7 @@ public interface IPlannedPurchaseRepository
         DateOnly? from,
         DateOnly? to,
         PlannedPurchaseStatus? status,
+        PlannedPurchaseDirection? direction,
         PlannedPurchaseAssigneeKind? assigneeKind,
         Guid? assigneeUserId,
         Guid? categoryId,

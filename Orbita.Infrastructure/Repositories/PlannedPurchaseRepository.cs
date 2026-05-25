@@ -14,6 +14,7 @@ public class PlannedPurchaseRepository(OrbitaDbContext db) : IPlannedPurchaseRep
         DateOnly? from,
         DateOnly? to,
         PlannedPurchaseStatus? status,
+        PlannedPurchaseDirection? direction,
         PlannedPurchaseAssigneeKind? assigneeKind,
         Guid? assigneeUserId,
         Guid? categoryId,
@@ -30,6 +31,9 @@ public class PlannedPurchaseRepository(OrbitaDbContext db) : IPlannedPurchaseRep
 
         if (status.HasValue)
             query = query.Where(x => x.Status == status.Value);
+
+        if (direction.HasValue)
+            query = query.Where(x => x.Direction == direction.Value);
 
         if (assigneeKind.HasValue)
             query = query.Where(x => x.AssigneeKind == assigneeKind.Value);
@@ -70,7 +74,9 @@ public class PlannedPurchaseRepository(OrbitaDbContext db) : IPlannedPurchaseRep
 
         entity.Title = purchase.Title;
         entity.Date = purchase.Date;
+        entity.Direction = purchase.Direction;
         entity.Amount = purchase.Amount;
+        entity.ActualAmount = purchase.ActualAmount;
         entity.AssigneeKind = purchase.AssigneeKind;
         entity.AssigneeUserId = purchase.AssigneeUserId?.Id;
         entity.CategoryId = purchase.CategoryId?.Id;
