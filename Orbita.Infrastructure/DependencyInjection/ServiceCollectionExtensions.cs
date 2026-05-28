@@ -19,6 +19,7 @@ using Orbita.Infrastructure.Logging;
 using Orbita.Infrastructure.Notifications;
 using Orbita.Infrastructure.Persistence;
 using Orbita.Application.Abstractions.Services;
+using Orbita.Infrastructure.ExternalServices;
 using Orbita.Infrastructure.Repositories;
 using Orbita.Infrastructure.Services;
 
@@ -102,6 +103,10 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IRecurringPaymentRepository, RecurringPaymentRepository>();
         services.AddScoped<IPlannedPurchaseRepository, PlannedPurchaseRepository>();
         services.AddScoped<IRecurringTaskRepository, RecurringTaskRepository>();
+        services.AddScoped<ICurrencyRepository, CurrencyRepository>();
+        services.AddScoped<IAccountRepository, AccountRepository>();
+        services.AddHttpClient<CbrRatesClient>();
+        services.AddHttpClient<CoinGeckoRatesClient>();
         services.AddScoped<ITeamRepository, TeamRepository>();
         services.AddScoped<IShoppingListRepository, ShoppingListRepository>();
         services.AddScoped<ITeamProvider, TeamProvider>();
@@ -125,6 +130,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IDailyJob, OverdueTaskNotificationJob>();
         services.AddScoped<IDailyJob, RecurringTaskMonthlyResetJob>();
         services.AddScoped<IDailyJob, RecurringTaskOverdueNotificationJob>();
+        services.AddScoped<IDailyJob, CbrRatesFetchJob>();
+        services.AddScoped<IDailyJob, CoinGeckoRatesFetchJob>();
         services.AddHostedService<DailyTaskRunnerService>();
 
         return services;
