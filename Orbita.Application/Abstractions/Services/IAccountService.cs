@@ -20,6 +20,21 @@ public interface IAccountService
     /// <summary>Возвращает счета команды + общую сумму в рублях. Если у валюты нет курса —
     /// конвертация для этого счёта возвращается как null, и он не учитывается в TotalRub.</summary>
     Task<Result<AccountsTotal>> GetTotalAsync(Guid userId, CancellationToken ct = default);
+
+    Task<Result<List<AccountTransaction>>> GetTransactionsAsync(
+        Guid userId, Guid? accountId, CancellationToken ct = default);
+
+    Task<Result<AccountTransaction>> CreateTransactionAsync(
+        Guid userId, Guid accountId, Guid? categoryId,
+        string title, decimal amount, DateTime? createdAt,
+        CancellationToken ct = default);
+
+    Task<Result<AccountTransaction>> UpdateTransactionAsync(
+        Guid userId, Guid transactionId,
+        Guid? categoryId, string? title, decimal? amount, DateTime? createdAt,
+        CancellationToken ct = default);
+
+    Task<Result> DeleteTransactionAsync(Guid userId, Guid transactionId, CancellationToken ct = default);
 }
 
 public sealed record AccountsTotal(
