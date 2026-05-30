@@ -84,6 +84,81 @@ public class AccountsController(IAccountService accountService) : AuthorizedCont
         return res.ToActionResult(HttpContext);
     }
 
+    [HttpGet("transactions")]
+    public async Task<IActionResult> GetTransactions([FromQuery] Guid? accountId, CancellationToken ct)
+    {
+        if (!TryGetUserId(out var userId))
+            return Unauthorized();
+
+        var res = await accountService.GetTransactionsAsync(userId, accountId, ct);
+
+        return res
+            .Map(items => items.Select(ToTransactionResponse).ToList())
+            .ToActionResult(HttpContext);
+    }
+
+    [HttpPost("transactions")]
+    public async Task<IActionResult> CreateTransaction(
+        [FromBody] CreateAccountTransactionRequest request, CancellationToken ct)
+    {
+        if (!TryGetUserId(out var userId))
+            return Unauthorized();
+
+        var res = await accountService.CreateTransactionAsync(
+            userId,
+            request.AccountId,
+            request.CategoryId,
+            request.Title,
+            request.Amount,
+            request.Date,
+            ct);
+
+        return res
+            .Map(ToTransactionResponse)
+            .ToActionResult(HttpContext);
+    }
+
+    [HttpPatch("transactions/{id:guid}")]
+    public async Task<IActionResult> UpdateTransaction(
+        Guid id, [FromBody] UpdateAccountTransactionRequest request, CancellationToken ct)
+    {
+        if (!TryGetUserId(out var userId))
+            return Unauthorized();
+
+        var res = await accountService.UpdateTransactionAsync(
+            userId, id,
+            request.CategoryId,
+            request.Title,
+            request.Amount,
+            request.Date,
+            ct);
+
+        return res
+            .Map(ToTransactionResponse)
+            .ToActionResult(HttpContext);
+    }
+
+    [HttpDelete("transactions/{id:guid}")]
+    public async Task<IActionResult> DeleteTransaction(Guid id, CancellationToken ct)
+    {
+        if (!TryGetUserId(out var userId))
+            return Unauthorized();
+
+        var res = await accountService.DeleteTransactionAsync(userId, id, ct);
+        return res.ToActionResult(HttpContext);
+    }
+
+    private static AccountTransactionResponse ToTransactionResponse(Domain.Entities.AccountTransaction t) => new()
+    {
+        Id = t.Id.Id.ToString(),
+        AccountId = t.AccountId.Id.ToString(),
+        CategoryId = t.CategoryId?.Id.ToString(),
+        Title = t.Title,
+        Amount = t.Amount,
+        Date = t.CreatedAt.ToString("yyyy-MM-dd"),
+        Timestamp = new DateTimeOffset(DateTime.SpecifyKind(t.CreatedAt, DateTimeKind.Utc), TimeSpan.Zero).ToUnixTimeMilliseconds()
+    };
+
     private static AccountResponse ToResponse(Domain.Entities.Account a) => new()
     {
         Id = a.Id.Id.ToString(),

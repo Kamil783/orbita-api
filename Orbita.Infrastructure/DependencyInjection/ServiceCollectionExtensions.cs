@@ -105,6 +105,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IRecurringTaskRepository, RecurringTaskRepository>();
         services.AddScoped<ICurrencyRepository, CurrencyRepository>();
         services.AddScoped<IAccountRepository, AccountRepository>();
+        services.AddScoped<IAccountTransactionRepository, AccountTransactionRepository>();
         services.AddHttpClient<CbrRatesClient>();
         services.AddHttpClient<CoinGeckoRatesClient>();
         services.AddScoped<ITeamRepository, TeamRepository>();
